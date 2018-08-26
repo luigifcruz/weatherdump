@@ -1,8 +1,8 @@
 package ScienceFrames
 
 import (
-	"osp-noaa-dump/VIIRS/Common"
-	"fmt"
+"osp-noaa-dump/VIIRS/Common"
+"fmt"
 )
 
 type FrameBody struct {
@@ -76,15 +76,15 @@ func (e FrameBody) IsValid() bool {
 }
 
 func (e FrameBody) IsFillData(aggregationZone int) bool {
-	return e.detectorData[aggregationZone].GetData()[0] == 0x04
+	return e.detectorData[aggregationZone].GetChecksum() == 0x0008
 }
 
 func (e FrameBody) GetAggrLen() int {
 	return len(e.detectorData)
 }
 
-func (e FrameBody) GetData(aggregationZone int) []byte {
-	return e.detectorData[aggregationZone].GetData()
+func (e *FrameBody) GetData(zone int, width int) []byte {
+	return e.detectorData[zone].GetData(width)
 }
 
 func (e FrameBody) GetDetectorNumber() uint8 {

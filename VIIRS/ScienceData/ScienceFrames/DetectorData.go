@@ -3,7 +3,40 @@ package ScienceFrames
 import (
 	"fmt"
 	"math"
+	"unsafe"
 )
+
+/*
+#include <stdlib.h>
+#include <stdint.h>
+#include <libaec.h>
+#include <string.h>
+#cgo LDFLAGS: -laec
+
+void decompress(char *input, char *output, int inputLen, int outputLen) {
+	struct aec_stream strm;
+
+	strm.bits_per_sample = 15;
+	strm.block_size = 8;
+	strm.rsi = 128;
+	strm.flags = AEC_DATA_MSB | AEC_DATA_PREPROCESS;
+	strm.next_in = input;
+	strm.avail_in = inputLen;
+	strm.next_out = output;
+	strm.avail_out = outputLen * sizeof(char);
+
+	aec_decode_init(&strm);
+	aec_decode(&strm, AEC_FLUSH);
+	aec_decode_end(&strm);
+}
+*/
+import "C"
+
+func Decompress(data []byte, inputLen int, outputLen int) []byte {
+	var slice = make([]byte, outputLen)
+	C.decompress((*C.char)(unsafe.Pointer(&data[0])), (*C.char)(unsafe.Pointer(&slice[0])), C.int(inputLen), C.int(outputLen))
+	return slice
+}
 
 type DetectorData struct {
 	fillData uint8
@@ -20,6 +53,10 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 	e.checksumOffset = uint16(dat[2]) << 8 | uint16(dat[3])
 
 	cso := e.checksumOffset
+
+	if int(cso) >= len(dat) + 4 || cso == 0 {
+		return
+	}
 
 	e.aggregator = dat[4:cso]
 	bitSlicer(&e.aggregator, int(e.fillData))
@@ -41,8 +78,16 @@ func (e DetectorData) Print() {
 	fmt.Println()
 }
 
-func (e DetectorData) GetData() []byte {
-	return e.aggregator
+func (e *DetectorData) GetData(width int) []byte {
+	if len(e.aggregator) > 0 {
+		return Decompress(e.aggregator, len(e.aggregator), width*2)
+	}
+	
+	return make([]byte, width*2)
+}
+
+func (e DetectorData) GetChecksum() uint16 {
+	return e.checksumOffset
 }
 
 func bitSlicer(dat *[]byte, size int) {
