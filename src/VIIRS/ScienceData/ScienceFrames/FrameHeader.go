@@ -1,7 +1,7 @@
 package ScienceFrames
 
 import (
-	"osp-noaa-dump/VIIRS/Common"
+	"weather-dump/src/VIIRS/Common"
 	"fmt"
 )
 

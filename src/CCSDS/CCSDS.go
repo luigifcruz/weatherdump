@@ -2,7 +2,7 @@ package CCSDS
 
 import (
 	"fmt"
-	"osp-noaa-dump/CCSDS/Frames"
+	"weather-dump/src/CCSDS/Frames"
 )
 
 const invalidAPID = uint16(65535)

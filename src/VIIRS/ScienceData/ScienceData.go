@@ -1,14 +1,14 @@
 package VIIRS
 
 import (
-	"osp-noaa-dump/CCSDS/Frames"
-	"osp-noaa-dump/VIIRS/ScienceData/ScienceFrames"
+	"weather-dump/src/CCSDS/Frames"
+	"weather-dump/src/VIIRS/ScienceData/ScienceFrames"
 	"sort"
 	"image"
 	"os"
 	"image/png"
 	"fmt"
-	"osp-noaa-dump/VIIRS/Common"
+	"weather-dump/src/VIIRS/Common"
 	"strings"
 )
 
@@ -18,6 +18,7 @@ const lastPacket = 2
 type ScienceData struct {
 	tempSegments [2047]Segment
 	dataSegments []Segment
+	outputFolder string
 }
 
 type Segment struct {
@@ -124,7 +125,7 @@ func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []Segm
 	VIIRS.NormalizeImage(&buf)
 
 	sc := Spacecrafts[SCID]
-	outputName := fmt.Sprintf("output/%s_%s_VIIRS_%s_%s.png", sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate())
+	outputName := fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate())
 	outputFile, _ := os.Create(outputName)
 
 	img := image.NewGray16(image.Rect(0, 0, cs.FinalProductWidth, len(packets)*cs.AggregationZoneHeight))
@@ -156,4 +157,8 @@ func (e *ScienceData) Parse(packet Frames.SpacePacketFrame) {
 	if packet.GetSequenceFlags() == lastPacket && ts.header.GetNumberOfSegments() > 0 {
 		e.dataSegments = append(e.dataSegments, *ts)
 	}
+}
+
+func (e *ScienceData) SetOutputFolder(path string) {
+	e.outputFolder = path
 }

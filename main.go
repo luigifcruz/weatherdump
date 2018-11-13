@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"log"
-	"io/ioutil"
-	"osp-noaa-dump/VIIRS/ScienceData"
-	"osp-noaa-dump/CCSDS"
-	"osp-noaa-dump/CCSDS/Frames"
 	"github.com/urfave/cli"
+	"io/ioutil"
+	"log"
+	"os"
+	"weather-dump/src/CCSDS"
+	"weather-dump/src/CCSDS/Frames"
+	"weather-dump/src/VIIRS/ScienceData"
 )
 
 const frameSize = 892
 
-func runDecoder(fileName string, outputPath string) {
-	fmt.Println("Satellite Helper App - NPOESS Edition")
+func runHRDDecoder(fileName string, outputPath string) {
+	fmt.Println("Decoding started...")
 
 	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
 		os.Mkdir(outputPath, os.ModePerm)
@@ -54,29 +54,39 @@ func runDecoder(fileName string, outputPath string) {
 		}
 	}
 
+	t.SetOutputFolder(outputPath)
 	t.SaveAllChannels(scid)
 
 	fmt.Println("Done! Products saved.")
 }
 
+func settingsPrint(inputFormat string, outputPath string, datalinkName string) {
+	fmt.Println("============== WeatherDump ==============")
+	fmt.Println("============= CONFIGURATION =============")
+	fmt.Println("Datalink:", datalinkName)
+	fmt.Println("Input Format:", inputFormat)
+	fmt.Println("Output Folder:", outputPath)
+	fmt.Println("=========================================")
+}
+
 func main() {
-	var fileType string
+	var inputFormat string
 	var outputPath string
 
 	app := cli.NewApp()
 
-	app.Name = "polardump"
-	app.UsageText = "polardump [DATALINK] [FILE_PATH] [OPTIONS]..."
+	app.Name = "weatherdump"
+	app.UsageText = "weatherdump [OPTIONS] [DATALINK] [FILE_PATH]"
 	app.Author = "Luigi Cruz (@luigifcruz) for Open Satellite Project"
 	app.Usage = "OSP's universal decoder for polar orbiting satellites."
 	app.Version = "0.1.0"
 
 	app.Flags = []cli.Flag {
 		cli.StringFlag {
-		  Name: "type",
+		  Name: "format",
 		  Value: "decoded",
-		  Usage: "file encoding type",
-		  Destination: &fileType,
+		  Usage: "input format [decoded or cadu]",
+		  Destination: &inputFormat,
 		},
 		cli.StringFlag {
 			Name: "output",
@@ -92,7 +102,7 @@ func main() {
 			Usage: "decoder for X-Band High Rate Data (HRD) signal (Suomi & NOAA-20)",
 			Category: "DATALINK",
 			Action: func(c *cli.Context) error {
-				if fileType == "cadu" {
+				if inputFormat == "cadu" {
 					fmt.Println("[ERROR] The CADU type input not supported yet.")
 					os.Exit(0)
 				}
@@ -102,7 +112,8 @@ func main() {
 					os.Exit(0)
 				}
 
-				runDecoder(c.Args().First(), outputPath)
+				settingsPrint(inputFormat, outputPath, "HRD")
+				runHRDDecoder(c.Args().First(), outputPath)
 				return nil
 			},
 		},
