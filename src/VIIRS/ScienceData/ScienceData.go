@@ -1,15 +1,17 @@
 package VIIRS
 
 import (
-	"weather-dump/src/CCSDS/Frames"
-	"weather-dump/src/VIIRS/ScienceData/ScienceFrames"
-	"sort"
-	"image"
-	"os"
-	"image/png"
 	"fmt"
-	"weather-dump/src/VIIRS/Common"
+	"image"
+	"image/png"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"sort"
 	"strings"
+	"weather-dump/src/CCSDS/Frames"
+	"weather-dump/src/VIIRS/Common"
+	"weather-dump/src/VIIRS/ScienceData/ScienceFrames"
 )
 
 const firstPacket = 1
@@ -122,10 +124,10 @@ func (e ScienceData) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 }
 
 func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []Segment, SCID uint8) {
-	VIIRS.NormalizeImage(&buf)
+	//VIIRS.NormalizeImage(&buf)
 
 	sc := Spacecrafts[SCID]
-	outputName := fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate())
+	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate()))
 	outputFile, _ := os.Create(outputName)
 
 	img := image.NewGray16(image.Rect(0, 0, cs.FinalProductWidth, len(packets)*cs.AggregationZoneHeight))
@@ -137,7 +139,10 @@ func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []Segm
 
 	encoder := png.Encoder{ CompressionLevel: png.NoCompression }
 	encoder.Encode(outputFile, img)
+
 	outputFile.Close()
+
+	exec.Command("convert", "-equalize", outputName, outputName).Output()
 }
 
 func (e *ScienceData) Parse(packet Frames.SpacePacketFrame) {
