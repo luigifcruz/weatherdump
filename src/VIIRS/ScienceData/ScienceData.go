@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/png"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -29,12 +28,12 @@ type Segment struct {
 	body [32]ScienceFrames.FrameBody
 }
 
-func (e ScienceData) GetChannelPackets(channelAPID uint16) []Segment {
-	var list []Segment
+func (e ScienceData) GetChannelPackets(channelAPID uint16) []*Segment {
+	var list []*Segment
 
-	for _, segment := range e.dataSegments {
+	for i, segment := range e.dataSegments {
 		if segment.APID == channelAPID {
-			list = append(list, segment)
+			list = append(list, &e.dataSegments[i])
 		}
 	}
 
@@ -79,16 +78,18 @@ func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 					if packet.body[i].IsValid() {
 						var image []uint16
 
-						baseData := packet.body[i].GetData(j, segment)
-						reconData := reconPackets[x].body[i].GetData(j, segment)
+						baseData := packet.body[i].GetData(j, segment, cs.OversampleZone[j])
+						reconData := reconPackets[x].body[i].GetData(j, segment, cs.OversampleZone[j])
 
 						reconPixel := VIIRS.ConvertToU16(reconData)
-						for i, basePixel := range VIIRS.ConvertToU16(baseData) {
-							pixel := int(basePixel) + int(reconPixel[i]) - 16383
+						for y, basePixel := range VIIRS.ConvertToU16(baseData) {
+							pixel := int16(basePixel) + int16(reconPixel[y]) - int16(16383)
 							image = append(image, uint16(pixel))
 						}
 
+
 						diffImage := VIIRS.ConvertToByte(image)
+						basePackets[x].body[i].SetData(j, &diffImage)
 						buf = append(buf, diffImage...)
 					} else {
 						buf = append(buf, make([]byte, segment*2)...)
@@ -111,7 +112,8 @@ func (e ScienceData) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 			for i := 0; i < cs.AggregationZoneHeight; i++ {
 				for j, segment := range cs.AggregationZoneWidth {
 					if packet.body[i].IsValid() {
-						buf = append(buf, packet.body[i].GetData(j, segment)...)
+						oversampleSize := cs.OversampleZone[j]
+						buf = append(buf, packet.body[i].GetData(j, segment, oversampleSize)...)
 					} else {
 						buf = append(buf, make([]byte, segment*2)...)
 					}
@@ -123,9 +125,7 @@ func (e ScienceData) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 	}
 }
 
-func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []Segment, SCID uint8) {
-	//VIIRS.NormalizeImage(&buf)
-
+func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Segment, SCID uint8) {
 	sc := Spacecrafts[SCID]
 	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate()))
 	outputFile, _ := os.Create(outputName)
@@ -142,7 +142,7 @@ func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []Segm
 
 	outputFile.Close()
 
-	exec.Command("convert", "-equalize", outputName, outputName).Output()
+	VIIRS.HistEqualization(outputName)
 }
 
 func (e *ScienceData) Parse(packet Frames.SpacePacketFrame) {

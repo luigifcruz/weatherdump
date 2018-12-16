@@ -83,8 +83,12 @@ func (e FrameBody) GetAggrLen() int {
 	return len(e.detectorData)
 }
 
-func (e *FrameBody) GetData(zone int, width int) []byte {
-	return e.detectorData[zone].GetData(width)
+func (e *FrameBody) GetData(zone int, width int, oversample int) []byte {
+	return e.detectorData[zone].GetData(width, oversample)
+}
+
+func (e *FrameBody) SetData(zone int, dat *[]byte) {
+	e.detectorData[zone].SetData(dat)
 }
 
 func (e FrameBody) GetDetectorNumber() uint8 {

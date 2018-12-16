@@ -3,12 +3,13 @@ package VIIRS
 import (
 	"encoding/binary"
 	"fmt"
+	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 func ConvertToU16(data []byte) []uint16 {
 	var buf []uint16
 	for i := 0; i < len(data); i += 2 {
-		buf = append(buf, binary.BigEndian.Uint16(data[i:]))
+		buf = append(buf, binary.BigEndian.Uint16(data[i:i+2]))
 	}
 	return buf
 }
@@ -33,6 +34,19 @@ func FindColorDepth(dat []uint16) (uint16, uint16) {
 	for _, e := range dat { if e < min { min = e } }
 
 	return min, max
+}
+
+func HistEqualization(outputFile string) {
+	imagick.Initialize()
+    defer imagick.Terminate()
+
+    mw := imagick.NewMagickWand()
+
+    mw.ReadImage(outputFile)
+    mw.EqualizeImage()
+    mw.WriteImage(outputFile)
+
+    fmt.Println("[IMAGE] Histogram Equalization.")
 }
 
 func NormalizeImage(data *[]byte) {

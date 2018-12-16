@@ -1,6 +1,7 @@
 package ScienceFrames
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
 	"unsafe"
@@ -44,6 +45,7 @@ type DetectorData struct {
 	aggregator []byte
 	checksum uint32
 	syncWord uint32
+	diffBuf []byte
 }
 
 func (e *DetectorData) FromBinary(buf *[]byte) {
@@ -78,12 +80,48 @@ func (e DetectorData) Print() {
 	fmt.Println()
 }
 
-func (e *DetectorData) GetData(width int) []byte {
+func (e *DetectorData) GetData(width int, oversample int) []byte {
+	if len(e.diffBuf) > 0 {
+		return e.diffBuf
+	}
+
 	if len(e.aggregator) > 0 {
-		return Decompress(e.aggregator, len(e.aggregator), width*2)
+		var buf []byte
+		size := width*2*oversample // 16-bits pixels * oversample
+		dat := Decompress(e.aggregator, len(e.aggregator), size)
+
+		if oversample == 1 {
+			return dat
+		}
+
+		for x := 0; x < size; x += oversample*2 {
+			var val uint16
+
+			if oversample > 1 {
+				val += binary.BigEndian.Uint16(dat[x:x+2])
+				val += binary.BigEndian.Uint16(dat[x+2:x+4])
+			}
+
+			if oversample > 2 {
+				val += binary.BigEndian.Uint16(dat[x+4 : x+6])
+			}
+
+			val /= uint16(oversample)
+
+			b := make([]byte, 2)
+			binary.BigEndian.PutUint16(b, val)
+			buf = append(buf, b...)
+		}
+
+		return buf
 	}
 	
 	return make([]byte, width*2)
+}
+
+func (e *DetectorData) SetData(dat *[]byte) {
+	e.diffBuf = make([]byte, len(*dat))
+	copy(e.diffBuf, *dat)
 }
 
 func (e DetectorData) GetChecksum() uint16 {
