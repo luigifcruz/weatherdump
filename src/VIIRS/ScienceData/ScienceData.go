@@ -1,16 +1,17 @@
 package VIIRS
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/png"
-	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"weather-dump/src/CCSDS/Frames"
-	"weather-dump/src/VIIRS/Common"
+	VIIRS "weather-dump/src/VIIRS/Common"
 	"weather-dump/src/VIIRS/ScienceData/ScienceFrames"
+
+	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 const firstPacket = 1
@@ -23,9 +24,9 @@ type ScienceData struct {
 }
 
 type Segment struct {
-	APID uint16
+	APID   uint16
 	header ScienceFrames.FrameHeader
-	body [32]ScienceFrames.FrameBody
+	body   [32]ScienceFrames.FrameBody
 }
 
 func (e ScienceData) GetChannelPackets(channelAPID uint16) []*Segment {
@@ -69,7 +70,8 @@ func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 	basePackets := e.GetChannelPackets(channelAPID)
 	reconPackets := e.GetChannelPackets(cs.ReconstructionBand)
 
-	fmt.Printf("Coded Channel: %s <= Reconstruction Channel: %s\n", cs.ChannelName, ChannelsParameters[cs.ReconstructionBand].ChannelName)
+	fmt.Printf("[RENDER] Rendering Channel %s\n", cs.ChannelName)
+	fmt.Printf("[RENDER] Coded Channel: %s <= Reconstruction Channel: %s\n", cs.ChannelName, ChannelsParameters[cs.ReconstructionBand].ChannelName)
 
 	if len(basePackets) > 0 && len(reconPackets) > 0 {
 		for x, packet := range basePackets {
@@ -86,7 +88,6 @@ func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 							pixel := int16(basePixel) + int16(reconPixel[y]) - int16(16383)
 							image = append(image, uint16(pixel))
 						}
-
 
 						diffImage := VIIRS.ConvertToByte(image)
 						basePackets[x].body[i].SetData(j, &diffImage)
@@ -106,6 +107,8 @@ func (e ScienceData) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 	var buf []byte
 	packets := e.GetChannelPackets(channelAPID)
 	cs := ChannelsParameters[channelAPID]
+
+	fmt.Printf("[RENDER] Rendering Channel %s\n", cs.ChannelName)
 
 	if len(packets) > 0 {
 		for _, packet := range packets {
@@ -128,21 +131,74 @@ func (e ScienceData) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Segment, SCID uint8) {
 	sc := Spacecrafts[SCID]
 	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate()))
-	outputFile, _ := os.Create(outputName)
 
-	img := image.NewGray16(image.Rect(0, 0, cs.FinalProductWidth, len(packets)*cs.AggregationZoneHeight))
+	w := cs.FinalProductWidth
+	h := len(packets) * cs.AggregationZoneHeight
+
+	img := image.NewGray16(image.Rect(0, 0, w, h))
 	img.Pix = buf
 
-	if strings.ContainsAny(cs.ChannelName, "I") {
-		PerformInterpolation(img, cs)
-	}
+	png_img := new(bytes.Buffer)
+	png.Encode(png_img, img)
 
-	encoder := png.Encoder{ CompressionLevel: png.NoCompression }
-	encoder.Encode(outputFile, img)
+	mw := imagick.NewMagickWand()
 
-	outputFile.Close()
+	mw.ReadImageBlob(png_img.Bytes())
+	mw.EqualizeImage()
+	mw.FlopImage()
+	mw.WriteImage(outputName)
+}
 
-	VIIRS.HistEqualization(outputName)
+func (e ScienceData) ExportTrueColor(SCID uint8) {
+	sc := Spacecrafts[SCID]
+	packets := e.GetChannelPackets(sc.TrueColorChannels[0])
+
+	fmt.Println("[RENDER] Exporting true color image.")
+
+	R, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
+		e.outputFolder,
+		sc.Filename,
+		sc.SignalName,
+		ChannelsParameters[sc.TrueColorChannels[1]].ChannelName,
+		packets[0].header.GetDate()))
+
+	G, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
+		e.outputFolder,
+		sc.Filename,
+		sc.SignalName,
+		ChannelsParameters[sc.TrueColorChannels[0]].ChannelName,
+		packets[0].header.GetDate()))
+
+	B, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
+		e.outputFolder,
+		sc.Filename,
+		sc.SignalName,
+		ChannelsParameters[sc.TrueColorChannels[2]].ChannelName,
+		packets[0].header.GetDate()))
+
+	RGB, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
+		e.outputFolder,
+		sc.Filename,
+		sc.SignalName,
+		"TRUECOLOR",
+		packets[0].header.GetDate()))
+
+	mwR := imagick.NewMagickWand()
+	mwG := imagick.NewMagickWand()
+	mwB := imagick.NewMagickWand()
+
+	mwR.ReadImage(R)
+	mwG.ReadImage(G)
+	mwB.ReadImage(B)
+
+	mwRGB := imagick.NewMagickWand()
+	mwRGB.AddImage(mwR)
+	mwRGB.AddImage(mwG)
+	mwRGB.AddImage(mwB)
+	mwRGB.ResetIterator()
+
+	mwRGB = mwRGB.CombineImages(imagick.CHANNEL_RED | imagick.CHANNEL_GREEN | imagick.CHANNEL_BLUE)
+	mwRGB.WriteImage(RGB)
 }
 
 func (e *ScienceData) Parse(packet Frames.SpacePacketFrame) {

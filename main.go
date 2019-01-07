@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/urfave/cli"
 	"io/ioutil"
 	"log"
 	"os"
 	"weather-dump/src/CCSDS"
 	"weather-dump/src/CCSDS/Frames"
-	"weather-dump/src/VIIRS/ScienceData"
+	VIIRS "weather-dump/src/VIIRS/ScienceData"
+
+	"github.com/urfave/cli"
+	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 const frameSize = 892
@@ -56,6 +58,7 @@ func runHRDDecoder(fileName string, outputPath string) {
 
 	t.SetOutputFolder(outputPath)
 	t.SaveAllChannels(scid)
+	t.ExportTrueColor(scid)
 
 	fmt.Println("Done! Products saved.")
 }
@@ -70,6 +73,9 @@ func settingsPrint(inputFormat string, outputPath string, datalinkName string) {
 }
 
 func main() {
+	imagick.Initialize()
+	defer imagick.Terminate()
+
 	var inputFormat string
 	var outputPath string
 
@@ -81,25 +87,25 @@ func main() {
 	app.Usage = "OSP's universal decoder for polar orbiting satellites."
 	app.Version = "0.1.0"
 
-	app.Flags = []cli.Flag {
-		cli.StringFlag {
-		  Name: "format",
-		  Value: "decoded",
-		  Usage: "input format [decoded or cadu]",
-		  Destination: &inputFormat,
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:        "format",
+			Value:       "decoded",
+			Usage:       "input format [decoded or cadu]",
+			Destination: &inputFormat,
 		},
-		cli.StringFlag {
-			Name: "output",
-			Value: "./output",
-			Usage: "path where the data decoded will be saved",
+		cli.StringFlag{
+			Name:        "output",
+			Value:       "./output",
+			Usage:       "path where the data decoded will be saved",
 			Destination: &outputPath,
 		},
 	}
 
-	app.Commands = []cli.Command {
+	app.Commands = []cli.Command{
 		{
-			Name: "hrd",
-			Usage: "decoder for X-Band High Rate Data (HRD) signal (Suomi & NOAA-20)",
+			Name:     "hrd",
+			Usage:    "decoder for X-Band High Rate Data (HRD) signal (Suomi & NOAA-20)",
 			Category: "DATALINK",
 			Action: func(c *cli.Context) error {
 				if inputFormat == "cadu" {

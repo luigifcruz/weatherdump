@@ -1,9 +1,13 @@
 package VIIRS
 
 import (
-	"math"
-	"image"
+	"fmt"
 	"github.com/nfnt/resize"
+	"image"
+	"image/draw"
+	"image/png"
+	"math"
+	"os"
 )
 
 type BowTie struct {
@@ -13,8 +17,8 @@ type BowTie struct {
 	y1 int
 }
 
-func IsBlack(r,g,b uint32) bool {
-	return r == 0 && g == 0 && b == 0
+func IsBlackOrWhite(r,g,b uint32) bool {
+	return (r == 0 || r == 65532) && (g == 0 || g == 65532) && (b == 0 || b == 65532)
 }
 
 func LinearInterp(r float32, q0, q1 uint32) uint16 {
@@ -54,6 +58,8 @@ func PerformInterpolation(img *image.Gray16, cs ChannelParameters) {
 
 	bounds := img.Bounds()
 
+	fmt.Printf("[INTERPOLATOR] Interpolating Channel %s\n", cs.ChannelName)
+
 	var x = bounds.Min.X
 	for z := 0; z < 6; z++ {
 		if z == 2 || z == 3 {
@@ -64,14 +70,14 @@ func PerformInterpolation(img *image.Gray16, cs ChannelParameters) {
 		var csh = cs.BowTieHeight[z]
 		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 			r, g, b, _ := img.At(x, y).RGBA()
-			if IsBlack(r, g, b) {
+			if IsBlackOrWhite(r, g, b) {
 				var nextY = y + csh
 				if nextY > bounds.Max.Y || nextY + 1 > bounds.Max.Y {
 					break
 				}
 				nr, ng, nb, _ := img.At(x, nextY).RGBA()
 				n2r, n2g, n2b, _ := img.At(x, nextY + 1).RGBA()
-				if IsBlack(nr, ng, nb) && !IsBlack(n2r, n2g, n2b) {
+				if IsBlackOrWhite(nr, ng, nb) && !IsBlackOrWhite(n2r, n2g, n2b) {
 					bt := BowTie{
 						x0: x,
 						y0: y,
@@ -86,20 +92,16 @@ func PerformInterpolation(img *image.Gray16, cs ChannelParameters) {
 		x += cs.AggregationZoneWidth[z]
 	}
 
-/*
-	outputFile, _ := os.Create("./mask.png")
+	outputFile, _ := os.Create(fmt.Sprintf("mask_%s.png", cs.ChannelName))
 	imas := image.NewGray(image.Rect(0, 0, img.Bounds().Dx(), img.Bounds().Dy()))
 	draw.Draw(imas, imas.Bounds(), image.Black, image.ZP, draw.Src)
-
 	for _, bowTie := range bowTies {
 		var rect = image.Rect(bowTie.x0, bowTie.y0, bowTie.x1, bowTie.y1)
 		draw.Draw(imas, rect.Bounds(), image.White, image.ZP, draw.Src)
 	}
-
 	encoder := png.Encoder{ CompressionLevel: png.NoCompression }
 	encoder.Encode(outputFile, imas)
 	outputFile.Close()
-*/
 
 	for _, bowTie := range bowTies {
 		ProcessBowTie(img, bowTie)
