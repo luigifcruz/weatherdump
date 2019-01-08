@@ -1,25 +1,26 @@
 package Frames
 
 import (
+	"encoding/binary"
 	"fmt"
 )
 
 const frameSize = 892
 
 type TransferFrame struct {
-	versionNumber uint8
-	SCID uint8
-	VCID uint8
+	versionNumber       uint8
+	SCID                uint8
+	VCID                uint8
 	virtualChannelCount uint32
-	replayFlag uint8
-	MPDU []byte
+	replayFlag          uint8
+	MPDU                []byte
 }
 
 func (e *TransferFrame) FromBinary(dat []byte) {
 	e.versionNumber = dat[0] >> 6
-	e.SCID = (dat[0] & 0x3F) << 2 | (dat[1] & 0xC0) >> 6
+	e.SCID = (dat[0]&0x3F)<<2 | (dat[1]&0xC0)>>6
 	e.VCID = dat[1] & 0x3F
-	e.virtualChannelCount = uint32(dat[2]) << 16 | uint32(dat[3]) << 8 | uint32(dat[4])
+	e.virtualChannelCount = binary.BigEndian.Uint32(dat[2:]) >> 8
 	e.replayFlag = dat[5] >> 7
 	e.MPDU = dat[6:892]
 }
@@ -35,7 +36,6 @@ func (e TransferFrame) GetVCID() uint8 {
 func (e TransferFrame) GetSCID() uint8 {
 	return e.SCID
 }
-
 
 func (e TransferFrame) Print() {
 	fmt.Println("### Transfer Frame Primary Header")

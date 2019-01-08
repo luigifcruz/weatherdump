@@ -40,23 +40,23 @@ func Decompress(data []byte, inputLen int, outputLen int) []byte {
 }
 
 type DetectorData struct {
-	fillData uint8
+	fillData       uint8
 	checksumOffset uint16
-	aggregator []byte
-	checksum uint32
-	syncWord uint32
-	diffBuf []byte
+	aggregator     []byte
+	checksum       uint32
+	syncWord       uint32
+	diffBuf        []byte
 }
 
 func (e *DetectorData) FromBinary(buf *[]byte) {
 	dat := *buf
 
 	e.fillData = uint8(dat[0])
-	e.checksumOffset = uint16(dat[2]) << 8 | uint16(dat[3])
+	e.checksumOffset = uint16(dat[2])<<8 | uint16(dat[3])
 
 	cso := e.checksumOffset
 
-	if int(cso) >= len(dat) + 4 || cso == 0 {
+	if int(cso) >= len(dat)+4 || cso == 0 {
 		return
 	}
 
@@ -64,8 +64,8 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 	bitSlicer(&e.aggregator, int(e.fillData))
 
 	if (len(dat) - int(cso)) > 8 {
-		e.checksum = uint32(dat[cso]) << 24 | uint32(dat[cso+1]) << 16 | uint32(dat[cso+2]) << 8 | uint32(dat[cso+3])
-		e.syncWord = uint32(dat[cso+4]) << 24 | uint32(dat[cso+5]) << 16 | uint32(dat[cso+6]) << 8 | uint32(dat[cso+7])
+		e.checksum = uint32(dat[cso])<<24 | uint32(dat[cso+1])<<16 | uint32(dat[cso+2])<<8 | uint32(dat[cso+3])
+		e.syncWord = uint32(dat[cso+4])<<24 | uint32(dat[cso+5])<<16 | uint32(dat[cso+6])<<8 | uint32(dat[cso+7])
 		*buf = (*buf)[cso+8:]
 	}
 }
@@ -87,19 +87,19 @@ func (e *DetectorData) GetData(width int, oversample int) []byte {
 
 	if len(e.aggregator) > 0 {
 		var buf []byte
-		size := width*2*oversample // 16-bits pixels * oversample
+		size := width * 2 * oversample // 16-bits pixels * oversample
 		dat := Decompress(e.aggregator, len(e.aggregator), size)
 
 		if oversample == 1 {
 			return dat
 		}
 
-		for x := 0; x < size; x += oversample*2 {
+		for x := 0; x < size; x += oversample * 2 {
 			var val uint16
 
 			if oversample > 1 {
-				val += binary.BigEndian.Uint16(dat[x:x+2])
-				val += binary.BigEndian.Uint16(dat[x+2:x+4])
+				val += binary.BigEndian.Uint16(dat[x : x+2])
+				val += binary.BigEndian.Uint16(dat[x+2 : x+4])
 			}
 
 			if oversample > 2 {
@@ -115,7 +115,7 @@ func (e *DetectorData) GetData(width int, oversample int) []byte {
 
 		return buf
 	}
-	
+
 	return make([]byte, width*2)
 }
 
@@ -132,7 +132,7 @@ func bitSlicer(dat *[]byte, size int) {
 	buf := *dat
 	bits, bytes := 0, 0
 
-	for size % 8 != 0 {
+	for size%8 != 0 {
 		bits += 1
 		size -= 1
 	}

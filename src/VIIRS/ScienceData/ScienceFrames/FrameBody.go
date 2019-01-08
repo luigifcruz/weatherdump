@@ -1,38 +1,39 @@
 package ScienceFrames
 
 import (
-"weather-dump/src/VIIRS/Common"
-"fmt"
+	"encoding/binary"
+	"fmt"
+	VIIRS "weather-dump/src/VIIRS/Common"
 )
 
 type FrameBody struct {
-	sequenceCount uint32
-	packetTime VIIRS.Time
-	formatVersion uint8
+	sequenceCount    uint32
+	packetTime       VIIRS.Time
+	formatVersion    uint8
 	instrumentNumber uint8
 
-	integrityCheck uint8
+	integrityCheck  uint8
 	selfTestPattern uint8
 
-	band uint8
-	detector uint8
+	band            uint8
+	detector        uint8
 	syncWordPattern uint32
 
 	detectorData [6]DetectorData
 }
 
 func (e *FrameBody) FromBinary(dat []byte) {
-	e.sequenceCount = uint32(dat[0]) << 24 | uint32(dat[1]) << 16 | uint32(dat[2]) << 8 | uint32(dat[3])
+	e.sequenceCount = binary.BigEndian.Uint32(dat[0:])
 	e.packetTime.FromBinary(dat[4:12])
 	e.formatVersion = uint8(dat[12])
 	e.instrumentNumber = uint8(dat[13])
 	// Spare 16 bits
 	e.integrityCheck = uint8(dat[16]) >> 7
-	e.selfTestPattern = uint8(dat[16] & 0x80) >> 4
+	e.selfTestPattern = uint8(dat[16]&0x80) >> 4
 	// Reserved 11 bits
 	e.band = uint8(dat[18])
 	e.detector = uint8(dat[19])
-	e.syncWordPattern = uint32(dat[20]) << 24 | uint32(dat[21]) << 16 | uint32(dat[22]) << 8 | uint32(dat[23])
+	e.syncWordPattern = binary.BigEndian.Uint32(dat[20:])
 	// Reserved 512 bits
 	buf := dat[88:]
 	for i, _ := range e.detectorData {

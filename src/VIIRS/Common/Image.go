@@ -7,7 +7,7 @@ import (
 func ConvertToU16(data []byte) []uint16 {
 	var buf []uint16
 	for i := 0; i < len(data); i += 2 {
-		buf = append(buf, binary.BigEndian.Uint16(data[i:i+2]))
+		buf = append(buf, binary.BigEndian.Uint16(data[i:]))
 	}
 	return buf
 }

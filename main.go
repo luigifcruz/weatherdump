@@ -25,7 +25,7 @@ func runHRDDecoder(fileName string, outputPath string) {
 	file, _ := ioutil.ReadFile(fileName)
 
 	d := CCSDS.CCSDS{}
-	t := VIIRS.ScienceData{}
+	viirs := VIIRS.ScienceData{}
 	scid := uint8(0)
 
 	bytesCount := 0
@@ -38,7 +38,7 @@ func runHRDDecoder(fileName string, outputPath string) {
 		s.FromBinary(file[bytesCount:])
 		scid = s.GetSCID()
 
-		if s.GetVCID() == 16 {
+		if s.GetVCID() == 16 || s.GetVCID() == 0 {
 			p := Frames.MultiplexingFrame{}
 			p.FromBinary(s.GetMPDU())
 
@@ -49,16 +49,30 @@ func runHRDDecoder(fileName string, outputPath string) {
 	}
 
 	fmt.Println("Decoding science packets...")
+	skippedPackets := 0
 
 	for _, packet := range d.GetSpacePackets() {
+		if !packet.IsValid() {
+			skippedPackets += 1
+			continue
+		}
+
+		if packet.GetAPID() == 8 {
+			packet.Print()
+			viirs.ParseTime(packet)
+		}
+
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
-			t.Parse(packet)
+			//packet.Print()
+			//viirs.Parse(packet)
 		}
 	}
 
-	t.SetOutputFolder(outputPath)
-	t.SaveAllChannels(scid)
-	t.ExportTrueColor(scid)
+	fmt.Printf("Found %d invalid packets...\n", skippedPackets)
+
+	viirs.SetOutputFolder(outputPath)
+	viirs.SaveAllChannels(scid)
+	viirs.ExportTrueColor(scid)
 
 	fmt.Println("Done! Products saved.")
 }

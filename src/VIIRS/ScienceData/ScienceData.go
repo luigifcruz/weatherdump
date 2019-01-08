@@ -70,8 +70,14 @@ func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 	basePackets := e.GetChannelPackets(channelAPID)
 	reconPackets := e.GetChannelPackets(cs.ReconstructionBand)
 
+	decFactor := map[bool]int{false: 2, true: 1}
+	bandComp := []rune(cs.ChannelName)[0] == []rune(ChannelsParameters[cs.ReconstructionBand].ChannelName)[0]
+
 	fmt.Printf("[RENDER] Rendering Channel %s\n", cs.ChannelName)
-	fmt.Printf("[RENDER] Coded Channel: %s <= Reconstruction Channel: %s\n", cs.ChannelName, ChannelsParameters[cs.ReconstructionBand].ChannelName)
+	fmt.Printf("[RENDER] (Decimation Factor: %d) Coded Channel: %s <= Reconstruction Channel: %s\n",
+		decFactor[bandComp],
+		cs.ChannelName,
+		ChannelsParameters[cs.ReconstructionBand].ChannelName)
 
 	if len(basePackets) > 0 && len(reconPackets) > 0 {
 		for x, packet := range basePackets {
@@ -81,11 +87,11 @@ func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 						var image []uint16
 
 						baseData := packet.body[i].GetData(j, segment, cs.OversampleZone[j])
-						reconData := reconPackets[x].body[i].GetData(j, segment, cs.OversampleZone[j])
-
+						reconData := reconPackets[x].body[i/decFactor[bandComp]].GetData(j, segment, cs.OversampleZone[j])
 						reconPixel := VIIRS.ConvertToU16(reconData)
+
 						for y, basePixel := range VIIRS.ConvertToU16(baseData) {
-							pixel := int16(basePixel) + int16(reconPixel[y]) - int16(16383)
+							pixel := int16(basePixel) + int16(reconPixel[y/decFactor[bandComp]]) - int16(16383)
 							image = append(image, uint16(pixel))
 						}
 
@@ -152,6 +158,10 @@ func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Seg
 func (e ScienceData) ExportTrueColor(SCID uint8) {
 	sc := Spacecrafts[SCID]
 	packets := e.GetChannelPackets(sc.TrueColorChannels[0])
+
+	if len(packets) == 0 {
+		return
+	}
 
 	fmt.Println("[RENDER] Exporting true color image.")
 
@@ -222,4 +232,10 @@ func (e *ScienceData) Parse(packet Frames.SpacePacketFrame) {
 
 func (e *ScienceData) SetOutputFolder(path string) {
 	e.outputFolder = path
+}
+
+func (e *ScienceData) ParseTime(packet Frames.SpacePacketFrame) {
+	t := VIIRS.Time{}
+	t.FromBinary(packet.GetData())
+	t.Print()
 }

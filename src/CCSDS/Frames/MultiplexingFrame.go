@@ -1,10 +1,13 @@
 package Frames
 
-import "fmt"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 type MultiplexingFrame struct {
 	firstHeaderPointer uint16
-	packetZone []byte
+	packetZone         []byte
 }
 
 func (e MultiplexingFrame) GetPacketZone() []byte {
@@ -16,7 +19,7 @@ func (e MultiplexingFrame) GetFirstHeaderPointer() uint16 {
 }
 
 func (e *MultiplexingFrame) FromBinary(dat []byte) {
-	e.firstHeaderPointer = (uint16(dat[0]) << 8 | uint16(dat[1])) & 0x7FF
+	e.firstHeaderPointer = binary.BigEndian.Uint16(dat[0:]) & 0x7FF
 	e.packetZone = dat[2:886]
 }
 

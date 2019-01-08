@@ -1,6 +1,7 @@
 package VIIRS
 
 import (
+	"encoding/binary"
 	"fmt"
 	"time"
 )
@@ -9,15 +10,15 @@ import (
 // Probably because Explorer 1 Launch Year
 
 type Time struct {
-	day uint16
+	day          uint16
 	milliseconds uint32
 	microseconds uint16
 }
 
 func (e *Time) FromBinary(dat []byte) {
-	e.day = uint16(dat[0]) << 8 | uint16(dat[1])
-	e.milliseconds = uint32(dat[2]) << 24 | uint32(dat[3]) << 16 | uint32(dat[4]) << 8 | uint32(dat[5])
-	e.microseconds = uint16(dat[6]) << uint16(dat[7])
+	e.day = binary.BigEndian.Uint16(dat[0:])
+	e.milliseconds = binary.BigEndian.Uint32(dat[2:])
+	e.microseconds = binary.BigEndian.Uint16(dat[6:])
 }
 
 func (e Time) Print() {
@@ -42,7 +43,7 @@ func (e Time) GetDate() time.Time {
 	millis += int64(e.milliseconds)
 
 	// Subtract days from January 1, 1958 to January 1, 1970
-	millis -= 4383 * 24  * 60 * 60 * 1000
+	millis -= 4383 * 24 * 60 * 60 * 1000
 
 	// Convert to Normal Date
 	nanos := millis * int64(time.Millisecond)
