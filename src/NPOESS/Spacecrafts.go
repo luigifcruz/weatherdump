@@ -1,13 +1,13 @@
-package VIIRS
+package NPOESS
 
-type SpacecraftParameters struct {
+type Parameters struct {
 	Filename          string
 	FullName          string
 	SignalName        string
 	TrueColorChannels [3]uint16
 }
 
-var Spacecrafts = map[uint8]SpacecraftParameters{
+var Spacecrafts = map[uint8]Parameters{
 	159: {
 		Filename:          "NOAA20",
 		FullName:          "Joint Polar Satellite System",

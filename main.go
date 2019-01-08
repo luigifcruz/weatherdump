@@ -7,7 +7,7 @@ import (
 	"os"
 	"weather-dump/src/CCSDS"
 	"weather-dump/src/CCSDS/Frames"
-	VIIRS "weather-dump/src/VIIRS/ScienceData"
+	"weather-dump/src/NPOESS/VIIRS"
 
 	"github.com/urfave/cli"
 	"gopkg.in/gographics/imagick.v2/imagick"
@@ -25,9 +25,10 @@ func runHRDDecoder(fileName string, outputPath string) {
 	file, _ := ioutil.ReadFile(fileName)
 
 	d := CCSDS.CCSDS{}
-	viirs := VIIRS.ScienceData{}
-	scid := uint8(0)
+	viirs := VIIRS.Data{}
+	//telemetry := NPOESS.Telemetry{}
 
+	scid := uint8(0)
 	bytesCount := 0
 	bytesNumber := len(file)
 
@@ -58,13 +59,13 @@ func runHRDDecoder(fileName string, outputPath string) {
 		}
 
 		if packet.GetAPID() == 8 {
-			packet.Print()
-			viirs.ParseTime(packet)
+			//packet.Print()
+			//telemetry.Parse(packet)
 		}
 
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
 			//packet.Print()
-			//viirs.Parse(packet)
+			viirs.Parse(packet)
 		}
 	}
 

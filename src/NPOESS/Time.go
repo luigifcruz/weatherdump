@@ -1,4 +1,4 @@
-package VIIRS
+package NPOESS
 
 import (
 	"encoding/binary"

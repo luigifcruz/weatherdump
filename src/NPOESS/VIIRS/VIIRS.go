@@ -2,14 +2,15 @@ package VIIRS
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"image"
 	"image/png"
 	"path/filepath"
 	"sort"
 	"weather-dump/src/CCSDS/Frames"
-	VIIRS "weather-dump/src/VIIRS/Common"
-	"weather-dump/src/VIIRS/ScienceData/ScienceFrames"
+	"weather-dump/src/NPOESS"
+	"weather-dump/src/NPOESS/VIIRS/VIIRSFrames"
 
 	"gopkg.in/gographics/imagick.v2/imagick"
 )
@@ -17,7 +18,7 @@ import (
 const firstPacket = 1
 const lastPacket = 2
 
-type ScienceData struct {
+type Data struct {
 	tempSegments [2047]Segment
 	dataSegments []Segment
 	outputFolder string
@@ -25,11 +26,31 @@ type ScienceData struct {
 
 type Segment struct {
 	APID   uint16
-	header ScienceFrames.FrameHeader
-	body   [32]ScienceFrames.FrameBody
+	header VIIRSFrames.FrameHeader
+	body   [32]VIIRSFrames.FrameBody
 }
 
-func (e ScienceData) GetChannelPackets(channelAPID uint16) []*Segment {
+func ConvertToU16(data []byte) []uint16 {
+	var buf []uint16
+	for i := 0; i < len(data); i += 2 {
+		buf = append(buf, binary.BigEndian.Uint16(data[i:]))
+	}
+	return buf
+}
+
+func ConvertToByte(data []uint16) []byte {
+	var buf []byte
+	bb := make([]byte, 2)
+
+	for _, d := range data {
+		binary.BigEndian.PutUint16(bb, d)
+		buf = append(buf, bb...)
+	}
+
+	return buf
+}
+
+func (e Data) GetChannelPackets(channelAPID uint16) []*Segment {
 	var list []*Segment
 
 	for i, segment := range e.dataSegments {
@@ -45,7 +66,7 @@ func (e ScienceData) GetChannelPackets(channelAPID uint16) []*Segment {
 	return list
 }
 
-func (e ScienceData) SaveAllChannels(SCID uint8) {
+func (e Data) SaveAllChannels(SCID uint8) {
 	var codedChannels []int
 
 	for _, channel := range ChannelsParameters {
@@ -63,7 +84,7 @@ func (e ScienceData) SaveAllChannels(SCID uint8) {
 	}
 }
 
-func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
+func (e Data) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 	var buf []byte
 	cs := ChannelsParameters[channelAPID]
 
@@ -83,19 +104,21 @@ func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 		for x, packet := range basePackets {
 			for i := 0; i < cs.AggregationZoneHeight; i++ {
 				for j, segment := range cs.AggregationZoneWidth {
-					if packet.body[i].IsValid() {
+					//fmt.Printf("A Len: %d B Len: %d Index: %d\n", len(reconPackets), len(basePackets), x)
+
+					if packet.body[i].IsValid() && reconPackets[x].body[i/decFactor[bandComp]].IsValid() {
 						var image []uint16
 
 						baseData := packet.body[i].GetData(j, segment, cs.OversampleZone[j])
 						reconData := reconPackets[x].body[i/decFactor[bandComp]].GetData(j, segment, cs.OversampleZone[j])
-						reconPixel := VIIRS.ConvertToU16(reconData)
+						reconPixel := ConvertToU16(reconData)
 
-						for y, basePixel := range VIIRS.ConvertToU16(baseData) {
+						for y, basePixel := range ConvertToU16(baseData) {
 							pixel := int16(basePixel) + int16(reconPixel[y/decFactor[bandComp]]) - int16(16383)
 							image = append(image, uint16(pixel))
 						}
 
-						diffImage := VIIRS.ConvertToByte(image)
+						diffImage := ConvertToByte(image)
 						basePackets[x].body[i].SetData(j, &diffImage)
 						buf = append(buf, diffImage...)
 					} else {
@@ -109,12 +132,12 @@ func (e ScienceData) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 	}
 }
 
-func (e ScienceData) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
+func (e Data) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 	var buf []byte
 	packets := e.GetChannelPackets(channelAPID)
 	cs := ChannelsParameters[channelAPID]
 
-	fmt.Printf("[RENDER] Rendering Channel %s\n", cs.ChannelName)
+	fmt.Printf("[RENDER] Rendering Uncoded Channel %s\n", cs.ChannelName)
 
 	if len(packets) > 0 {
 		for _, packet := range packets {
@@ -134,8 +157,8 @@ func (e ScienceData) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 	}
 }
 
-func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Segment, SCID uint8) {
-	sc := Spacecrafts[SCID]
+func (e Data) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Segment, SCID uint8) {
+	sc := NPOESS.Spacecrafts[SCID]
 	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate()))
 
 	w := cs.FinalProductWidth
@@ -155,8 +178,8 @@ func (e ScienceData) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Seg
 	mw.WriteImage(outputName)
 }
 
-func (e ScienceData) ExportTrueColor(SCID uint8) {
-	sc := Spacecrafts[SCID]
+func (e Data) ExportTrueColor(SCID uint8) {
+	sc := NPOESS.Spacecrafts[SCID]
 	packets := e.GetChannelPackets(sc.TrueColorChannels[0])
 
 	if len(packets) == 0 {
@@ -211,14 +234,14 @@ func (e ScienceData) ExportTrueColor(SCID uint8) {
 	mwRGB.WriteImage(RGB)
 }
 
-func (e *ScienceData) Parse(packet Frames.SpacePacketFrame) {
+func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 	ts := &e.tempSegments[packet.GetAPID()]
 
 	if packet.GetSequenceFlags() == firstPacket {
 		ts.header.FromBinary(packet.GetData())
 		ts.APID = packet.GetAPID()
 	} else {
-		frameBody := &ScienceFrames.FrameBody{}
+		frameBody := &VIIRSFrames.FrameBody{}
 		frameBody.FromBinary(packet.GetData())
 		if frameBody.IsValid() {
 			ts.body[frameBody.GetDetectorNumber()].FromBinary(packet.GetData())
@@ -230,12 +253,6 @@ func (e *ScienceData) Parse(packet Frames.SpacePacketFrame) {
 	}
 }
 
-func (e *ScienceData) SetOutputFolder(path string) {
+func (e *Data) SetOutputFolder(path string) {
 	e.outputFolder = path
-}
-
-func (e *ScienceData) ParseTime(packet Frames.SpacePacketFrame) {
-	t := VIIRS.Time{}
-	t.FromBinary(packet.GetData())
-	t.Print()
 }

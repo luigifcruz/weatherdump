@@ -1,25 +1,22 @@
-package ScienceFrames
+package VIIRSFrames
 
 import (
 	"encoding/binary"
 	"fmt"
-	VIIRS "weather-dump/src/VIIRS/Common"
+	"weather-dump/src/NPOESS"
 )
 
 type FrameBody struct {
 	sequenceCount    uint32
-	packetTime       VIIRS.Time
+	packetTime       NPOESS.Time
 	formatVersion    uint8
 	instrumentNumber uint8
-
-	integrityCheck  uint8
-	selfTestPattern uint8
-
-	band            uint8
-	detector        uint8
-	syncWordPattern uint32
-
-	detectorData [6]DetectorData
+	integrityCheck   uint8
+	selfTestPattern  uint8
+	band             uint8
+	detector         uint8
+	syncWordPattern  uint32
+	detectorData     [6]DetectorData
 }
 
 func (e *FrameBody) FromBinary(dat []byte) {
@@ -94,4 +91,8 @@ func (e *FrameBody) SetData(zone int, dat *[]byte) {
 
 func (e FrameBody) GetDetectorNumber() uint8 {
 	return e.detector
+}
+
+func (e FrameBody) GetID() uint32 {
+	return e.sequenceCount
 }

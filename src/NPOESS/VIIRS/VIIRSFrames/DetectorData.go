@@ -1,4 +1,4 @@
-package ScienceFrames
+package VIIRSFrames
 
 import (
 	"encoding/binary"

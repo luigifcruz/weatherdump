@@ -1,26 +1,23 @@
-package ScienceFrames
+package VIIRSFrames
 
 import (
 	"encoding/binary"
 	"fmt"
-	VIIRS "weather-dump/src/VIIRS/Common"
+	"weather-dump/src/NPOESS"
 )
 
 type FrameHeader struct {
-	time             VIIRS.Time
+	time             NPOESS.Time
 	numberOfSegments uint8
-
 	sequenceCount    uint32
-	packetTime       VIIRS.Time
+	packetTime       NPOESS.Time
 	formatVersion    uint8
 	instrumentNumber uint8
-
-	hamSide         uint8
-	scanSync        uint8
-	selfTestPattern uint8
-
+	hamSide          uint8
+	scanSync         uint8
+	selfTestPattern  uint8
 	scanNumber       uint32
-	scanTerminus     VIIRS.Time
+	scanTerminus     NPOESS.Time
 	sensorMode       uint8
 	viirsModel       uint8
 	fswVersion       uint16
