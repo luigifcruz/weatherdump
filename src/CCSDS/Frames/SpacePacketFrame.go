@@ -14,9 +14,13 @@ type SpacePacketFrame struct {
 	packetSeqCount      uint16
 	packetDataLength    uint16
 	packetData          []byte
+
+	dataLength int
 }
 
 func (e *SpacePacketFrame) FromBinary(dat []byte) {
+	e.dataLength += len(dat)
+
 	e.versionNumber = dat[0] >> 5
 	e.typeIndicator = (dat[0] & 0x1F) >> 4
 	e.secondaryHeaderFlag = (dat[0] & 0x0F) >> 3
@@ -31,8 +35,18 @@ func (e *SpacePacketFrame) FromBinary(dat []byte) {
 	}
 }
 
-func (e *SpacePacketFrame) FeedData(dat []byte) {
-	e.packetData = append(e.packetData, dat...)
+func (e *SpacePacketFrame) FeedData(dat []byte) []byte {
+	currentData := (e.packetDataLength + 1)
+	dataLeft := currentData - uint16(len(e.packetData))
+	e.dataLength += len(dat)
+
+	if currentData < 6 || dataLeft > uint16(len(dat)) {
+		e.packetData = append(e.packetData, dat...)
+		return nil
+	} else {
+		e.packetData = append(e.packetData, dat[:dataLeft]...)
+		return dat[dataLeft:]
+	}
 }
 
 func (e SpacePacketFrame) GetAPID() uint16 {

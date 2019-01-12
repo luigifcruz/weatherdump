@@ -25,6 +25,10 @@ func (e *TransferFrame) FromBinary(dat []byte) {
 	e.MPDU = dat[6:892]
 }
 
+func (e TransferFrame) IsReplay() bool {
+	return e.replayFlag == 0x01
+}
+
 func (e TransferFrame) GetMPDU() []byte {
 	return e.MPDU
 }

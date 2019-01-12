@@ -39,10 +39,9 @@ func runHRDDecoder(fileName string, outputPath string) {
 		s.FromBinary(file[bytesCount:])
 		scid = s.GetSCID()
 
-		if s.GetVCID() == 16 || s.GetVCID() == 0 {
+		if (s.GetVCID() == 16 || s.GetVCID() == 0) && s.IsReplay() {
 			p := Frames.MultiplexingFrame{}
 			p.FromBinary(s.GetMPDU())
-
 			CCSDS.ParseMPDU(&d, p)
 		}
 
@@ -69,7 +68,7 @@ func runHRDDecoder(fileName string, outputPath string) {
 		}
 	}
 
-	fmt.Printf("Found %d invalid packets...\n", skippedPackets)
+	fmt.Printf("Found %d/%d invalid packets...\n", skippedPackets, len(d.GetSpacePackets()))
 
 	viirs.SetOutputFolder(outputPath)
 	viirs.SaveAllChannels(scid)
