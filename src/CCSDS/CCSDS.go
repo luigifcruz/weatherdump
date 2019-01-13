@@ -17,7 +17,10 @@ func (e CCSDS) GetSpacePackets() []Frames.SpacePacketFrame {
 }
 
 func (e *CCSDS) CloseFrame() {
-	e.spacePackets = append(e.spacePackets, *e.tmpPacket)
+	if e.tmpPacket != nil {
+		e.spacePackets = append(e.spacePackets, *e.tmpPacket)
+	}
+
 	e.buffer = make([]byte, 0)
 	e.tmpPacket = nil
 }
@@ -52,8 +55,7 @@ func (e *CCSDS) CreatePacket(buf []byte) {
 	}
 }
 
-func ParseMPDU(e *CCSDS, MPDU Frames.MultiplexingFrame) {
-
+func (e *CCSDS) ParseMPDU(MPDU Frames.MultiplexingFrame) {
 	if !MPDU.IsValid() {
 		fmt.Println("[CCSDS] Not Valid MPDU frame, skipping...")
 		return
@@ -82,8 +84,7 @@ func ParseMPDU(e *CCSDS, MPDU Frames.MultiplexingFrame) {
 			buf := append(e.buffer, dat...)
 			e.CreatePacket(buf)
 		} else if e.tmpPacket == nil {
-			//e.buffer = append(e.buffer, dat...)
-			//e.buffer = CreatePacket(e)
+			// IGNORE
 		} else {
 			e.tmpPacket.FeedData(dat)
 		}

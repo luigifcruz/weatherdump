@@ -16,6 +16,12 @@ type TransferFrame struct {
 	MPDU                []byte
 }
 
+func NewTransferFrame(dat []byte) *TransferFrame {
+	e := TransferFrame{}
+	e.FromBinary(dat)
+	return &e
+}
+
 func (e *TransferFrame) FromBinary(dat []byte) {
 	e.versionNumber = dat[0] >> 6
 	e.SCID = (dat[0]&0x3F)<<2 | (dat[1]&0xC0)>>6

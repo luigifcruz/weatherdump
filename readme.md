@@ -1,5 +1,6 @@
 # WeatherDump
 
 ### ToDo List
-- CRITICAL BUGFIX: Fix coded channels segment number mismatch.
-- BUGFIX: Fix CCSDS packet stacker (high number of invalid packets).
+- Improve VIIRS frame stacker.
+- Make pixel mapping to fix distortions.
+- Add Lambert Conformal projection output.

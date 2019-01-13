@@ -38,12 +38,13 @@ func (e *SpacePacketFrame) FromBinary(dat []byte) {
 func (e *SpacePacketFrame) FeedData(dat []byte) []byte {
 	currentData := (e.packetDataLength + 1)
 	dataLeft := currentData - uint16(len(e.packetData))
-	e.dataLength += len(dat)
 
 	if currentData < 6 || dataLeft > uint16(len(dat)) {
+		e.dataLength += len(dat)
 		e.packetData = append(e.packetData, dat...)
 		return nil
 	} else {
+		e.dataLength += int(dataLeft)
 		e.packetData = append(e.packetData, dat[:dataLeft]...)
 		return dat[dataLeft:]
 	}

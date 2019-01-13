@@ -10,6 +10,12 @@ type MultiplexingFrame struct {
 	packetZone         []byte
 }
 
+func NewMultiplexingFrame(dat []byte) *MultiplexingFrame {
+	e := MultiplexingFrame{}
+	e.FromBinary(dat)
+	return &e
+}
+
 func (e *MultiplexingFrame) FromBinary(dat []byte) {
 	e.firstHeaderPointer = binary.BigEndian.Uint16(dat[0:]) & 0x7FF
 	e.packetZone = dat[2:]

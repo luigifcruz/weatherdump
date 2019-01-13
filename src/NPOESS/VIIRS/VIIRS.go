@@ -94,18 +94,22 @@ func (e Data) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 	decFactor := map[bool]int{false: 2, true: 1}
 	bandComp := []rune(cs.ChannelName)[0] == []rune(ChannelsParameters[cs.ReconstructionBand].ChannelName)[0]
 
-	fmt.Printf("[RENDER] Rendering Channel %s\n", cs.ChannelName)
-	fmt.Printf("[RENDER] (Decimation Factor: %d) Coded Channel: %s <= Reconstruction Channel: %s\n",
+	fmt.Printf("[VIIRS] Rendering Channel %s\n", cs.ChannelName)
+	fmt.Printf("[VIIRS] (Decimation Factor: %d) Coded Channel: %s <= Reconstruction Channel: %s\n",
 		decFactor[bandComp],
 		cs.ChannelName,
 		ChannelsParameters[cs.ReconstructionBand].ChannelName)
 
 	if len(basePackets) > 0 && len(reconPackets) > 0 {
 		for x, packet := range basePackets {
+			if x > len(reconPackets)-1 {
+				fmt.Println("[VIIRS] Orphaned segment, skipping...")
+				basePackets = basePackets[:len(basePackets)-1]
+				continue
+			}
+
 			for i := 0; i < cs.AggregationZoneHeight; i++ {
 				for j, segment := range cs.AggregationZoneWidth {
-					//fmt.Printf("A Len: %d B Len: %d Index: %d\n", len(reconPackets), len(basePackets), x)
-
 					if packet.body[i].IsValid() && reconPackets[x].body[i/decFactor[bandComp]].IsValid() {
 						var image []uint16
 
@@ -137,7 +141,7 @@ func (e Data) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 	packets := e.GetChannelPackets(channelAPID)
 	cs := ChannelsParameters[channelAPID]
 
-	fmt.Printf("[RENDER] Rendering Uncoded Channel %s\n", cs.ChannelName)
+	fmt.Printf("[VIIRS] Rendering Uncoded Channel %s\n", cs.ChannelName)
 
 	if len(packets) > 0 {
 		for _, packet := range packets {
@@ -186,7 +190,7 @@ func (e Data) ExportTrueColor(SCID uint8) {
 		return
 	}
 
-	fmt.Println("[RENDER] Exporting true color image.")
+	fmt.Println("[VIIRS] Exporting true color image.")
 
 	R, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
 		e.outputFolder,

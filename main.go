@@ -16,7 +16,7 @@ import (
 const frameSize = 892
 
 func runHRDDecoder(fileName string, outputPath string) {
-	fmt.Println("Decoding started...")
+	fmt.Println("[HRD] Decoding started...")
 
 	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
 		os.Mkdir(outputPath, os.ModePerm)
@@ -24,57 +24,48 @@ func runHRDDecoder(fileName string, outputPath string) {
 
 	file, _ := ioutil.ReadFile(fileName)
 
-	d := CCSDS.CCSDS{}
+	ch16 := CCSDS.CCSDS{}
 	viirs := VIIRS.Data{}
-	//telemetry := NPOESS.Telemetry{}
-
 	scid := uint8(0)
-	bytesCount := 0
-	bytesNumber := len(file)
 
-	fmt.Println("Decoding CCSDS packets...")
+	fmt.Println("[HRD] Decoding CCSDS packets...")
 
-	for bytesCount < bytesNumber {
-		s := Frames.TransferFrame{}
-		s.FromBinary(file[bytesCount:])
+	for i := len(file); i > 0; i -= frameSize {
+		s := Frames.NewTransferFrame(file[(len(file) - i):])
 		scid = s.GetSCID()
 
-		if (s.GetVCID() == 16 || s.GetVCID() == 0) && s.IsReplay() {
-			p := Frames.MultiplexingFrame{}
-			p.FromBinary(s.GetMPDU())
-			CCSDS.ParseMPDU(&d, p)
-		}
+		if s.IsReplay() {
+			p := Frames.NewMultiplexingFrame(s.GetMPDU())
 
-		bytesCount += frameSize
+			switch s.GetVCID() {
+			case 16:
+				ch16.ParseMPDU(*p) // VCID 16 Parser (VIIRS)
+			}
+		}
 	}
 
-	fmt.Println("Decoding science packets...")
-	skippedPackets := 0
+	fmt.Println("[HRD] Decoding VCID 16 packets...")
 
-	for _, packet := range d.GetSpacePackets() {
+	skippedPackets := 0
+	for _, packet := range ch16.GetSpacePackets() {
 		if !packet.IsValid() {
 			skippedPackets += 1
 			continue
 		}
 
-		if packet.GetAPID() == 8 {
-			//packet.Print()
-			//telemetry.Parse(packet)
-		}
-
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
-			//packet.Print()
 			viirs.Parse(packet)
 		}
 	}
 
-	fmt.Printf("Found %d/%d invalid packets...\n", skippedPackets, len(d.GetSpacePackets()))
+	fmt.Printf("[HRD] Found %d/%d invalid packets in VCID 16...\n", skippedPackets, len(ch16.GetSpacePackets()))
+	fmt.Printf("[HRD] Exporting VIIRS science products to %s...\n", outputPath)
 
 	viirs.SetOutputFolder(outputPath)
 	viirs.SaveAllChannels(scid)
 	viirs.ExportTrueColor(scid)
 
-	fmt.Println("Done! Products saved.")
+	fmt.Println("[HRD] Done! Products saved.")
 }
 
 func settingsPrint(inputFormat string, outputPath string, datalinkName string) {
@@ -123,7 +114,7 @@ func main() {
 			Category: "DATALINK",
 			Action: func(c *cli.Context) error {
 				if inputFormat == "cadu" {
-					fmt.Println("[ERROR] The CADU type input not supported yet.")
+					fmt.Println("[ERROR] The CADU type input isn't supported yet.")
 					os.Exit(0)
 				}
 
