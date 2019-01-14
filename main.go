@@ -7,6 +7,7 @@ import (
 	"os"
 	"weather-dump/src/CCSDS"
 	"weather-dump/src/CCSDS/Frames"
+	"weather-dump/src/NPOESS/Decoder"
 	"weather-dump/src/NPOESS/VIIRS"
 
 	"github.com/urfave/cli"
@@ -17,6 +18,9 @@ const frameSize = 892
 
 func runHRDDecoder(fileName string, outputPath string) {
 	fmt.Println("[HRD] Decoding started...")
+
+	dec := Decoder.NewDecoder()
+	dec.DecodeFile()
 
 	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
 		os.Mkdir(outputPath, os.ModePerm)
