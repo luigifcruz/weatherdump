@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 	"weather-dump/src/CCSDS"
 	"weather-dump/src/CCSDS/Frames"
 	"weather-dump/src/NPOESS/Decoder"
@@ -16,17 +17,29 @@ import (
 
 const frameSize = 892
 
-func runHRDDecoder(fileName string, outputPath string) {
+func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 	fmt.Println("[HRD] Decoding started...")
 
-	dec := Decoder.NewDecoder()
-	dec.DecodeFile()
-
-	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-		os.Mkdir(outputPath, os.ModePerm)
+	if _, err := os.Stat(outputFolder); os.IsNotExist(err) {
+		os.Mkdir(outputFolder, os.ModePerm)
 	}
 
-	file, _ := ioutil.ReadFile(fileName)
+	outputFolder = fmt.Sprintf("%s/NPOESS-HRD-%s", outputFolder, time.Now().Format(time.RFC3339))
+	os.Mkdir(outputFolder, os.ModePerm)
+
+	if inputFormat == "grcout" {
+		dec := Decoder.NewDecoder()
+		outputFile := fmt.Sprintf("%s/decoded.bin", outputFolder)
+		dec.DecodeFile(inputPath, outputFile)
+		inputPath = outputFile
+	}
+
+	file, err := ioutil.ReadFile(inputPath)
+	if err != nil {
+		fmt.Println("[HRD] Input file not found. Exiting...")
+		fmt.Println(err)
+		os.Exit(0)
+	}
 
 	ch16 := CCSDS.CCSDS{}
 	viirs := VIIRS.Data{}
@@ -63,9 +76,9 @@ func runHRDDecoder(fileName string, outputPath string) {
 	}
 
 	fmt.Printf("[HRD] Found %d/%d invalid packets in VCID 16...\n", skippedPackets, len(ch16.GetSpacePackets()))
-	fmt.Printf("[HRD] Exporting VIIRS science products to %s...\n", outputPath)
+	fmt.Printf("[HRD] Exporting VIIRS science products to %s...\n", outputFolder)
 
-	viirs.SetOutputFolder(outputPath)
+	viirs.SetOutputFolder(outputFolder)
 	viirs.SaveAllChannels(scid)
 	viirs.ExportTrueColor(scid)
 
@@ -85,8 +98,8 @@ func main() {
 	imagick.Initialize()
 	defer imagick.Terminate()
 
+	var outputFolder string
 	var inputFormat string
-	var outputPath string
 
 	app := cli.NewApp()
 
@@ -94,20 +107,20 @@ func main() {
 	app.UsageText = "weatherdump [OPTIONS] [DATALINK] [FILE_PATH]"
 	app.Author = "Luigi Cruz (@luigifcruz) for Open Satellite Project"
 	app.Usage = "OSP's universal decoder for polar orbiting satellites."
-	app.Version = "0.1.0"
+	app.Version = "1.0.0"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "format",
-			Value:       "decoded",
-			Usage:       "input format [decoded or cadu]",
+			Value:       "grcout",
+			Usage:       "input format [grcout or decoded]",
 			Destination: &inputFormat,
 		},
 		cli.StringFlag{
 			Name:        "output",
 			Value:       "./output",
-			Usage:       "path where the data decoded will be saved",
-			Destination: &outputPath,
+			Usage:       "folder where the products will be saved",
+			Destination: &outputFolder,
 		},
 	}
 
@@ -117,18 +130,13 @@ func main() {
 			Usage:    "decoder for X-Band High Rate Data (HRD) signal (Suomi & NOAA-20)",
 			Category: "DATALINK",
 			Action: func(c *cli.Context) error {
-				if inputFormat == "cadu" {
-					fmt.Println("[ERROR] The CADU type input isn't supported yet.")
-					os.Exit(0)
-				}
-
 				if len(c.Args().First()) == 0 {
 					fmt.Println("[ERROR] Missing file_path.")
 					os.Exit(0)
 				}
 
-				settingsPrint(inputFormat, outputPath, "HRD")
-				runHRDDecoder(c.Args().First(), outputPath)
+				settingsPrint(outputFolder, outputFolder, "HRD")
+				runHRDDecoder(c.Args().First(), inputFormat, outputFolder)
 				return nil
 			},
 		},

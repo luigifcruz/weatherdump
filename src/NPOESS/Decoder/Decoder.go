@@ -52,9 +52,11 @@ func NewDecoder() *Decoder {
 	return &e
 }
 
-func (e *Decoder) DecodeFile() {
+func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 	var isCorrupted bool
 	lastFrameOk := false
+
+	fmt.Printf("[DECODER] Initializing decoding process...\n")
 
 	var averageRSCorrections float32 = 0.0
 	var averageVitCorrections float32 = 0.0
@@ -63,21 +65,21 @@ func (e *Decoder) DecodeFile() {
 	var receivedPacketsPerChannel [256]int64
 	var flywheelCount = 0
 
-	fmt.Printf("[DECODER] Opening files...\n")
-
-	input, err := os.Open("/home/luigifcruz/Sandbox/osp/arved.raw")
+	input, err := os.Open(inputPath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer input.Close()
 
-	output, err := os.Create("./output/demod.bin")
+	output, err := os.Create(outputPath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer output.Close()
+
+	fmt.Printf("[DECODER] Starting decoding the signal. This might take a while...\n")
 
 	for {
 		n, err := input.Read(e.codedData)
@@ -232,9 +234,9 @@ func (e *Decoder) DecodeFile() {
 				e.Statistics.FrameLock = 0
 			}
 
-			fmt.Printf("(%d)\nAverageVitCorrections: %d\nAverageRSCorrections: %d\nSignalQuality: %d\nTotalBytesRead: %d\nDroppedPackages: %d/%d\n",
-				e.Statistics.FrameLock, e.Statistics.AverageVitCorrections, derrors[0], e.Statistics.SignalQuality,
-				e.Statistics.TotalBytesRead, e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
+			//fmt.Printf("(%d)\nAverageVitCorrections: %d\nAverageRSCorrections: %d\nSignalQuality: %d\nTotalBytesRead: %d\nDroppedPackages: %d/%d\n",
+			//	e.Statistics.FrameLock, e.Statistics.AverageVitCorrections, derrors[0], e.Statistics.SignalQuality,
+			//	e.Statistics.TotalBytesRead, e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
 		} else {
 			if err != io.EOF {
 				fmt.Println(err)
@@ -242,6 +244,12 @@ func (e *Decoder) DecodeFile() {
 			break
 		}
 	}
+
+	fmt.Printf("[DECODER] Decoded file saved as %s\n", outputPath)
+	fmt.Printf("[DECODER] Signal Quality Statistics:\n")
+	fmt.Printf("Average Viterbi Corrections: %d\n	Average RS Corrections: %d\n	Average Signal Quality: %d\n	Total Bytes Read: %d\n	Dropped Packages: %d/%d\n",
+		e.Statistics.AverageVitCorrections, e.Statistics.AverageRSCorrections, e.Statistics.SignalQuality,
+		e.Statistics.TotalBytesRead, e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
 }
 
 func shiftWithConstantSize(arr *[]byte, pos int, length int) {
