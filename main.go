@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 	"weather-dump/src/CCSDS"
 	"weather-dump/src/CCSDS/Frames"
@@ -24,12 +26,19 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 		os.Mkdir(outputFolder, os.ModePerm)
 	}
 
-	outputFolder = fmt.Sprintf("%s/NPOESS-HRD-%s", outputFolder, time.Now().Format(time.RFC3339))
+	fileName := time.Now().Format(time.RFC3339)
+	r, err := regexp.Compile("^.*\\/(.*)\\.\\w+$")
+
+	if err == nil {
+		fileName = r.FindStringSubmatch(inputPath)[1]
+	}
+
+	outputFolder = fmt.Sprintf("%s/NPOESS-HRD-%s", outputFolder, strings.ToUpper(fileName))
 	os.Mkdir(outputFolder, os.ModePerm)
 
 	if inputFormat == "grcout" {
 		dec := Decoder.NewDecoder()
-		outputFile := fmt.Sprintf("%s/decoded.bin", outputFolder)
+		outputFile := fmt.Sprintf("%s/decoded-%s.bin", outputFolder, strings.ToLower(fileName))
 		dec.DecodeFile(inputPath, outputFile)
 		inputPath = outputFile
 	}
@@ -61,7 +70,7 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 		}
 	}
 
-	fmt.Println("[HRD] Decoding VCID 16 packets...")
+	fmt.Printf("[HRD] Decoding %d VCID 16 packets...\n", len(ch16.GetSpacePackets()))
 
 	skippedPackets := 0
 	for _, packet := range ch16.GetSpacePackets() {
@@ -75,7 +84,7 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 		}
 	}
 
-	fmt.Printf("[HRD] Found %d/%d invalid packets in VCID 16...\n", skippedPackets, len(ch16.GetSpacePackets()))
+	fmt.Printf("[HRD] Found %d invalid packets in VCID 16...\n", skippedPackets)
 	fmt.Printf("[HRD] Exporting VIIRS science products to %s...\n", outputFolder)
 
 	viirs.SetOutputFolder(outputFolder)
@@ -106,7 +115,7 @@ func main() {
 	app.Name = "weatherdump"
 	app.UsageText = "weatherdump [OPTIONS] [DATALINK] [FILE_PATH]"
 	app.Author = "Luigi Cruz (@luigifcruz) for Open Satellite Project"
-	app.Usage = "OSP's universal decoder for polar orbiting satellites."
+	app.Usage = "OSP's universal decoder for sun-synchronous satellites."
 	app.Version = "1.0.0"
 
 	app.Flags = []cli.Flag{

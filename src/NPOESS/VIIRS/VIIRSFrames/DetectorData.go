@@ -52,7 +52,7 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 	dat := *buf
 
 	e.fillData = uint8(dat[0])
-	e.checksumOffset = uint16(dat[2])<<8 | uint16(dat[3])
+	e.checksumOffset = binary.BigEndian.Uint16(dat[2:])
 
 	cso := e.checksumOffset
 
@@ -138,6 +138,11 @@ func bitSlicer(dat *[]byte, size int) {
 	}
 
 	bytes = len(*dat) - (size / 8)
+
+	if bytes > len(*dat) || bytes < 0 {
+		return
+	}
+
 	*dat = (*dat)[:bytes]
 	buf[len(*dat)-1] = uint8(buf[len(*dat)-1]) & ^(uint8(math.Pow(2, float64(bits))) - 1)
 }

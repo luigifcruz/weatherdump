@@ -25,6 +25,14 @@ type FrameHeader struct {
 	partialStart     uint16
 	numberOfSamples  uint16
 	sampleDelay      uint16
+	fillFrame        bool
+}
+
+func NewFillFrameHeader(scanNumber uint32) *FrameHeader {
+	e := FrameHeader{}
+	e.scanNumber = scanNumber
+	e.fillFrame = true
+	return &e
 }
 
 func NewHeader() *FrameHeader {
@@ -41,6 +49,14 @@ func (e FrameHeader) GetNumberOfSegments() uint8 {
 
 func (e FrameHeader) GetSequenceCount() uint32 {
 	return e.sequenceCount
+}
+
+func (e FrameHeader) GetScanNumber() uint32 {
+	return e.scanNumber
+}
+
+func (e FrameHeader) IsValid() bool {
+	return !e.fillFrame
 }
 
 func (e *FrameHeader) FromBinary(dat []byte) {
@@ -65,6 +81,7 @@ func (e *FrameHeader) FromBinary(dat []byte) {
 	e.partialStart = binary.BigEndian.Uint16(dat[48:])
 	e.numberOfSamples = binary.BigEndian.Uint16(dat[50:])
 	e.sampleDelay = binary.BigEndian.Uint16(dat[52:])
+	e.fillFrame = false
 }
 
 func (e FrameHeader) Print() {

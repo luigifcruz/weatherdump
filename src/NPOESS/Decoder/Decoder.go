@@ -111,7 +111,8 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			corr := e.correlator.GetHighestCorrelation()
 
 			if corr < Datalink[ID].MinCorrelationBits {
-				fmt.Printf("Correlation didn't match criteria of %d bits. Got %d\n", Datalink[ID].MinCorrelationBits, corr)
+				fmt.Printf("[DECODER] Not enough correlations %d/%d. Skipping...\n", corr, Datalink[ID].MinCorrelationBits)
+				continue
 			}
 
 			if pos != 0 {
@@ -247,7 +248,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 
 	fmt.Printf("[DECODER] Decoded file saved as %s\n", outputPath)
 	fmt.Printf("[DECODER] Signal Quality Statistics:\n")
-	fmt.Printf("Average Viterbi Corrections: %d\n	Average RS Corrections: %d\n	Average Signal Quality: %d\n	Total Bytes Read: %d\n	Dropped Packages: %d/%d\n",
+	fmt.Printf("	Average Viterbi Corrections: %d\n	Average RS Corrections: %d\n	Average Signal Quality: %d\n	Total Bytes Read: %d\n	Dropped Packages: %d/%d\n",
 		e.Statistics.AverageVitCorrections, e.Statistics.AverageRSCorrections, e.Statistics.SignalQuality,
 		e.Statistics.TotalBytesRead, e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
 }

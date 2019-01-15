@@ -17,6 +17,13 @@ type FrameBody struct {
 	detector         uint8
 	syncWordPattern  uint32
 	detectorData     [6]DetectorData
+	fillFrame        bool
+}
+
+func NewFillFrameBody() *FrameBody {
+	e := FrameBody{}
+	e.fillFrame = true
+	return &e
 }
 
 func (e *FrameBody) FromBinary(dat []byte) {
@@ -36,6 +43,7 @@ func (e *FrameBody) FromBinary(dat []byte) {
 	for i, _ := range e.detectorData {
 		e.detectorData[i].FromBinary(&buf)
 	}
+	e.fillFrame = false
 }
 
 func (e FrameBody) Print() {
@@ -66,7 +74,7 @@ func (e FrameBody) Print() {
 
 func (e FrameBody) IsValid() bool {
 	for i, detector := range e.detectorData {
-		if detector.syncWord != e.syncWordPattern && i != 5 {
+		if detector.syncWord != e.syncWordPattern && i != 5 || e.fillFrame {
 			return false
 		}
 	}

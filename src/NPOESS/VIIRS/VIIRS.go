@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"os"
 	"path/filepath"
 	"sort"
 	"weather-dump/src/CCSDS/Frames"
@@ -17,18 +18,6 @@ import (
 
 const firstPacket = 1
 const lastPacket = 2
-
-type Data struct {
-	tempSegments [2047]Segment
-	dataSegments []Segment
-	outputFolder string
-}
-
-type Segment struct {
-	APID   uint16
-	header VIIRSFrames.FrameHeader
-	body   [32]VIIRSFrames.FrameBody
-}
 
 func ConvertToU16(data []byte) []uint16 {
 	var buf []uint16
@@ -48,22 +37,6 @@ func ConvertToByte(data []uint16) []byte {
 	}
 
 	return buf
-}
-
-func (e Data) GetChannelPackets(channelAPID uint16) []*Segment {
-	var list []*Segment
-
-	for i, segment := range e.dataSegments {
-		if segment.APID == channelAPID {
-			list = append(list, &e.dataSegments[i])
-		}
-	}
-
-	sort.SliceStable(list, func(i, j int) bool {
-		return list[j].header.GetSequenceCount() < list[i].header.GetSequenceCount()
-	})
-
-	return list
 }
 
 func (e Data) SaveAllChannels(SCID uint8) {
@@ -88,8 +61,8 @@ func (e Data) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 	var buf []byte
 	cs := ChannelsParameters[channelAPID]
 
-	basePackets := e.GetChannelPackets(channelAPID)
-	reconPackets := e.GetChannelPackets(cs.ReconstructionBand)
+	a, z, basePackets := e.GetChannelPackets(channelAPID)
+	_, _, reconPackets := e.GetChannelPackets(cs.ReconstructionBand)
 
 	decFactor := map[bool]int{false: 2, true: 1}
 	bandComp := []rune(cs.ChannelName)[0] == []rune(ChannelsParameters[cs.ReconstructionBand].ChannelName)[0]
@@ -101,16 +74,11 @@ func (e Data) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 		ChannelsParameters[cs.ReconstructionBand].ChannelName)
 
 	if len(basePackets) > 0 && len(reconPackets) > 0 {
-		for x, packet := range basePackets {
-			if x > len(reconPackets)-1 {
-				fmt.Println("[VIIRS] Orphaned segment, skipping...")
-				basePackets = basePackets[:len(basePackets)-1]
-				continue
-			}
-
+		for x := z; x >= a; x -= 1 {
+			packet := basePackets[x]
 			for i := 0; i < cs.AggregationZoneHeight; i++ {
 				for j, segment := range cs.AggregationZoneWidth {
-					if packet.body[i].IsValid() && reconPackets[x].body[i/decFactor[bandComp]].IsValid() {
+					if reconPackets[x] != nil && packet.body[i].IsValid() && reconPackets[x].body[i/decFactor[bandComp]].IsValid() {
 						var image []uint16
 
 						baseData := packet.body[i].GetData(j, segment, cs.OversampleZone[j])
@@ -132,19 +100,20 @@ func (e Data) SaveCodedChannel(channelAPID uint16, SCID uint8) {
 			}
 		}
 
-		e.ProcessBuf(buf, cs, basePackets, SCID)
+		e.ProcessBuf(buf, cs, len(basePackets), e.GetTimestamp(channelAPID), SCID)
 	}
 }
 
 func (e Data) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 	var buf []byte
-	packets := e.GetChannelPackets(channelAPID)
+	a, z, packets := e.GetChannelPackets(channelAPID)
 	cs := ChannelsParameters[channelAPID]
 
 	fmt.Printf("[VIIRS] Rendering Uncoded Channel %s\n", cs.ChannelName)
 
 	if len(packets) > 0 {
-		for _, packet := range packets {
+		for x := z; x >= a; x -= 1 {
+			packet := packets[x]
 			for i := 0; i < cs.AggregationZoneHeight; i++ {
 				for j, segment := range cs.AggregationZoneWidth {
 					if packet.body[i].IsValid() {
@@ -157,16 +126,16 @@ func (e Data) SaveUncodedChannel(channelAPID uint16, SCID uint8) {
 			}
 		}
 
-		e.ProcessBuf(buf, cs, packets, SCID)
+		e.ProcessBuf(buf, cs, len(packets), e.GetTimestamp(channelAPID), SCID)
 	}
 }
 
-func (e Data) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Segment, SCID uint8) {
+func (e Data) ProcessBuf(buf []byte, cs ChannelParameters, len int, date string, SCID uint8) {
 	sc := NPOESS.Spacecrafts[SCID]
-	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, packets[0].header.GetDate()))
+	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png", e.outputFolder, sc.Filename, sc.SignalName, cs.ChannelName, date))
 
 	w := cs.FinalProductWidth
-	h := len(packets) * cs.AggregationZoneHeight
+	h := len * cs.AggregationZoneHeight
 
 	img := image.NewGray16(image.Rect(0, 0, w, h))
 	img.Pix = buf
@@ -175,6 +144,7 @@ func (e Data) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Segment, S
 	png.Encode(png_img, img)
 
 	mw := imagick.NewMagickWand()
+	defer mw.Destroy()
 
 	mw.ReadImageBlob(png_img.Bytes())
 	mw.EqualizeImage()
@@ -184,11 +154,6 @@ func (e Data) ProcessBuf(buf []byte, cs ChannelParameters, packets []*Segment, S
 
 func (e Data) ExportTrueColor(SCID uint8) {
 	sc := NPOESS.Spacecrafts[SCID]
-	packets := e.GetChannelPackets(sc.TrueColorChannels[0])
-
-	if len(packets) == 0 {
-		return
-	}
 
 	fmt.Println("[VIIRS] Exporting true color image.")
 
@@ -197,38 +162,62 @@ func (e Data) ExportTrueColor(SCID uint8) {
 		sc.Filename,
 		sc.SignalName,
 		ChannelsParameters[sc.TrueColorChannels[1]].ChannelName,
-		packets[0].header.GetDate()))
+		e.GetTimestamp(sc.TrueColorChannels[1])))
 
 	G, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
 		e.outputFolder,
 		sc.Filename,
 		sc.SignalName,
 		ChannelsParameters[sc.TrueColorChannels[0]].ChannelName,
-		packets[0].header.GetDate()))
+		e.GetTimestamp(sc.TrueColorChannels[0])))
 
 	B, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
 		e.outputFolder,
 		sc.Filename,
 		sc.SignalName,
 		ChannelsParameters[sc.TrueColorChannels[2]].ChannelName,
-		packets[0].header.GetDate()))
+		e.GetTimestamp(sc.TrueColorChannels[2])))
 
 	RGB, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_VIIRS_%s_%s.png",
 		e.outputFolder,
 		sc.Filename,
 		sc.SignalName,
 		"TRUECOLOR",
-		packets[0].header.GetDate()))
+		e.GetTimestamp(sc.TrueColorChannels[0])))
 
+	if _, err := os.Stat(R); os.IsNotExist(err) {
+		fmt.Println("[VIIRS] Red channel doesn't exists. Can't create true-color product.")
+		return
+	}
+
+	if _, err := os.Stat(G); os.IsNotExist(err) {
+		fmt.Println("[VIIRS] Green channel doesn't exists. Can't create true-color product.")
+		return
+	}
+
+	if _, err := os.Stat(B); os.IsNotExist(err) {
+		fmt.Println("[VIIRS] Blue channel doesn't exists. Can't create true-color product.")
+		return
+	}
+
+	// Load all channels for RGB.
 	mwR := imagick.NewMagickWand()
+	defer mwR.Destroy()
+
 	mwG := imagick.NewMagickWand()
+	defer mwG.Destroy()
+
 	mwB := imagick.NewMagickWand()
+	defer mwB.Destroy()
 
 	mwR.ReadImage(R)
 	mwG.ReadImage(G)
 	mwB.ReadImage(B)
 
+	// Merge them togheter to create True Color Image.
 	mwRGB := imagick.NewMagickWand()
+	defer mwRGB.Destroy()
+
 	mwRGB.AddImage(mwR)
 	mwRGB.AddImage(mwG)
 	mwRGB.AddImage(mwB)
