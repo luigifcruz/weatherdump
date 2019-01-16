@@ -48,6 +48,10 @@ type DetectorData struct {
 	diffBuf        []byte
 }
 
+func NewDetectorData() *DetectorData {
+	return &DetectorData{}
+}
+
 func (e *DetectorData) FromBinary(buf *[]byte) {
 	dat := *buf
 
@@ -64,9 +68,11 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 	bitSlicer(&e.aggregator, int(e.fillData))
 
 	if (len(dat) - int(cso)) > 8 {
-		e.checksum = uint32(dat[cso])<<24 | uint32(dat[cso+1])<<16 | uint32(dat[cso+2])<<8 | uint32(dat[cso+3])
-		e.syncWord = uint32(dat[cso+4])<<24 | uint32(dat[cso+5])<<16 | uint32(dat[cso+6])<<8 | uint32(dat[cso+7])
+		e.checksum = binary.BigEndian.Uint32(dat[cso:])
+		e.syncWord = binary.BigEndian.Uint32(dat[cso+4:])
 		*buf = (*buf)[cso+8:]
+	} else {
+		e.syncWord = 0xC000FFEE
 	}
 }
 
@@ -80,12 +86,18 @@ func (e DetectorData) Print() {
 	fmt.Println()
 }
 
-func (e *DetectorData) GetData(width int, oversample int) []byte {
+// Struct Validation
+// Struct Get
+func (e DetectorData) GetChecksum() uint16 {
+	return e.checksumOffset
+}
+
+func (e DetectorData) GetData(syncwork uint32, width int, oversample int) []byte {
 	if len(e.diffBuf) > 0 {
 		return e.diffBuf
 	}
 
-	if len(e.aggregator) > 0 {
+	if len(e.aggregator) > 0 && (syncwork == e.syncWord || e.syncWord == 0xC000FFEE) {
 		var buf []byte
 		size := width * 2 * oversample // 16-bits pixels * oversample
 		dat := Decompress(e.aggregator, len(e.aggregator), size)
@@ -119,15 +131,13 @@ func (e *DetectorData) GetData(width int, oversample int) []byte {
 	return make([]byte, width*2)
 }
 
+// Struct Set
 func (e *DetectorData) SetData(dat *[]byte) {
 	e.diffBuf = make([]byte, len(*dat))
 	copy(e.diffBuf, *dat)
 }
 
-func (e DetectorData) GetChecksum() uint16 {
-	return e.checksumOffset
-}
-
+// Struct Tools
 func bitSlicer(dat *[]byte, size int) {
 	buf := *dat
 	bits, bytes := 0, 0

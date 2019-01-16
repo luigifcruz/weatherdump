@@ -35,28 +35,10 @@ func NewFillFrameHeader(scanNumber uint32) *FrameHeader {
 	return &e
 }
 
-func NewHeader() *FrameHeader {
-	return &FrameHeader{}
-}
-
-func (e FrameHeader) GetDate() string {
-	return e.time.GetZulu()
-}
-
-func (e FrameHeader) GetNumberOfSegments() uint8 {
-	return e.numberOfSegments
-}
-
-func (e FrameHeader) GetSequenceCount() uint32 {
-	return e.sequenceCount
-}
-
-func (e FrameHeader) GetScanNumber() uint32 {
-	return e.scanNumber
-}
-
-func (e FrameHeader) IsValid() bool {
-	return !e.fillFrame
+func NewFrameHeader(buf []byte) *FrameHeader {
+	e := FrameHeader{}
+	e.FromBinary(buf)
+	return &e
 }
 
 func (e *FrameHeader) FromBinary(dat []byte) {
@@ -108,3 +90,31 @@ func (e FrameHeader) Print() {
 	fmt.Printf("Sample Delay: %016b\n", e.sampleDelay)
 	fmt.Println()
 }
+
+// Struct Validation
+func (e FrameHeader) IsValid() bool {
+	return !e.fillFrame
+}
+
+// Struct Get
+func (e FrameHeader) GetDateString() string {
+	return e.time.GetZulu()
+}
+
+func (e FrameHeader) GetDate() NPOESS.Time {
+	return e.time
+}
+
+func (e FrameHeader) GetNumberOfSegments() uint8 {
+	return e.numberOfSegments
+}
+
+func (e FrameHeader) GetSequenceCount() uint32 {
+	return e.sequenceCount
+}
+
+func (e FrameHeader) GetScanNumber() uint32 {
+	return e.scanNumber
+}
+
+// Struct Set

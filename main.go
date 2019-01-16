@@ -51,7 +51,6 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 	}
 
 	ch16 := CCSDS.CCSDS{}
-	viirs := VIIRS.Data{}
 	scid := uint8(0)
 
 	fmt.Println("[HRD] Decoding CCSDS packets...")
@@ -71,7 +70,7 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 	}
 
 	fmt.Printf("[HRD] Decoding %d VCID 16 packets...\n", len(ch16.GetSpacePackets()))
-
+	viirs := VIIRS.NewData(scid)
 	skippedPackets := 0
 	for _, packet := range ch16.GetSpacePackets() {
 		if !packet.IsValid() {
@@ -87,9 +86,8 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 	fmt.Printf("[HRD] Found %d invalid packets in VCID 16...\n", skippedPackets)
 	fmt.Printf("[HRD] Exporting VIIRS science products to %s...\n", outputFolder)
 
-	viirs.SetOutputFolder(outputFolder)
-	viirs.SaveAllChannels(scid)
-	viirs.ExportTrueColor(scid)
+	viirs.Process()
+	viirs.SaveAllChannels(outputFolder)
 
 	fmt.Println("[HRD] Done! Products saved.")
 }

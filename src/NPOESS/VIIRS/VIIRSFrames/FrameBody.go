@@ -26,6 +26,12 @@ func NewFillFrameBody() *FrameBody {
 	return &e
 }
 
+func NewFrameBody(buf []byte) *FrameBody {
+	e := FrameBody{}
+	e.FromBinary(buf)
+	return &e
+}
+
 func (e *FrameBody) FromBinary(dat []byte) {
 	e.sequenceCount = binary.BigEndian.Uint32(dat[0:])
 	e.packetTime.FromBinary(dat[4:12])
@@ -64,43 +70,48 @@ func (e FrameBody) Print() {
 		e.detectorData[i].Print()
 	}
 
-	if e.IsValid() {
-		fmt.Println("VALID FRAME")
+	if e.IsFillerFrame() {
+		fmt.Println("FILLER FRAME")
 	} else {
-		fmt.Println("INVALID FRAME")
+		fmt.Println("NORMAL FRAME")
 	}
 	fmt.Println()
 }
 
-func (e FrameBody) IsValid() bool {
-	for i, detector := range e.detectorData {
-		if detector.syncWord != e.syncWordPattern && i != 5 || e.fillFrame {
-			return false
-		}
-	}
-	return true
+// Struct Validation
+func (e FrameBody) IsFillerFrame() bool {
+	return e.fillFrame
 }
 
 func (e FrameBody) IsFillData(aggregationZone int) bool {
 	return e.detectorData[aggregationZone].GetChecksum() == 0x0008
 }
 
+// Struct Get
 func (e FrameBody) GetAggrLen() int {
 	return len(e.detectorData)
 }
 
-func (e *FrameBody) GetData(zone int, width int, oversample int) []byte {
-	return e.detectorData[zone].GetData(width, oversample)
-}
-
-func (e *FrameBody) SetData(zone int, dat *[]byte) {
-	e.detectorData[zone].SetData(dat)
+func (e FrameBody) GetData(zone int, width int, oversample int) []byte {
+	if e.IsFillerFrame() {
+		return make([]byte, width*2)
+	}
+	return e.detectorData[zone].GetData(e.syncWordPattern, width, oversample)
 }
 
 func (e FrameBody) GetDetectorNumber() uint8 {
 	return e.detector
 }
 
+func (e FrameBody) GetSequenceCount() uint32 {
+	return e.sequenceCount
+}
+
 func (e FrameBody) GetID() uint32 {
 	return e.sequenceCount
+}
+
+// Struct Set
+func (e *FrameBody) SetData(zone int, dat *[]byte) {
+	e.detectorData[zone].SetData(dat)
 }

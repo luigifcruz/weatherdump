@@ -7,9 +7,11 @@ type ChannelParameters struct {
 	AggregationZoneHeight int
 	BowTieHeight          [6]int
 	OversampleZone        [6]int
-	FinalProductWidth     int
+	FinalProductWidth     uint32
 	ReconstructionBand    uint16
 }
+
+var ChannelsIndex = [24]uint16{800, 801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812, 813, 814, 815, 816, 817, 818, 819, 820, 821, 822, 823}
 
 var ChannelsParameters = map[uint16]ChannelParameters{
 	800: {
