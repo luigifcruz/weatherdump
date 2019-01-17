@@ -17,13 +17,13 @@ func ExportGrayscale(buf []byte, e Channel, outputFolder string) {
 	img := image.NewGray16(image.Rect(0, 0, int(e.width), int(e.height)))
 	img.Pix = buf
 
-	png_img := new(bytes.Buffer)
-	png.Encode(png_img, img)
+	pngImg := new(bytes.Buffer)
+	png.Encode(pngImg, img)
 
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
-	mw.ReadImageBlob(png_img.Bytes())
+	mw.ReadImageBlob(pngImg.Bytes())
 	mw.EqualizeImage()
 	mw.FlopImage()
 	mw.WriteImage(outputName)

@@ -37,13 +37,13 @@ func (e Data) SaveAllChannels(outputFolder string) {
 			e.channelData[i].ComposeUncoded(outputFolder)
 		} else {
 			if e.channelData[reconChannel] != nil {
-				e.channelData[i].ComposeCoded(outputFolder, e.channelData[reconChannel])
+				//e.channelData[i].ComposeCoded(outputFolder, e.channelData[reconChannel])
 			}
 		}
 	}
 
-	colorChannels := e.spacecraft.TrueColorChannels
-	ExportTrueColor(outputFolder, e.channelData[colorChannels[1]], e.channelData[colorChannels[0]], e.channelData[colorChannels[2]])
+	//colorChannels := e.spacecraft.TrueColorChannels
+	//ExportTrueColor(outputFolder, e.channelData[colorChannels[1]], e.channelData[colorChannels[0]], e.channelData[colorChannels[2]])
 }
 
 func (e *Data) Process() {
@@ -57,7 +57,7 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 	ch := e.channelData
 	apid := packet.GetAPID()
 
-	if packet.GetSequenceFlags() == firstPacket {
+	if packet.GetSequenceFlags() == firstPacket && packet.IsValid() {
 		if ch[apid] == nil {
 			ch[apid] = NewChannel(apid)
 		}

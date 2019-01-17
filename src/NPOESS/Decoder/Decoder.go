@@ -9,7 +9,7 @@ import (
 )
 
 const DefaultFlywheelRecheck = 4
-const AverageLastNSamples = 10000
+const AverageLastNSamples = 8192
 const ID = "HRD"
 
 type Decoder struct {
@@ -46,8 +46,10 @@ func NewDecoder() *Decoder {
 
 	e.reedSolomon.SetCopyParityToOutput(true)
 
-	e.correlator.AddWord(Datalink[ID].HritUw0)
-	e.correlator.AddWord(Datalink[ID].HritUw2)
+	e.correlator.AddWord(Datalink[ID].HrdUw0)
+	e.correlator.AddWord(Datalink[ID].HrdUw1)
+	e.correlator.AddWord(Datalink[ID].HrdUw2)
+	e.correlator.AddWord(Datalink[ID].HrdUw3)
 
 	return &e
 }
@@ -58,11 +60,12 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 
 	fmt.Printf("[DECODER] Initializing decoding process...\n")
 
-	var averageRSCorrections float32 = 0.0
-	var averageVitCorrections float32 = 0.0
+	var averageRSCorrections float32
+	var averageVitCorrections float32
 	var lostPacketsPerChannel [256]int64
 	var lastPacketCount [256]int64
 	var receivedPacketsPerChannel [256]int64
+	var phaseShift SatHelper.SatHelperPhaseShift
 	var flywheelCount = 0
 
 	input, err := os.Open(inputPath)
@@ -78,6 +81,8 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 		return
 	}
 	defer output.Close()
+
+	fi, _ := os.Stat(inputPath)
 
 	fmt.Printf("[DECODER] Starting decoding the signal. This might take a while...\n")
 
@@ -107,8 +112,20 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			}
 			flywheelCount++
 
+			word := e.correlator.GetCorrelationWordNumber()
 			pos := e.correlator.GetHighestCorrelationPosition()
 			corr := e.correlator.GetHighestCorrelation()
+
+			switch word {
+			case 0:
+				phaseShift = SatHelper.DEG_0
+			case 1:
+				phaseShift = SatHelper.DEG_90
+			case 2:
+				phaseShift = SatHelper.DEG_180
+			case 3:
+				phaseShift = SatHelper.DEG_270
+			}
 
 			if corr < Datalink[ID].MinCorrelationBits {
 				fmt.Printf("[DECODER] Not enough correlations %d/%d. Skipping...\n", corr, Datalink[ID].MinCorrelationBits)
@@ -133,6 +150,8 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 					e.codedData[i] = buffer[i-offset]
 				}
 			}
+
+			e.packetFixer.FixPacket(&e.codedData[0], uint(Datalink[ID].CodedFrameSize), phaseShift, false)
 
 			for i := 0; i < Datalink[ID].CodedFrameSize; i++ {
 				e.viterbiData[i] = e.codedData[i]
@@ -162,7 +181,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			shiftWithConstantSize(&e.decodedData, Datalink[ID].SyncWordSize, Datalink[ID].FrameSize-Datalink[ID].SyncWordSize)
 
 			e.Statistics.AverageVitCorrections += uint16(e.viterbi.GetBER())
-			e.Statistics.TotalPackets += 1
+			e.Statistics.TotalPackets++
 
 			SatHelper.DeRandomizerDeRandomize(&e.decodedData[0], Datalink[ID].FrameSize-Datalink[ID].SyncWordSize)
 
@@ -181,7 +200,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			if derrors[0] == -1 && derrors[1] == -1 && derrors[2] == -1 && derrors[3] == -1 {
 				isCorrupted = true
 				lastFrameOk = false
-				e.Statistics.DroppedPackets += 1
+				e.Statistics.DroppedPackets++
 			} else {
 				isCorrupted = false
 				lastFrameOk = true
@@ -235,9 +254,15 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 				e.Statistics.FrameLock = 0
 			}
 
-			//fmt.Printf("(%d)\nAverageVitCorrections: %d\nAverageRSCorrections: %d\nSignalQuality: %d\nTotalBytesRead: %d\nDroppedPackages: %d/%d\n",
-			//	e.Statistics.FrameLock, e.Statistics.AverageVitCorrections, derrors[0], e.Statistics.SignalQuality,
-			//	e.Statistics.TotalBytesRead, e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
+			if e.Statistics.TotalPackets%512 == 0 {
+				fmt.Printf("\nAverage Viterbi Corrections: %d\nAverage RS Corrections: %d\nAverage Signal Quality: %d\nBytes Read: %2.2f%% (%d/%d)\nDropped Packages: %2.2f%% (%d/%d)\n",
+					e.Statistics.AverageVitCorrections, e.Statistics.AverageRSCorrections, e.Statistics.SignalQuality,
+					float32(e.Statistics.TotalBytesRead)/float32(fi.Size())*100,
+					e.Statistics.TotalBytesRead, fi.Size(),
+					float32(e.Statistics.DroppedPackets)/float32(e.Statistics.TotalPackets)*100,
+					e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
+			}
+
 		} else {
 			if err != io.EOF {
 				fmt.Println(err)
@@ -247,10 +272,6 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 	}
 
 	fmt.Printf("[DECODER] Decoded file saved as %s\n", outputPath)
-	fmt.Printf("[DECODER] Signal Quality Statistics:\n")
-	fmt.Printf("	Average Viterbi Corrections: %d\n	Average RS Corrections: %d\n	Average Signal Quality: %d\n	Total Bytes Read: %d\n	Dropped Packages: %d/%d\n",
-		e.Statistics.AverageVitCorrections, e.Statistics.AverageRSCorrections, e.Statistics.SignalQuality,
-		e.Statistics.TotalBytesRead, e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
 }
 
 func shiftWithConstantSize(arr *[]byte, pos int, length int) {

@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+const SpacePacketFrameMinimum = 6
+
 type SpacePacketFrame struct {
 	versionNumber       uint8
 	typeIndicator       uint8
@@ -19,8 +21,11 @@ type SpacePacketFrame struct {
 }
 
 func (e *SpacePacketFrame) FromBinary(dat []byte) {
-	e.dataLength += len(dat)
+	if len(dat) < SpacePacketFrameMinimum {
+		return
+	}
 
+	e.dataLength += len(dat)
 	e.versionNumber = dat[0] >> 5
 	e.typeIndicator = (dat[0] & 0x1F) >> 4
 	e.secondaryHeaderFlag = (dat[0] & 0x0F) >> 3

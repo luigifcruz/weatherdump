@@ -70,20 +70,14 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 	}
 
 	fmt.Printf("[HRD] Decoding %d VCID 16 packets...\n", len(ch16.GetSpacePackets()))
-	viirs := VIIRS.NewData(scid)
-	skippedPackets := 0
-	for _, packet := range ch16.GetSpacePackets() {
-		if !packet.IsValid() {
-			skippedPackets += 1
-			continue
-		}
 
+	viirs := VIIRS.NewData(scid)
+	for _, packet := range ch16.GetSpacePackets() {
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
 			viirs.Parse(packet)
 		}
 	}
 
-	fmt.Printf("[HRD] Found %d invalid packets in VCID 16...\n", skippedPackets)
 	fmt.Printf("[HRD] Exporting VIIRS science products to %s...\n", outputFolder)
 
 	viirs.Process()

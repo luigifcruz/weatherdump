@@ -6,6 +6,8 @@ import (
 	"weather-dump/src/NPOESS"
 )
 
+const FrameBodyMinimum = 88
+
 type FrameBody struct {
 	sequenceCount    uint32
 	packetTime       NPOESS.Time
@@ -33,6 +35,10 @@ func NewFrameBody(buf []byte) *FrameBody {
 }
 
 func (e *FrameBody) FromBinary(dat []byte) {
+	if len(dat) < FrameBodyMinimum {
+		return
+	}
+
 	e.sequenceCount = binary.BigEndian.Uint32(dat[0:])
 	e.packetTime.FromBinary(dat[4:12])
 	e.formatVersion = uint8(dat[12])
@@ -46,7 +52,7 @@ func (e *FrameBody) FromBinary(dat []byte) {
 	e.syncWordPattern = binary.BigEndian.Uint32(dat[20:])
 	// Reserved 512 bits
 	buf := dat[88:]
-	for i, _ := range e.detectorData {
+	for i := range e.detectorData {
 		e.detectorData[i].FromBinary(&buf)
 	}
 	e.fillFrame = false
@@ -66,7 +72,7 @@ func (e FrameBody) Print() {
 	fmt.Printf("Sync Word Pattern: %032b\n", e.syncWordPattern)
 	fmt.Println()
 
-	for i, _ := range e.detectorData {
+	for i := range e.detectorData {
 		e.detectorData[i].Print()
 	}
 

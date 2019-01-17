@@ -6,6 +6,7 @@ import (
 )
 
 const frameSize = 892
+const TransferFrameMinimum = frameSize
 
 type TransferFrame struct {
 	versionNumber       uint8
@@ -23,6 +24,10 @@ func NewTransferFrame(dat []byte) *TransferFrame {
 }
 
 func (e *TransferFrame) FromBinary(dat []byte) {
+	if len(dat) < TransferFrameMinimum {
+		return
+	}
+
 	e.versionNumber = dat[0] >> 6
 	e.SCID = (dat[0]&0x3F)<<2 | (dat[1]&0xC0)>>6
 	e.VCID = dat[1] & 0x3F

@@ -6,6 +6,8 @@ import (
 	"weather-dump/src/NPOESS"
 )
 
+const FrameHeaderMinimum = 52
+
 type FrameHeader struct {
 	time             NPOESS.Time
 	numberOfSegments uint8
@@ -42,6 +44,10 @@ func NewFrameHeader(buf []byte) *FrameHeader {
 }
 
 func (e *FrameHeader) FromBinary(dat []byte) {
+	if len(dat) < FrameHeaderMinimum {
+		return
+	}
+
 	e.time.FromBinary(dat[0:8])
 	e.numberOfSegments = dat[8]
 	// Spare 8 bits

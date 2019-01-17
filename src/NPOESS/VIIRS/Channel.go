@@ -17,6 +17,7 @@ type Channel struct {
 	segments   map[uint32]*Segment
 	start      uint32
 	end        uint32
+	count      uint32
 
 	scanCount  uint32
 	exctdCount uint32
@@ -28,6 +29,7 @@ func NewChannel(apid uint16) *Channel {
 	e.segments = make(map[uint32]*Segment)
 	e.end = 0x00000000
 	e.start = 0xFFFFFFFF
+	e.count = 0
 	return &e
 }
 
@@ -45,7 +47,7 @@ func NewSegment(header *VIIRSFrames.FrameHeader) *Segment {
 func NewFillSegment(scanNumber uint32) *Segment {
 	fillFrame := Segment{}
 	fillFrame.header = VIIRSFrames.NewFillFrameHeader(scanNumber)
-	for i := 0; i < 32; i += 1 {
+	for i := 0; i < 32; i++ {
 		fillFrame.body[i] = *VIIRSFrames.NewFillFrameBody()
 	}
 	return &fillFrame
@@ -54,7 +56,11 @@ func NewFillSegment(scanNumber uint32) *Segment {
 func (e *Channel) Fix(scft NPOESS.SpacecraftParameters) {
 	e.parameters = ChannelsParameters[e.apid]
 
-	for i := e.end; i >= e.start; i -= 1 {
+	if e.end-e.start > 5000 {
+		return
+	}
+
+	for i := e.end; i >= e.start; i-- {
 		if e.segments[i] == nil {
 			e.segments[i] = NewFillSegment(i)
 		}
@@ -67,17 +73,13 @@ func (e *Channel) Fix(scft NPOESS.SpacecraftParameters) {
 	e.width = e.parameters.FinalProductWidth
 }
 
-func (e Data) GetTimestamp(chAPID uint16) string {
-	return ""
-}
-
 func (e Channel) ComposeUncoded(outputFolder string) {
 	var buf []byte
 
 	fmt.Printf("[VIIRS] Rendering Uncoded Channel %s\n", e.parameters.ChannelName)
 
 	if len(e.segments) > 0 {
-		for x := e.end; x >= e.start; x -= 1 {
+		for x := e.end; x >= e.start; x-- {
 			packet := e.segments[x]
 			for i := 0; i < e.parameters.AggregationZoneHeight; i++ {
 				for j, segment := range e.parameters.AggregationZoneWidth {
@@ -101,7 +103,7 @@ func (e *Channel) ComposeCoded(outputFolder string, r *Channel) {
 		e.parameters.ChannelName, ChannelsParameters[e.parameters.ReconstructionBand].ChannelName)
 
 	if len(e.segments) > 0 && len(r.segments) > 0 {
-		for x := e.end; x >= e.start; x -= 1 {
+		for x := e.end; x >= e.start; x-- {
 			packet := e.segments[x]
 			for i := 0; i < e.parameters.AggregationZoneHeight; i++ {
 				for j, segment := range e.parameters.AggregationZoneWidth {

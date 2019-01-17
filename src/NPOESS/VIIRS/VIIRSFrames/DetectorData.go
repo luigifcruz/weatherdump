@@ -55,6 +55,10 @@ func NewDetectorData() *DetectorData {
 func (e *DetectorData) FromBinary(buf *[]byte) {
 	dat := *buf
 
+	if len(dat) < 4 {
+		return
+	}
+
 	e.fillData = uint8(dat[0])
 	e.checksumOffset = binary.BigEndian.Uint16(dat[2:])
 
@@ -97,7 +101,7 @@ func (e DetectorData) GetData(syncwork uint32, width int, oversample int) []byte
 		return e.diffBuf
 	}
 
-	if len(e.aggregator) > 0 && (syncwork == e.syncWord || e.syncWord == 0xC000FFEE) {
+	if len(e.aggregator) > 8 && (syncwork == e.syncWord || e.syncWord == 0xC000FFEE) {
 		var buf []byte
 		size := width * 2 * oversample // 16-bits pixels * oversample
 		dat := Decompress(e.aggregator, len(e.aggregator), size)
@@ -143,8 +147,8 @@ func bitSlicer(dat *[]byte, size int) {
 	bits, bytes := 0, 0
 
 	for size%8 != 0 {
-		bits += 1
-		size -= 1
+		bits++
+		size--
 	}
 
 	bytes = len(*dat) - (size / 8)
@@ -154,5 +158,10 @@ func bitSlicer(dat *[]byte, size int) {
 	}
 
 	*dat = (*dat)[:bytes]
+
+	if len(*dat) < len(buf) {
+		return
+	}
+
 	buf[len(*dat)-1] = uint8(buf[len(*dat)-1]) & ^(uint8(math.Pow(2, float64(bits))) - 1)
 }

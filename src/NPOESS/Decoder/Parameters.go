@@ -8,8 +8,10 @@ type Parameters struct {
 	SyncWordSize       int
 	RsParityBlockSize  int
 	RsBlocks           int
-	HritUw0            uint64
-	HritUw2            uint64
+	HrdUw0             uint64
+	HrdUw1             uint64
+	HrdUw2             uint64
+	HrdUw3             uint64
 }
 
 var Datalink = map[string]Parameters{
@@ -21,7 +23,9 @@ var Datalink = map[string]Parameters{
 		SyncWordSize:       4,
 		RsParityBlockSize:  (32 * 4),
 		RsBlocks:           4,
-		HritUw0:            0xfc4ef4fd0cc2df89,
-		HritUw2:            0x25010b02f33d2076,
+		HrdUw0:             0xfc4ef4fd0cc2df89,
+		HrdUw1:             0x56275254a66b45ec,
+		HrdUw2:             0x03b10b02f33d2076,
+		HrdUw3:             0xa9d8adab5994ba89,
 	},
 }

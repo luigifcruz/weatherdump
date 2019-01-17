@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+const MultiplexingFrameMinimum = 2
+
 type MultiplexingFrame struct {
 	firstHeaderPointer uint16
 	packetZone         []byte
@@ -17,6 +19,10 @@ func NewMultiplexingFrame(dat []byte) *MultiplexingFrame {
 }
 
 func (e *MultiplexingFrame) FromBinary(dat []byte) {
+	if len(dat) < MultiplexingFrameMinimum {
+		return
+	}
+
 	e.firstHeaderPointer = binary.BigEndian.Uint16(dat[0:]) & 0x7FF
 	e.packetZone = dat[2:]
 }
