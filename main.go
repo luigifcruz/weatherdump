@@ -82,6 +82,7 @@ func runHRDDecoder(inputPath string, inputFormat string, outputFolder string) {
 
 	viirs.Process()
 	viirs.SaveAllChannels(outputFolder)
+	viirs.SaveTrueColorChannel(outputFolder)
 
 	fmt.Println("[HRD] Done! Products saved.")
 }

@@ -30,11 +30,11 @@ func ExportGrayscale(buf []byte, e Channel, outputFolder string) {
 }
 
 func ExportTrueColor(outputFolder string, r, g, b *Channel) {
-	fmt.Println("[VIIRS] Exporting true color image.")
+	fmt.Println("[VIIRS] Saving true color image.")
 
-	R, _ := filepath.Abs(fmt.Sprintf("%s/%s.png", outputFolder, r.fileName))
-	G, _ := filepath.Abs(fmt.Sprintf("%s/%s.png", outputFolder, g.fileName))
-	B, _ := filepath.Abs(fmt.Sprintf("%s/%s.png", outputFolder, b.fileName))
+	R, _ := filepath.Abs(fmt.Sprintf("/tmp/%s.png", r.fileName))
+	G, _ := filepath.Abs(fmt.Sprintf("/tmp/%s.png", g.fileName))
+	B, _ := filepath.Abs(fmt.Sprintf("/tmp/%s.png", b.fileName))
 
 	RGB, _ := filepath.Abs(fmt.Sprintf("%s/TRUECOLOR_VIIRS_%s.png", outputFolder, r.endTime.GetZulu()))
 
@@ -45,6 +45,7 @@ func ExportTrueColor(outputFolder string, r, g, b *Channel) {
 
 	if _, err := os.Stat(G); os.IsNotExist(err) {
 		fmt.Println("[VIIRS] Green channel doesn't exists. Can't create true-color product.")
+		fmt.Println(G)
 		return
 	}
 

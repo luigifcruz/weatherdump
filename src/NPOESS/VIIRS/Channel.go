@@ -6,6 +6,8 @@ import (
 	"weather-dump/src/NPOESS/VIIRS/VIIRSFrames"
 )
 
+const MaxFrameCount = 8192
+
 type Channel struct {
 	apid       uint16
 	parameters ChannelParameters
@@ -56,8 +58,24 @@ func NewFillSegment(scanNumber uint32) *Segment {
 func (e *Channel) Fix(scft NPOESS.SpacecraftParameters) {
 	e.parameters = ChannelsParameters[e.apid]
 
-	if e.end-e.start > 5000 {
-		return
+	if e.end-e.start > MaxFrameCount {
+		fmt.Printf("[VIIRS] Potentially invalid channel %s was found.\n", e.parameters.ChannelName)
+		fmt.Println("	It's too long for the round earth, trying to correct...")
+
+		if (e.end - e.end - e.count) < MaxFrameCount {
+			e.start = e.end - e.count
+		}
+
+		if (e.start + e.count - e.start) < MaxFrameCount {
+			e.end = e.start + e.count
+		}
+
+		if e.end-e.start > MaxFrameCount {
+			fmt.Println("	Cannot find any valid number, skipping channel.")
+			return
+		}
+
+		fmt.Println("	Found a valid number. Channel can still be damaged.")
 	}
 
 	for i := e.end; i >= e.start; i-- {
@@ -84,7 +102,7 @@ func (e Channel) ComposeUncoded(outputFolder string) {
 			for i := 0; i < e.parameters.AggregationZoneHeight; i++ {
 				for j, segment := range e.parameters.AggregationZoneWidth {
 					oversampleSize := e.parameters.OversampleZone[j]
-					buf = append(buf, packet.body[i].GetData(j, segment, oversampleSize)...)
+					buf = append(buf, packet.body[i].GetData(j, segment, oversampleSize, false)...)
 				}
 			}
 		}
@@ -110,8 +128,8 @@ func (e *Channel) ComposeCoded(outputFolder string, r *Channel) {
 					if r.segments[x] != nil && !packet.body[i].IsFillerFrame() && !r.segments[x].body[i/decFactor[bandComp]].IsFillerFrame() {
 						var image []uint16
 
-						baseData := packet.body[i].GetData(j, segment, e.parameters.OversampleZone[j])
-						reconData := r.segments[x].body[i/decFactor[bandComp]].GetData(j, segment, e.parameters.OversampleZone[j])
+						baseData := packet.body[i].GetData(j, segment, e.parameters.OversampleZone[j], false)
+						reconData := r.segments[x].body[i/decFactor[bandComp]].GetData(j, segment, e.parameters.OversampleZone[j], true)
 						reconPixel := ConvertToU16(reconData)
 
 						for y, basePixel := range ConvertToU16(baseData) {

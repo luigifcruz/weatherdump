@@ -1,6 +1,19 @@
 package VIIRS
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"sort"
+)
+
+func MinIntSlice(v []int) int {
+	sort.Ints(v)
+	return v[0]
+}
+
+func MaxIntSlice(v []int) int {
+	sort.Ints(v)
+	return v[len(v)-1]
+}
 
 func ConvertToU16(data []byte) []uint16 {
 	var buf []uint16

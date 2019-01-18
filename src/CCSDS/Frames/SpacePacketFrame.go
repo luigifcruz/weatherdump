@@ -48,11 +48,11 @@ func (e *SpacePacketFrame) FeedData(dat []byte) []byte {
 		e.dataLength += len(dat)
 		e.packetData = append(e.packetData, dat...)
 		return nil
-	} else {
-		e.dataLength += int(dataLeft)
-		e.packetData = append(e.packetData, dat[:dataLeft]...)
-		return dat[dataLeft:]
 	}
+
+	e.dataLength += int(dataLeft)
+	e.packetData = append(e.packetData, dat[:dataLeft]...)
+	return dat[dataLeft:]
 }
 
 func (e SpacePacketFrame) GetAPID() uint16 {

@@ -98,11 +98,11 @@ func (e FrameBody) GetAggrLen() int {
 	return len(e.detectorData)
 }
 
-func (e FrameBody) GetData(zone int, width int, oversample int) []byte {
+func (e FrameBody) GetData(zone int, width int, oversample int, getBuf bool) []byte {
 	if e.IsFillerFrame() {
 		return make([]byte, width*2)
 	}
-	return e.detectorData[zone].GetData(e.syncWordPattern, width, oversample)
+	return e.detectorData[zone].GetData(e.syncWordPattern, width, oversample, getBuf)
 }
 
 func (e FrameBody) GetDetectorNumber() uint8 {

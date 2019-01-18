@@ -2,6 +2,7 @@ package VIIRS
 
 import (
 	"fmt"
+	"os"
 	"weather-dump/src/CCSDS/Frames"
 	"weather-dump/src/NPOESS"
 	"weather-dump/src/NPOESS/VIIRS/VIIRSFrames"
@@ -37,13 +38,51 @@ func (e Data) SaveAllChannels(outputFolder string) {
 			e.channelData[i].ComposeUncoded(outputFolder)
 		} else {
 			if e.channelData[reconChannel] != nil {
-				//e.channelData[i].ComposeCoded(outputFolder, e.channelData[reconChannel])
+				e.channelData[i].ComposeCoded(outputFolder, e.channelData[reconChannel])
 			}
 		}
 	}
+}
 
-	//colorChannels := e.spacecraft.TrueColorChannels
-	//ExportTrueColor(outputFolder, e.channelData[colorChannels[1]], e.channelData[colorChannels[0]], e.channelData[colorChannels[2]])
+func (e Data) SaveTrueColorChannel(outputFolder string) {
+	colorChannels := e.spacecraft.TrueColorChannels
+	fmt.Println("[VIIRS] Exporting True Color Channel.")
+
+	// Synchronize all channels scans.
+	firstScan := make([]int, 3)
+	lastScan := make([]int, 3)
+
+	firstScan[0] = int(e.channelData[colorChannels[0]].start)
+	firstScan[1] = int(e.channelData[colorChannels[1]].start)
+	firstScan[2] = int(e.channelData[colorChannels[2]].start)
+
+	lastScan[0] = int(e.channelData[colorChannels[0]].end)
+	lastScan[1] = int(e.channelData[colorChannels[1]].end)
+	lastScan[2] = int(e.channelData[colorChannels[2]].end)
+
+	e.channelData[colorChannels[0]].end = uint32(MinIntSlice(lastScan))
+	e.channelData[colorChannels[1]].end = uint32(MinIntSlice(lastScan))
+	e.channelData[colorChannels[2]].end = uint32(MinIntSlice(lastScan))
+
+	e.channelData[colorChannels[0]].start = uint32(MaxIntSlice(firstScan))
+	e.channelData[colorChannels[1]].start = uint32(MaxIntSlice(firstScan))
+	e.channelData[colorChannels[2]].start = uint32(MaxIntSlice(firstScan))
+
+	// Fix channel parameters.
+	e.Process()
+
+	// Decode all channels.
+	e.channelData[colorChannels[0]].ComposeUncoded("/tmp")
+	e.channelData[colorChannels[1]].ComposeCoded("/tmp", e.channelData[colorChannels[0]])
+	e.channelData[colorChannels[2]].ComposeCoded("/tmp", e.channelData[colorChannels[0]])
+
+	// Generate the true color image.
+	ExportTrueColor(outputFolder, e.channelData[colorChannels[1]], e.channelData[colorChannels[0]], e.channelData[colorChannels[2]])
+
+	// Cleaning up our garbage.
+	os.Remove(fmt.Sprintf("/tmp/%s.png", e.channelData[colorChannels[0]].fileName))
+	os.Remove(fmt.Sprintf("/tmp/%s.png", e.channelData[colorChannels[1]].fileName))
+	os.Remove(fmt.Sprintf("/tmp/%s.png", e.channelData[colorChannels[2]].fileName))
 }
 
 func (e *Data) Process() {
@@ -66,7 +105,6 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 		ch[apid].scanCount = frameHeader.GetScanNumber()
 		ch[apid].exctdCount = frameHeader.GetSequenceCount() + uint32(frameHeader.GetNumberOfSegments()) + 2
 		ch[apid].segments[ch[apid].scanCount] = NewSegment(frameHeader)
-		//fmt.Printf("%d %d %d==%d\n", apid, ch[apid].scanCount, ch[apid].exctdCount, frameHeader.GetSequenceCount())
 
 		if ch[apid].end < ch[apid].scanCount {
 			ch[apid].end = ch[apid].scanCount
@@ -76,12 +114,12 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 			ch[apid].start = ch[apid].scanCount
 		}
 
+		ch[apid].count++
 		return
 	}
 
 	if ch[apid] != nil {
 		frameBody := VIIRSFrames.NewFrameBody(packet.GetData())
-		//fmt.Printf("%d %d %d>%d %d (%d)\n", apid, ch[apid].scanCount, ch[apid].exctdCount, frameBody.GetSequenceCount(), frameBody.GetDetectorNumber(), frameBody.GetSequenceCount() <= ch[apid].exctdCount)
 		if frameBody.GetSequenceCount() <= ch[apid].exctdCount && frameBody.GetDetectorNumber() < 32 {
 			ch[apid].segments[ch[apid].scanCount].body[frameBody.GetDetectorNumber()] = *frameBody
 		}

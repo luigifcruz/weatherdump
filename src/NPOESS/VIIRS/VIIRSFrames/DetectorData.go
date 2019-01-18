@@ -4,41 +4,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
-	"unsafe"
 )
 
-/*
-#include <stdlib.h>
-#include <stdint.h>
-#include <libaec.h>
-#include <string.h>
-#cgo LDFLAGS: -laec
+// DetectorDataMinimum is the minium amout of data to this frame be valid.
+const DetectorDataMinimum = 88
 
-void decompress(char *input, char *output, int inputLen, int outputLen) {
-	struct aec_stream strm;
-
-	strm.bits_per_sample = 15;
-	strm.block_size = 8;
-	strm.rsi = 128;
-	strm.flags = AEC_DATA_MSB | AEC_DATA_PREPROCESS;
-	strm.next_in = input;
-	strm.avail_in = inputLen;
-	strm.next_out = output;
-	strm.avail_out = outputLen * sizeof(char);
-
-	aec_decode_init(&strm);
-	aec_decode(&strm, AEC_FLUSH);
-	aec_decode_end(&strm);
-}
-*/
-import "C"
-
-func Decompress(data []byte, inputLen int, outputLen int) []byte {
-	var slice = make([]byte, outputLen)
-	C.decompress((*C.char)(unsafe.Pointer(&data[0])), (*C.char)(unsafe.Pointer(&slice[0])), C.int(inputLen), C.int(outputLen))
-	return slice
-}
-
+// DetectorData is the final data structure from the VIIRS pictures products.
 type DetectorData struct {
 	fillData       uint8
 	checksumOffset uint16
@@ -48,17 +19,17 @@ type DetectorData struct {
 	diffBuf        []byte
 }
 
+// NewDetectorData returns a pointer of a new DetectorData.
 func NewDetectorData() *DetectorData {
 	return &DetectorData{}
 }
 
 func (e *DetectorData) FromBinary(buf *[]byte) {
-	dat := *buf
-
-	if len(dat) < 4 {
+	if len(*buf) < DetectorDataMinimum {
 		return
 	}
 
+	dat := *buf
 	e.fillData = uint8(dat[0])
 	e.checksumOffset = binary.BigEndian.Uint16(dat[2:])
 
@@ -96,15 +67,19 @@ func (e DetectorData) GetChecksum() uint16 {
 	return e.checksumOffset
 }
 
-func (e DetectorData) GetData(syncwork uint32, width int, oversample int) []byte {
-	if len(e.diffBuf) > 0 {
+func (e DetectorData) GetData(syncwork uint32, width int, oversample int, getBuf bool) []byte {
+	if len(e.diffBuf) > 0 && getBuf {
 		return e.diffBuf
 	}
 
 	if len(e.aggregator) > 8 && (syncwork == e.syncWord || e.syncWord == 0xC000FFEE) {
 		var buf []byte
 		size := width * 2 * oversample // 16-bits pixels * oversample
-		dat := Decompress(e.aggregator, len(e.aggregator), size)
+		dat, err := Decompress(e.aggregator, len(e.aggregator), size)
+
+		if err == 1 {
+			return make([]byte, width*2)
+		}
 
 		if oversample == 1 {
 			return dat
