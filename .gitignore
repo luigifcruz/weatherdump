@@ -3,3 +3,8 @@
 output/*
 input/*
 .vscode
+bin/*
+*/node_modules/*
+package-lock.json
+Dockerfile
+build/*

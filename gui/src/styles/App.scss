@@ -1,0 +1,31 @@
+body {
+    font-family: 'Roboto Slab', serif;
+    font-weight: 400;
+    background-color: $background-color;
+    width: 85%;
+    margin-left: 7.5%;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+.App {
+    margin-bottom: 2em;
+
+    h2 {
+        color: $heavy-text;
+        font-size: 1.5em;
+        font-weight: 700;
+        margin-top: 0em;
+        margin-bottom: 0.65em;
+    }
+
+    .Khronos {
+        font-size: 2.5em;
+        color: $khronos-green;
+        font-weight: 700;
+        margin-bottom: 0em;
+        margin-top: 0.35em;
+        text-decoration: none;
+        outline: none;
+    }
+}
