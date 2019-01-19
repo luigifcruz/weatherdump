@@ -10,11 +10,15 @@ import (
 
 const DefaultFlywheelRecheck = 4
 const AverageLastNSamples = 8192
+const LastFrameDataBits = 64
+const LastFrameData = LastFrameDataBits / 8
+const UseLastFrameData = true
 const ID = "HRD"
 
 type Decoder struct {
 	viterbiData     []byte
 	decodedData     []byte
+	lastFrameEnd    []byte
 	codedData       []byte
 	rsCorrectedData []byte
 	rsWorkBuffer    []byte
@@ -29,10 +33,22 @@ type Decoder struct {
 func NewDecoder() *Decoder {
 	e := Decoder{}
 
-	e.viterbiData = make([]byte, Datalink[ID].CodedFrameSize)
-	e.decodedData = make([]byte, Datalink[ID].FrameSize)
+	if UseLastFrameData {
+		e.viterbiData = make([]byte, Datalink[ID].CodedFrameSize+LastFrameDataBits)
+		e.decodedData = make([]byte, Datalink[ID].FrameSize+LastFrameData)
+		e.lastFrameEnd = make([]byte, LastFrameDataBits)
 
-	e.viterbi = SatHelper.NewViterbi27(Datalink[ID].FrameBits)
+		e.viterbi = SatHelper.NewViterbi27(Datalink[ID].FrameBits + LastFrameDataBits)
+
+		for i := 0; i < LastFrameDataBits; i++ {
+			e.lastFrameEnd[i] = 128
+		}
+	} else {
+		e.viterbiData = make([]byte, Datalink[ID].CodedFrameSize)
+		e.decodedData = make([]byte, Datalink[ID].FrameSize)
+
+		e.viterbi = SatHelper.NewViterbi27(Datalink[ID].FrameBits)
+	}
 
 	e.codedData = make([]byte, Datalink[ID].CodedFrameSize)
 	e.rsCorrectedData = make([]byte, Datalink[ID].FrameSize)
@@ -133,7 +149,6 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			}
 
 			if pos != 0 {
-				// Sync frame
 				shiftWithConstantSize(&e.codedData, int(pos), Datalink[ID].CodedFrameSize)
 				offset := Datalink[ID].CodedFrameSize - int(pos)
 
@@ -153,13 +168,26 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 
 			e.packetFixer.FixPacket(&e.codedData[0], uint(Datalink[ID].CodedFrameSize), phaseShift, false)
 
-			for i := 0; i < Datalink[ID].CodedFrameSize; i++ {
-				e.viterbiData[i] = e.codedData[i]
+			if UseLastFrameData {
+				for i := 0; i < LastFrameDataBits; i++ {
+					e.viterbiData[i] = e.lastFrameEnd[i]
+				}
+				for i := LastFrameDataBits; i < Datalink[ID].CodedFrameSize+LastFrameDataBits; i++ {
+					e.viterbiData[i] = e.codedData[i-LastFrameDataBits]
+				}
+			} else {
+				for i := 0; i < Datalink[ID].CodedFrameSize; i++ {
+					e.viterbiData[i] = e.codedData[i]
+				}
 			}
 
 			e.viterbi.Decode(&e.viterbiData[0], &e.decodedData[0])
 
 			nrzmDecodeSize := Datalink[ID].FrameSize
+
+			if UseLastFrameData {
+				nrzmDecodeSize += LastFrameData
+			}
 
 			SatHelper.DifferentialEncodingNrzmDecode(&e.decodedData[0], nrzmDecodeSize)
 
@@ -172,6 +200,13 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			}
 
 			averageVitCorrections += float32(e.viterbi.GetBER())
+
+			if UseLastFrameData {
+				shiftWithConstantSize(&e.decodedData, LastFrameData/2, Datalink[ID].FrameSize+LastFrameData/2)
+				for i := 0; i < LastFrameDataBits; i++ {
+					e.lastFrameEnd[i] = e.viterbiData[Datalink[ID].CodedFrameSize+i]
+				}
+			}
 
 			for i := 0; i < Datalink[ID].SyncWordSize; i++ {
 				e.syncWord[i] = e.decodedData[i]
@@ -216,8 +251,16 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			e.Statistics.SCID = scid
 			e.Statistics.VCID = vcid
 
+			vitBitErr := e.viterbi.GetBER()
+
+			vitBitErr -= LastFrameDataBits / 2
+
+			if vitBitErr < 0 {
+				vitBitErr = 0
+			}
+
 			e.Statistics.PacketNumber = uint64(counter)
-			e.Statistics.VitErrors = uint16(e.viterbi.GetBER())
+			e.Statistics.VitErrors = uint16(vitBitErr)
 			e.Statistics.FrameBits = uint16(Datalink[ID].FrameBits)
 			e.Statistics.SignalQuality = signalQuality
 			e.Statistics.SyncCorrelation = uint8(corr)
