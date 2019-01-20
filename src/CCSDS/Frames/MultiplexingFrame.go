@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const MultiplexingFrameMinimum = 2
+const multiplexingFrameMinimum = 2
 
 type MultiplexingFrame struct {
 	firstHeaderPointer uint16
@@ -19,7 +19,7 @@ func NewMultiplexingFrame(dat []byte) *MultiplexingFrame {
 }
 
 func (e *MultiplexingFrame) FromBinary(dat []byte) {
-	if len(dat) < MultiplexingFrameMinimum {
+	if len(dat) < multiplexingFrameMinimum {
 		return
 	}
 

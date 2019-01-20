@@ -6,7 +6,7 @@ import (
 	"weather-dump/src/NPOESS"
 )
 
-const FrameHeaderMinimum = 52
+const frameHeaderMinimum = 52
 
 type FrameHeader struct {
 	time             NPOESS.Time
@@ -44,7 +44,7 @@ func NewFrameHeader(buf []byte) *FrameHeader {
 }
 
 func (e *FrameHeader) FromBinary(dat []byte) {
-	if len(dat) < FrameHeaderMinimum {
+	if len(dat) < frameHeaderMinimum {
 		return
 	}
 

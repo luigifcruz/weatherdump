@@ -6,7 +6,7 @@ import (
 )
 
 const frameSize = 892
-const TransferFrameMinimum = frameSize
+const transferFrameMinimum = frameSize
 
 type TransferFrame struct {
 	versionNumber       uint8
@@ -24,7 +24,7 @@ func NewTransferFrame(dat []byte) *TransferFrame {
 }
 
 func (e *TransferFrame) FromBinary(dat []byte) {
-	if len(dat) < TransferFrameMinimum {
+	if len(dat) < transferFrameMinimum {
 		return
 	}
 

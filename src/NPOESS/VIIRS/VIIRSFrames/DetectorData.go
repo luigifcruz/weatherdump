@@ -6,8 +6,7 @@ import (
 	"math"
 )
 
-// DetectorDataMinimum is the minium amout of data to this frame be valid.
-const DetectorDataMinimum = 88
+const detectorDataMinimum = 88
 
 // DetectorData is the final data structure from the VIIRS pictures products.
 type DetectorData struct {
@@ -25,7 +24,7 @@ func NewDetectorData() *DetectorData {
 }
 
 func (e *DetectorData) FromBinary(buf *[]byte) {
-	if len(*buf) < DetectorDataMinimum {
+	if len(*buf) < detectorDataMinimum {
 		return
 	}
 

@@ -6,7 +6,7 @@ import (
 	"weather-dump/src/NPOESS"
 )
 
-const FrameBodyMinimum = 88
+const frameBodyMinimum = 88
 
 type FrameBody struct {
 	sequenceCount    uint32
@@ -35,7 +35,7 @@ func NewFrameBody(buf []byte) *FrameBody {
 }
 
 func (e *FrameBody) FromBinary(dat []byte) {
-	if len(dat) < FrameBodyMinimum {
+	if len(dat) < frameBodyMinimum {
 		return
 	}
 

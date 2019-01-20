@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const SpacePacketFrameMinimum = 6
+const spacePacketFrameMinimum = 6
 
 type SpacePacketFrame struct {
 	versionNumber       uint8
@@ -21,7 +21,7 @@ type SpacePacketFrame struct {
 }
 
 func (e *SpacePacketFrame) FromBinary(dat []byte) {
-	if len(dat) < SpacePacketFrameMinimum {
+	if len(dat) < spacePacketFrameMinimum {
 		return
 	}
 
