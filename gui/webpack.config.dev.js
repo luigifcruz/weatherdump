@@ -2,9 +2,6 @@ const webpack = require('webpack');
 const path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-const ROOT_DIR = path.resolve(__dirname, '../');
-const DIST_DIR = path.resolve(ROOT_DIR, 'build');
-
 const devConfig = {
     mode: 'development',
     target: 'web',
@@ -18,7 +15,7 @@ const devConfig = {
         './src/client/index.js'
     ],
     output: {
-        path: DIST_DIR,
+        path: path.resolve(__dirname, 'build'),
         filename: 'bundle.js'
     },
     module: {
@@ -33,7 +30,7 @@ const devConfig = {
                     loader: 'sass-resources-loader',
                     options: {
                         resources: [
-                            path.resolve(ROOT_DIR, 'gui/src/styles/Resources.scss')
+                            path.resolve(__dirname, 'src/styles/Resources.scss')
                         ],
                     },
                 },

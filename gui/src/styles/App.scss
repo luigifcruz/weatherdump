@@ -10,6 +10,7 @@ body {
 
 .App {
     margin-bottom: 2em;
+    width: 100%;
 
     h2 {
         color: $heavy-text;
@@ -19,13 +20,21 @@ body {
         margin-bottom: 0.65em;
     }
 
-    .Khronos {
-        font-size: 2.5em;
-        color: $khronos-green;
-        font-weight: 700;
-        margin-bottom: 0em;
-        margin-top: 0.35em;
-        text-decoration: none;
-        outline: none;
+    .Footer {
+        
+
+        .Left {
+            font-size: 0.85em;
+            text-decoration: none;
+        }
+
+        .Center {
+            font-size: 1.25em;
+        }
+
+        .Right {
+            font-size: 0.85em;
+            text-decoration: none;
+        }
     }
 }

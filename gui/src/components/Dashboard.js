@@ -7,9 +7,7 @@ class Dashboard extends Component {
     render() {
         return (
             <div className="Dashboard">
-                <h2>Welcome to WeatherDump!</h2>
-                <Link to="/clock">Time & Date</Link>
-                <Link to="/settings">Settings</Link>
+                <h1 className="Header">Select the input file format...</h1>
             </div>
         )
     }

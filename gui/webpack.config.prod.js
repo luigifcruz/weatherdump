@@ -5,15 +5,12 @@ const CompressionWebpackPlugin = require('compression-webpack-plugin');
 const DelWebpackPlugin = require('del-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
-const ROOT_DIR = path.resolve(__dirname, '../');
-const DIST_DIR = path.resolve(ROOT_DIR, 'build');
-
 const prodConfig = {
     mode: 'production',
     target: 'web',
     entry: './src/client/index.js',
     output: {
-        path: DIST_DIR,
+        path: path.resolve(__dirname, 'build'),
         filename: 'bundle.js'
     },
     performance: {
@@ -30,7 +27,7 @@ const prodConfig = {
                     loader: 'sass-resources-loader',
                     options: {
                         resources: [
-                            path.resolve(ROOT_DIR, 'gui/src/styles/Resources.scss')
+                            path.resolve(__dirname, 'src/styles/Resources.scss')
                         ],
                     },
                 },

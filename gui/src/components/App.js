@@ -1,12 +1,8 @@
 import { withRouter } from 'react-router-dom'
 import React, { Component } from 'react'
-import Websocket from 'react-websocket'
 import * as rxa from '../redux/actions'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { TimeEvent } from 'pondjs'
-import request from 'superagent'
-import prefix from 'superagent-prefix'
 
 import '../styles/App.scss'
 
@@ -15,8 +11,18 @@ class App extends Component {
     render() {
         return (
             <div className="App">
-                <Link to="/" className="Khronos">WeatherDump</Link>
                 {this.props.children}
+                <div className="Footer">
+                    <div className="Left">
+                        Beta 1 • <Link to="/update">Check Updates</Link>
+                    </div>
+                    <div className="Center">
+                        WeatherDump
+                    </div>
+                    <div className="Right">
+                        Open Satellite Project
+                    </div>
+                </div>
             </div>
         )
     }
