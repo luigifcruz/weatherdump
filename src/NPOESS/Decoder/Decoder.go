@@ -1,11 +1,17 @@
 package Decoder
 
 import (
+	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 
+	b64 "encoding/base64"
+	"encoding/json"
+
 	SatHelper "github.com/OpenSatelliteProject/libsathelper"
+	"github.com/gorilla/websocket"
 )
 
 const defaultFlywheelRecheck = 4
@@ -14,6 +20,9 @@ const lastFrameDataBits = 64
 const lastFrameData = lastFrameDataBits / 8
 const uselastFrameData = true
 const id = "HRD"
+
+var addr = flag.String("addr", "localhost:8080", "http service address")
+var upgrader = websocket.Upgrader{}
 
 type Decoder struct {
 	viterbiData     []byte
@@ -28,10 +37,16 @@ type Decoder struct {
 	correlator      SatHelper.Correlator
 	packetFixer     SatHelper.PacketFixer
 	Statistics      Statistics
+	constSock       *websocket.Conn
+	statsSock       *websocket.Conn
 }
 
 func NewDecoder() *Decoder {
 	e := Decoder{}
+
+	http.HandleFunc("/constellation", e.constellation)
+	http.HandleFunc("/statistics", e.statistics)
+	go http.ListenAndServe(*addr, nil)
 
 	if uselastFrameData {
 		e.viterbiData = make([]byte, Datalink[id].CodedFrameSize+lastFrameDataBits)
@@ -106,7 +121,11 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 		n, err := input.Read(e.codedData)
 		e.Statistics.TotalBytesRead += uint64(n)
 
-		if err == nil {
+		if err == nil && Datalink[id].CodedFrameSize == n {
+			if (e.Statistics.TotalPackets%32 == 0) && e.constSock != nil {
+				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:512])))
+			}
+
 			if e.Statistics.TotalPackets%averageLastNSamples == 0 {
 				averageRSCorrections = 0
 				averageVitCorrections = 0
@@ -264,6 +283,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			e.Statistics.FrameBits = uint16(Datalink[id].FrameBits)
 			e.Statistics.SignalQuality = signalQuality
 			e.Statistics.SyncCorrelation = uint8(corr)
+			e.Statistics.TotalBytes = uint64(fi.Size())
 
 			if !isCorrupted {
 				if lastPacketCount[vcid]+1 != int64(counter) && lastPacketCount[vcid] > -1 {
@@ -297,6 +317,13 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 				e.Statistics.FrameLock = 0
 			}
 
+			if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
+				json, err := json.Marshal(e.Statistics)
+				if err == nil {
+					e.statsSock.WriteMessage(1, []byte(json))
+				}
+			}
+
 			if e.Statistics.TotalPackets%512 == 0 {
 				fmt.Printf("\nAverage Viterbi Corrections: %d\nAverage RS Corrections: %d\nAverage Signal Quality: %d\nBytes Read: %2.2f%% (%d/%d)\nDropped Packages: %2.2f%% (%d/%d)\n",
 					e.Statistics.AverageVitCorrections, e.Statistics.AverageRSCorrections, e.Statistics.SignalQuality,
@@ -315,6 +342,16 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 	}
 
 	fmt.Printf("[DECODER] Decoded file saved as %s\n", outputPath)
+}
+
+func (e *Decoder) constellation(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	e.constSock, _ = upgrader.Upgrade(w, r, nil)
+}
+
+func (e *Decoder) statistics(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
 }
 
 func shiftWithConstantSize(arr *[]byte, pos int, length int) {

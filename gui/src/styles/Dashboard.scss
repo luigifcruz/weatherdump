@@ -1,7 +1,28 @@
-.Dashboard {
-    .Header {
-        color: #28262C;
-        width: 100%;
-        font-size: 1.75em;
+.Satellite {
+    width: 16em;
+    height: 6em;
+    border: 2px solid #3F4247;
+    border-radius: 0.75em;
+    margin-right: 1em;
+    padding: 0.5em 0.5em 1.25em 0.5em;
+
+    a {
+        border: 2px solid #3F8EFC;
+        color: #3F8EFC;
+        padding: 0.35em 0.75em 0.45em 0.75em;
+        margin-right: 0.5em;
+        border-radius: 1.5em;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    h3 {
+        font-size: 1.5em;
+        margin: 0;
+    }
+
+    h4 {
+        margin: 0 0 1.25em 0;
+        color: #A2A0A1;
     }
 }

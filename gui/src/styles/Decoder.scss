@@ -1,0 +1,249 @@
+.LeftWindow {
+    width: 30%;
+
+    .Constellation {
+        width: 225px;
+        height: 250px;
+        padding: 10px;
+        background: #21252B;
+        border-radius: 0.5em;
+    
+        .Label {
+            width: 100%;
+            text-align: center;
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: #A2A0A1;
+            font-weight: 700;
+        }
+    
+        .ProgressBar {
+            margin-left: -10px;
+            padding-top: 1.5em;
+            position: absolute;
+            height: 15px;
+            width: 245px;
+    
+            .Text {
+                display: flex;
+                font-size: 0.8em;
+    
+                .Percentage {
+                    color: #A2A0A1;
+                    text-align: right;
+                    font-weight: 700;
+                    width: 30%;
+                }
+                
+                .Description {
+                    color: #A2A0A1;
+                    text-align: left;
+                    font-weight: 500;
+                    width: 70%;
+                }
+            }
+    
+            .Body {
+                width: 100%;
+                height: 1.25em;
+                margin-bottom: 0.25em;
+                background: #21252B;
+                border-radius: 0.5em;
+    
+                .Progress {
+                    height: 100%;
+                    background: #FB5607;
+                    border-radius: 0.5em;
+                }
+            }
+        }
+    }    
+}
+
+.CenterWindow {
+    width: 35%;
+    margin-left: 0.75em;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+
+    .LockIndicator {
+        width: 100%;
+        height: 2.35em;
+        margin-top: 0.85em;
+        color: white;
+        border-radius: 0.5em;
+        text-align: center;
+        line-height: 2.31em;
+        font-weight: 700;
+
+        transition: background-color 100ms ease-in-out;
+    }
+
+    .DroppedPackets {
+        width: 9.25em;
+        height: 3.5em;
+        border-radius: 0.5em;
+        background: #21252B;
+        padding: 0.5em;
+        margin: 0.75em 0 0 0.75em;
+
+        .Quality {
+            width: 100%;
+            text-align: center;
+            font-size: 1.75em;
+            color: white;
+        }
+
+        .Name {
+            width: 100%;
+            text-align: center;
+            color: #A2A0A1;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-top: 0em;
+        }
+    }
+
+    .SignalQuality {
+        width: 5.5em;
+        height: 3.5em;
+        border-radius: 0.5em;
+        background: #21252B;
+        padding: 0.5em;
+        margin-top: 0.75em;
+
+        .Quality {
+            width: 100%;
+            text-align: center;
+            font-size: 1.75em;
+            color: white;
+        }
+
+        .Name {
+            width: 100%;
+            text-align: center;
+            color: #A2A0A1;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-top: 0em;
+        }
+    }
+
+    .ReedSolomon {                
+        width: 17em;
+        height: 5.4em;
+        border-radius: 0.5em;
+        background: #21252B;
+        padding: 0.5em 0 0.5em 0.5em;
+
+        .Name {
+            width: 20.75em;
+            text-align: center;
+            color: #A2A0A1;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-top: 0.75em;
+        }
+
+        .Indicator {
+            display: flex;
+            
+            .Block {
+                width: 4em;
+                padding: 0.25em 0.5em 0.25em 0.5em;
+                margin-right: 0.5em;
+                border-radius: 0.5em;
+                background: #282C34;
+
+                .Corrections {
+                    font-size: 1.75em;
+                    color: white;
+                    text-align: center;
+                    width: 100%;
+                }
+
+                .Label {
+                    font-size: 0.75em;
+                    color: #85888B;
+                    font-weight: 700;
+                    text-align: center;
+                    width: 100%;
+                }
+            }
+        }
+    }
+}   
+
+.RightWindow {
+    width: 35%;
+    margin-left: 0.75em;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+
+    button {
+        height: 2.75em;
+        width: 20em;
+        border: 2px solid #3F8EFC;
+        color: #3F8EFC;
+        background: none;
+        line-height: 1.8em;
+        padding: 0.35em 0.75em 0.45em 0.75em;
+        margin-top: 1.05em;
+        border-radius: 1.5em;
+        text-decoration: none;
+        font-weight: 700;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .Abort {
+        color: #EAC435;
+        border: 2px solid #EAC435;
+    }
+
+    .ChannelList {
+        width: 16em;
+        height: 16.4em;
+        border-radius: 0.5em;
+        background: #21252B;
+        padding: 0 0 0.5em 0.5em;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+
+        .Label {
+            width: 100%;
+            text-align: center;
+            margin-top: 0.75em;
+            font-size: 0.8em;
+            color: #A2A0A1;
+            font-weight: 700;
+        }
+
+        .Channel {
+            width: 6.25em;
+            height: 1.5em;
+            border-radius: 0.5em;
+            background: #282C34;
+            padding: 0.5em;
+            margin: 0.5em 0.25em 0 0.25em;
+            display: flex;
+
+            .VCID {
+                width: 30%;
+                color: #A2A0A1;
+                font-weight: 700;
+                font-size: 1.2em;
+                line-height: 1.2em;
+                text-align: left;
+            }
+
+            .Count {
+                width: 70%;
+                text-align: right;
+            }
+        }
+    }
+}

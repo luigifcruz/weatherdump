@@ -1,40 +1,82 @@
 body {
     font-family: 'Roboto Slab', serif;
     font-weight: 400;
-    background-color: $background-color;
-    width: 85%;
-    margin-left: 7.5%;
-
+    background-color: #282C34;
+    width: 95%;
+    height: 100%;
+    margin-left: 5%;
+    color: white;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden;
 }
 
 .App {
-    margin-bottom: 2em;
-    width: 100%;
+    padding: 0;
+    margin: 0;
+    width: 95%;
 
-    h2 {
-        color: $heavy-text;
-        font-size: 1.5em;
-        font-weight: 700;
-        margin-top: 0em;
-        margin-bottom: 0.65em;
+    .Header {
+        height: 6em;
+
+        .Title {
+            color: rgb(255, 255, 255);
+            width: 100%;
+            font-size: 1.75em;
+            margin-bottom: 0;
+        }
+
+        .Description {
+            font-size: 1em;
+            font-weight: 500;
+            color: #A2A0A1;
+            padding-top: 0;
+            margin: 0 0 1.5em 0;
+            margin-bottom: 1.5em;
+        }
+    }
+
+    .Body {
+        display: flex;
+        height: 20.5em;
     }
 
     .Footer {
-        
+        display: flex;
+        margin-top: 0.5em;
+        border-top: 1px solid #607777;
+        padding-top: 3px;
 
         .Left {
+            width: 25%;
             font-size: 0.85em;
             text-decoration: none;
+            text-align: left;
+            line-height: 3em;
+            color: #96BBBB;
+            font-weight: 700;
+
+            a {
+                color: #96BBBB;
+            }
         }
 
         .Center {
-            font-size: 1.25em;
+            width: 50%;
+            font-size: 1.75em;
+            text-align: center;
+            line-height: 1.45em;
+            font-family: 'Racing Sans One', cursive;
+            color: #24C18B;
         }
 
         .Right {
+            width: 25%;
             font-size: 0.85em;
             text-decoration: none;
+            text-align: right;
+            line-height: 3em;
+            color: #96BBBB;
+            font-weight: 700;
         }
     }
 }

@@ -49,7 +49,6 @@ const devConfig = {
             filename: "[name].css",
             allChunks: false
         }),
-        new webpack.NamedModulesPlugin(),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify('development')

@@ -15,7 +15,7 @@ const render = (Component) => {
 
 render(Client);
 
-if (module.hot) {
+if (module && module.hot) {
     module.hot.accept('./client', () => {
         const HotApp = require('./client').default;
         render(HotApp);

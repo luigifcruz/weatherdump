@@ -17,6 +17,7 @@ type Statistics struct {
 	LostPacketsPerChannel     [256]int64
 	TotalPackets              uint64
 	TotalBytesRead            uint64
+	TotalBytes                uint64
 	SyncWord                  [4]uint8
 	FrameLock                 uint8
 }
