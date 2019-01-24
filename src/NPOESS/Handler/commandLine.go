@@ -3,6 +3,7 @@ package Handler
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -17,6 +18,8 @@ const frameSize = 892
 
 func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 	fmt.Println("[HRD] Decoding started...")
+
+	go http.ListenAndServe(":3000", nil)
 
 	if _, err := os.Stat(outputFolder); os.IsNotExist(err) {
 		os.Mkdir(outputFolder, os.ModePerm)

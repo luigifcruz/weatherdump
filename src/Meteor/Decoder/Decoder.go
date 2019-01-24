@@ -18,7 +18,7 @@ const averageLastNSamples = 8192
 const lastFrameDataBits = 64
 const lastFrameData = lastFrameDataBits / 8
 const uselastFrameData = true
-const id = "HRD"
+const id = "LRPT"
 
 var upgrader = websocket.Upgrader{}
 
@@ -42,8 +42,8 @@ type Decoder struct {
 func NewDecoder() *Decoder {
 	e := Decoder{}
 
-	http.HandleFunc("/npoess/constellation", e.constellation)
-	http.HandleFunc("/npoess/statistics", e.statistics)
+	http.HandleFunc("/meteor/constellation", e.constellation)
+	http.HandleFunc("/meteor/statistics", e.statistics)
 
 	if uselastFrameData {
 		e.viterbiData = make([]byte, Datalink[id].CodedFrameSize+lastFrameDataBits)
@@ -78,6 +78,10 @@ func NewDecoder() *Decoder {
 	e.correlator.AddWord(Datalink[id].SyncWords[1])
 	e.correlator.AddWord(Datalink[id].SyncWords[2])
 	e.correlator.AddWord(Datalink[id].SyncWords[3])
+	e.correlator.AddWord(Datalink[id].SyncWords[4])
+	e.correlator.AddWord(Datalink[id].SyncWords[5])
+	e.correlator.AddWord(Datalink[id].SyncWords[6])
+	e.correlator.AddWord(Datalink[id].SyncWords[7])
 
 	return &e
 }
@@ -148,6 +152,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			pos := e.correlator.GetHighestCorrelationPosition()
 			corr := e.correlator.GetHighestCorrelation()
 
+			iqInv := (word / 4) > 0
 			switch word % 4 {
 			case 0:
 				phaseShift = SatHelper.DEG_0
@@ -182,7 +187,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 				}
 			}
 
-			e.packetFixer.FixPacket(&e.codedData[0], uint(Datalink[id].CodedFrameSize), phaseShift, false)
+			e.packetFixer.FixPacket(&e.codedData[0], uint(Datalink[id].CodedFrameSize), phaseShift, iqInv)
 
 			if uselastFrameData {
 				for i := 0; i < lastFrameDataBits; i++ {
@@ -204,8 +209,6 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			if uselastFrameData {
 				nrzmDecodeSize += lastFrameData
 			}
-
-			SatHelper.DifferentialEncodingNrzmDecode(&e.decodedData[0], nrzmDecodeSize)
 
 			signalErrors := float32(e.viterbi.GetPercentBER())
 			signalErrors = 100 - (signalErrors * 10)
@@ -240,7 +243,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 
 			for i := 0; i < Datalink[id].RsBlocks; i++ {
 				e.reedSolomon.Deinterleave(&e.decodedData[0], &e.rsWorkBuffer[0], byte(i), byte(Datalink[id].RsBlocks))
-				derrors[i] = int32(int8(e.reedSolomon.Decode_ccsds(&e.rsWorkBuffer[0])))
+				derrors[i] = int32(int8(e.reedSolomon.Decode_rs8(&e.rsWorkBuffer[0])))
 				e.reedSolomon.Interleave(&e.rsWorkBuffer[0], &e.rsCorrectedData[0], byte(i), byte(Datalink[id].RsBlocks))
 				if derrors[i] != -1 {
 					averageRSCorrections += float32(derrors[i])

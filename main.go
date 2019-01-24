@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"weather-dump/src/NPOESS/Handler"
+
+	MeteorHandler "weather-dump/src/Meteor/Handler"
+	NPOESSHandler "weather-dump/src/NPOESS/Handler"
 
 	"github.com/urfave/cli"
 	"gopkg.in/gographics/imagick.v2/imagick"
@@ -63,7 +65,21 @@ func main() {
 				}
 
 				settingsPrint(outputFolder, outputFolder, "HRD")
-				Handler.CommandLine(c.Args().First(), inputFormat, outputFolder)
+				NPOESSHandler.CommandLine(c.Args().First(), inputFormat, outputFolder)
+				return nil
+			},
+		}, {
+			Name:     "lrpt",
+			Usage:    "decoder for VHF band Low Rate Picture Transfer (LRPT) signal (MeteorM-N2)",
+			Category: "DATALINK",
+			Action: func(c *cli.Context) error {
+				if len(c.Args().First()) == 0 {
+					fmt.Println("[ERROR] Missing file_path.")
+					os.Exit(0)
+				}
+
+				settingsPrint(outputFolder, outputFolder, "LRPT")
+				MeteorHandler.CommandLine(c.Args().First(), inputFormat, outputFolder)
 				return nil
 			},
 		},

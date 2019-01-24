@@ -106,8 +106,8 @@ class Decoder extends Component {
 
         return (
             <div className="View">
-                <Websocket url={`ws://localhost:8080/constellation`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
-                <Websocket url={`ws://localhost:8080/statistics`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
+                <Websocket url={`ws://localhost:3000/meteor/constellation`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
+                <Websocket url={`ws://localhost:3000/meteor/statistics`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
                 <div className="Header">
                     <h1 className="Title">Decoding the input file for NPOESS...</h1>
                     <h2 className="Description">

@@ -8,11 +8,11 @@ type Parameters struct {
 	SyncWordSize       int
 	RsParityBlockSize  int
 	RsBlocks           int
-	SyncWords          [4]uint64
+	SyncWords          [8]uint64
 }
 
 var Datalink = map[string]Parameters{
-	"HRD": {
+	"LRPT": {
 		FrameSize:          1024,
 		FrameBits:          (1024 * 8),
 		CodedFrameSize:     ((1024 * 8) * 2),
@@ -20,10 +20,14 @@ var Datalink = map[string]Parameters{
 		SyncWordSize:       4,
 		RsParityBlockSize:  (32 * 4),
 		RsBlocks:           4,
-		SyncWords: [4]uint64{
-			0xfc4ef4fd0cc2df89,
-			0x56275254a66b45ec,
-			0x03b10b02f33d2076,
-			0xa9d8adab5994ba89},
+		SyncWords: [8]uint64{
+			0xfca2b63db00d9794,
+			0x56fbd394daa4c1c2,
+			0x035d49c24ff2686b,
+			0xa9042c6b255b3e3d,
+			0xfc51793e700e6b68,
+			0xa9f7e368e558c2c1,
+			0x03ae86c18ff19497,
+			0x56081c971aa73d3e},
 	},
 }
