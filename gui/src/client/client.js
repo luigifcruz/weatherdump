@@ -6,6 +6,7 @@ import { configureStore } from '../redux/store'
 import App from '../components/App'
 import Dashboard from '../components/Dashboard'
 import Decoder from '../components/Decoder'
+import FilePicker from '../components/FilePicker'
 
 const store = configureStore();
 
@@ -17,7 +18,8 @@ export default class Client extends Component {
                     <App>
                         <Switch>
                             <Route exact path="/" component={Dashboard}/>
-                            <Route exact path="/decoder" component={Decoder}/>
+                            <Route exact path="/:satellite/filepicker" component={FilePicker}/>
+                            <Route exact path="/:satellite/decoder" component={Decoder}/>
                         </Switch>
                     </App>
                 </BrowserRouter>

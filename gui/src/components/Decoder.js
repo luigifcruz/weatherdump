@@ -96,7 +96,8 @@ class Decoder extends Component {
     }
 
     render() {
-        let { complex, n, stats } = this.state;
+        const { match: { params } } = this.props;
+        const { complex, n, stats } = this.state;
 
         let percentage = (stats.TotalBytesRead/stats.TotalBytes)*100
         percentage = isNaN(percentage) ? 0 : percentage
@@ -106,8 +107,8 @@ class Decoder extends Component {
 
         return (
             <div className="View">
-                <Websocket url={`ws://localhost:3000/meteor/constellation`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
-                <Websocket url={`ws://localhost:3000/meteor/statistics`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
+                <Websocket url={`ws://localhost:3000/${params.satellite}/constellation`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
+                <Websocket url={`ws://localhost:3000/${params.satellite}/statistics`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
                 <div className="Header">
                     <h1 className="Title">Decoding the input file for NPOESS...</h1>
                     <h2 className="Description">

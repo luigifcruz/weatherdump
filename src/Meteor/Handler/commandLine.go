@@ -2,13 +2,19 @@ package Handler
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
 	"time"
+	"weather-dump/src/CCSDS"
+	"weather-dump/src/CCSDS/Frames"
 	"weather-dump/src/Meteor/Decoder"
+	"weather-dump/src/Meteor/Sensor"
 )
+
+const frameSize = 892
 
 func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 	fmt.Println("[LRPT] Decoding started...")
@@ -34,5 +40,38 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 		outputFile := fmt.Sprintf("%s/decoded-%s.bin", outputFolder, strings.ToLower(fileName))
 		dec.DecodeFile(inputPath, outputFile)
 		inputPath = outputFile
+	}
+
+	file, err := ioutil.ReadFile(inputPath)
+	if err != nil {
+		fmt.Println("[LRPT] Input file not found. Exiting...")
+		fmt.Println(err)
+		os.Exit(0)
+	}
+
+	ch05 := CCSDS.CCSDS{}
+	scid := uint8(0)
+
+	fmt.Println("[LRPT] Decoding CCSDS packets...")
+
+	for i := len(file); i > 0; i -= frameSize {
+		s := Frames.NewTransferFrame(file[(len(file) - i):])
+		scid = s.GetSCID()
+
+		if !s.IsReplay() {
+			p := Frames.NewMultiplexingFrame(CCSDS.Version["LRPT"], s.GetMPDU())
+
+			switch s.GetVCID() {
+			case 5:
+				ch05.ParseMPDU(*p) // VCID 5 Parser
+			}
+		}
+	}
+
+	fmt.Printf("SCID: %d Packets Number: %d\n", scid, len(ch05.GetSpacePackets()))
+
+	for _, packet := range ch05.GetSpacePackets() {
+		s := Sensor.NewSensor(packet.GetData())
+		s.Print()
 	}
 }

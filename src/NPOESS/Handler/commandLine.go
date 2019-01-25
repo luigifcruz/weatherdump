@@ -59,7 +59,7 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 		scid = s.GetSCID()
 
 		if s.IsReplay() {
-			p := Frames.NewMultiplexingFrame(s.GetMPDU())
+			p := Frames.NewMultiplexingFrame(CCSDS.Version["HRD"], s.GetMPDU())
 
 			switch s.GetVCID() {
 			case 16:

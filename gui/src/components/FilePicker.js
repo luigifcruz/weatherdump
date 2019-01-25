@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import '../styles/Dashboard.scss'
+import '../styles/FilePicker.scss'
 
-class Dashboard extends Component {
+class FilePicker extends Component {
 
     render() {
+        const { match: { params } } = this.props;
+
         return (
             <div className="View">
                 <div className="Header">
@@ -14,16 +16,8 @@ class Dashboard extends Component {
                     </h2>
                 </div>
                 <div className="Body">
-                    <div className="Satellite">
-                        <h3>NPOESS</h3>
-                        <h4>NOAA-20 & Suomi</h4>
-                        <Link to="/npoess/filepicker" className="Band">X-Band</Link>
-                    </div>
-                    <div className="Satellite">
-                        <h3>Meteor</h3>
-                        <h4>Meteor-MN2</h4>
-                        <Link to="/meteor/filepicker"  className="Band">VHF</Link>
-                    </div>
+                    pick file name pls
+                    <Link to="decoder">Continue...</Link>
                 </div>
             </div>
         )
@@ -31,4 +25,4 @@ class Dashboard extends Component {
 
 }
 
-export default Dashboard
+export default FilePicker

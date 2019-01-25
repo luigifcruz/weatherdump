@@ -3,7 +3,10 @@ package CCSDS
 import (
 	"fmt"
 	"weather-dump/src/CCSDS/Frames"
+	"weather-dump/src/CCSDS/Parameters"
 )
+
+var Version = Parameters.Version
 
 type CCSDS struct {
 	lastAPID     uint16
