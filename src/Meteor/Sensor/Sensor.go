@@ -9,6 +9,10 @@ import (
 
 const sensorDataMinimum = 13
 
+type mcu struct {
+	blocks [64]int
+}
+
 type Sensor struct {
 	day     uint16
 	msec    uint32
@@ -20,6 +24,7 @@ type Sensor struct {
 	QFM     uint16
 	QF      uint8
 	payload []byte
+	units   [14]mcu
 }
 
 func NewSensor(buf []byte) *Sensor {
@@ -47,37 +52,67 @@ func (e *Sensor) FromBinary(dat []byte) {
 	e.payload = dat[14:]
 }
 
-type Mask struct {
-	code []bool
-	len  int
-}
+func getValue(dat []bool) int {
+	if len(dat) == 0 {
+		fmt.Println("Got invalid value...")
+		return 0
+	}
 
-var dcCategories = [12]Mask{
-	Mask{[]bool{false, false}, 3},                                           // 00
-	Mask{[]bool{true, false, true}, 4},                                      // 101
-	Mask{[]bool{true, true, false}, 5},                                      // 110
-	Mask{[]bool{true, false, false}, 2},                                     // 100
-	Mask{[]bool{false, true, true}, 1},                                      // 011
-	Mask{[]bool{false, true, false}, 0},                                     // 010
-	Mask{[]bool{true, true, true, false}, 6},                                // 1110
-	Mask{[]bool{true, true, true, true, false}, 7},                          // 11110
-	Mask{[]bool{true, true, true, true, true, false}, 8},                    // 111110
-	Mask{[]bool{true, true, true, true, true, true, false}, 9},              // 1111110
-	Mask{[]bool{true, true, true, true, true, true, true, false}, 10},       // 11111110
-	Mask{[]bool{true, true, true, true, true, true, true, true, false}, 11}, // 111111110
-}
-
-func findCategory(dat []bool) []bool {
-	for _, m := range dcCategories {
-		if reflect.DeepEqual(dat[:len(m.code)], m.code) {
-			fmt.Println(m.len)
-			return dat[len(m.code)+m.len:]
+	result := 0x00
+	for i := len(dat) - 1; i > 0; i-- {
+		if dat[i] {
+			result = result | 0x0001<<uint(i-2)
 		}
 	}
-	return nil
+	result += 0x01 << uint(len(dat)-1)
+	if !dat[0] {
+		result *= -1
+	}
+	return result
 }
 
-func convertToArray(buf []byte) []bool {
+func findDC(dat []bool) (int, []bool) {
+	for _, m := range dcCategories {
+		klen := len(m.code)
+		if len(dat) < klen {
+			continue
+		}
+
+		if reflect.DeepEqual(dat[:klen], m.code) {
+			return getValue(dat[klen : klen+m.len]), dat[klen+m.len:]
+		}
+	}
+	return 0, nil
+}
+
+func findAC(dat []bool) ([]int, []bool) {
+	for _, m := range acCategories {
+		klen := len(m.code)
+		if len(dat) < klen {
+			continue
+		}
+
+		if reflect.DeepEqual(dat[:klen], m.code) {
+			if m.clen == 0 && m.zlen == 0 {
+				return nil, dat[klen:]
+			}
+			var vals []int
+
+			if !(m.zlen == 15 && m.clen == 0) {
+				vals = make([]int, m.zlen+1)
+				vals[m.zlen] = getValue(dat[klen : klen+m.clen])
+			} else {
+				vals = make([]int, m.zlen)
+				fmt.Println("Zero BOMB!!!")
+			}
+
+			return vals, dat[klen+m.clen:]
+		}
+	}
+	return nil, nil
+}
+
+func convertToArray(buf []byte) *[]bool {
 	var soft = make([]bool, len(buf)*8)
 	for i, m := range buf {
 		soft[0+8*i] = m>>7&0x01 == 0x01
@@ -89,7 +124,7 @@ func convertToArray(buf []byte) []bool {
 		soft[6+8*i] = m>>1&0x01 == 0x01
 		soft[7+8*i] = m>>0&0x01 == 0x01
 	}
-	return soft
+	return &soft
 }
 
 func (e Sensor) Print() {
@@ -106,10 +141,49 @@ func (e Sensor) Print() {
 	fmt.Printf("Quality Factor: %08b\n", e.QF)
 	fmt.Println()
 
-	fmt.Printf("%08b %08b\n", e.payload[0], e.payload[1])
+	fmt.Printf("[JPEG] Packet size %d", len(e.payload))
+	g := convertToArray(e.payload)
 
-	g := convertToArray(e.payload[0:2])
-	g = findCategory(g)
+	chunks, mcus := 0, 0
 
-	os.Exit(0)
+	for {
+		fmt.Println(len(*g))
+		val, buf := findDC(*g)
+		if len(buf) == 0 {
+			fmt.Println("[JPEG] Invalid DC value, frame can't be restored.")
+			return
+			os.Exit(0)
+		}
+		chunks++
+
+		r := 0
+		for {
+			var vals []int
+			vals, buf = findAC(buf)
+			if len(buf) == 0 {
+				fmt.Println("[JPEG] Invalid AC value, frame can't be restored.")
+				return
+				os.Exit(0)
+			}
+			r++
+			chunks += len(vals)
+			//fmt.Println(vals, chunks)
+			if len(vals) == 0 {
+				fmt.Printf("EOB! %d %d %d %d\n", chunks, mcus, val, r)
+				g = &buf
+				break
+			}
+		}
+
+		if mcus == 13 {
+			break
+		}
+
+		mcus++
+		chunks = 0
+		//os.Exit(0)
+	}
+	fmt.Println(len(*g))
+	fmt.Println(*g)
+	//os.Exit(0)
 }
