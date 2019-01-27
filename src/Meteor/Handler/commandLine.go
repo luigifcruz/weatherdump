@@ -71,7 +71,9 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 	fmt.Printf("SCID: %d Packets Number: %d\n", scid, len(ch05.GetSpacePackets()))
 
 	for _, packet := range ch05.GetSpacePackets() {
-		s := Sensor.NewSensor(packet.GetData())
-		s.Print()
+		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
+			s := Sensor.NewSensor(packet.GetData())
+			s.Print()
+		}
 	}
 }

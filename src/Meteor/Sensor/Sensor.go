@@ -3,7 +3,6 @@ package Sensor
 import (
 	"encoding/binary"
 	"fmt"
-	"os"
 	"reflect"
 )
 
@@ -79,6 +78,9 @@ func findDC(dat []bool) (int, []bool) {
 		}
 
 		if reflect.DeepEqual(dat[:klen], m.code) {
+			if m.len == 0 {
+				return 0, dat[klen+m.len:]
+			}
 			return getValue(dat[klen : klen+m.len]), dat[klen+m.len:]
 		}
 	}
@@ -97,13 +99,15 @@ func findAC(dat []bool) ([]int, []bool) {
 				return nil, dat[klen:]
 			}
 			var vals []int
-
-			if !(m.zlen == 15 && m.clen == 0) {
-				vals = make([]int, m.zlen+1)
-				vals[m.zlen] = getValue(dat[klen : klen+m.clen])
-			} else {
-				vals = make([]int, m.zlen)
+			vals = make([]int, m.zlen+1)
+			if m.zlen == 15 && m.clen == 0 {
 				fmt.Println("Zero BOMB!!!")
+			} else {
+				if len(dat) < klen+m.clen {
+					return nil, nil
+				}
+
+				vals[m.zlen] = getValue(dat[klen : klen+m.clen])
 			}
 
 			return vals, dat[klen+m.clen:]
@@ -141,35 +145,30 @@ func (e Sensor) Print() {
 	fmt.Printf("Quality Factor: %08b\n", e.QF)
 	fmt.Println()
 
-	fmt.Printf("[JPEG] Packet size %d", len(e.payload))
+	fmt.Printf("[JPEG] Packet size %d\n", len(e.payload))
 	g := convertToArray(e.payload)
 
 	chunks, mcus := 0, 0
 
 	for {
-		fmt.Println(len(*g))
 		val, buf := findDC(*g)
 		if len(buf) == 0 {
 			fmt.Println("[JPEG] Invalid DC value, frame can't be restored.")
 			return
-			os.Exit(0)
 		}
 		chunks++
 
-		r := 0
 		for {
 			var vals []int
 			vals, buf = findAC(buf)
+			chunks += len(vals)
+
 			if len(buf) == 0 {
 				fmt.Println("[JPEG] Invalid AC value, frame can't be restored.")
 				return
-				os.Exit(0)
 			}
-			r++
-			chunks += len(vals)
-			//fmt.Println(vals, chunks)
 			if len(vals) == 0 {
-				fmt.Printf("EOB! %d %d %d %d\n", chunks, mcus, val, r)
+				fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", chunks, mcus, len(*g), val)
 				g = &buf
 				break
 			}
@@ -181,9 +180,8 @@ func (e Sensor) Print() {
 
 		mcus++
 		chunks = 0
-		//os.Exit(0)
 	}
+
 	fmt.Println(len(*g))
 	fmt.Println(*g)
-	//os.Exit(0)
 }
