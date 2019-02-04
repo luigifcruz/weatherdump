@@ -1,24 +1,19 @@
-package Sensor
+package BISMW
 
 import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
+	"weather-dump/src/Meteor"
 )
 
 var eob = []int{-999}
 var cfc = []int{-998}
 
-const sensorDataMinimum = 13
+const segmentDataMinimum = 13
 
-type mcu struct {
-	blocks [64]int
-}
-
-type Sensor struct {
-	day     uint16
-	msec    uint32
-	usec    uint16
+type Segment struct {
+	time    Meteor.Time
 	MCUN    uint8
 	QT      uint8
 	DC      uint8
@@ -26,24 +21,22 @@ type Sensor struct {
 	QFM     uint16
 	QF      uint8
 	payload []byte
-	units   [14]mcu
+	mcus    [14][]int
 }
 
-func NewSensor(buf []byte) *Sensor {
-	e := Sensor{}
+func NewSegment(buf []byte) *Segment {
+	e := Segment{}
 	e.FromBinary(buf)
+	e.Parse()
 	return &e
 }
 
-func (e *Sensor) FromBinary(dat []byte) {
-	if len(dat) < sensorDataMinimum {
+func (e *Segment) FromBinary(dat []byte) {
+	if len(dat) < segmentDataMinimum {
 		return
 	}
 
-	e.day = binary.BigEndian.Uint16(dat[0:])
-	e.msec = binary.BigEndian.Uint32(dat[2:])
-	e.usec = binary.BigEndian.Uint16(dat[6:])
-
+	e.time.FromBinary(dat[0:])
 	e.MCUN = uint8(dat[8])
 	e.QT = uint8(dat[9])
 	e.DC = uint8(dat[10]) & 0xF0 >> 4
@@ -52,6 +45,10 @@ func (e *Sensor) FromBinary(dat []byte) {
 	e.QF = uint8(dat[13])
 
 	e.payload = dat[14:]
+}
+
+func (e Segment) GetMCUNumber() uint8 {
+	return e.MCUN
 }
 
 func getValue(dat []bool) int {
@@ -140,44 +137,53 @@ func convertToArray(buf []byte) *[]bool {
 	return &soft
 }
 
-func (e Sensor) Print() {
-	fmt.Println("### LRPT Sensor Frame")
-	fmt.Printf("Days: %d\n", e.day)
-	fmt.Printf("Milliseconds: %d\n", e.msec)
-	fmt.Printf("Microseconds: %d\n", e.usec)
-
-	fmt.Printf("First MCU Number: %08b\n", e.MCUN)
+func (e Segment) Print() {
+	fmt.Println("### LRPT Segment Frame")
+	fmt.Printf("MCU Number: %d\n", e.MCUN)
 	fmt.Printf("Quantization Table: %08b\n", e.QT)
 	fmt.Printf("Huffman Table DC: %04b\n", e.DC)
 	fmt.Printf("Huffman Table AC: %04b\n", e.AC)
 	fmt.Printf("Quality Factor Marker: %16b\n", e.QFM)
 	fmt.Printf("Quality Factor: %08b\n", e.QF)
+	fmt.Println()
+	e.time.Print()
 }
 
-func (e *Sensor) Parse() {
+func (e *Segment) Parse() {
 	fmt.Printf("[JPEG] Packet size %d\n", len(e.payload))
 	buf := convertToArray(e.payload)
 
-	for mculen := 0; mculen < 14; mculen++ {
+	for i := 0; i < 14; i++ {
 		val := findDC(buf)
 		if val == cfc[0] {
 			fmt.Println("[JPEG] Invalid DC value, frame can't be restored.")
 			return
 		}
 
-		for chunks := 0; chunks < 62; {
+		e.mcus[i] = []int{val}
+
+		for j := 0; j < 62; {
 			vals := findAC(buf)
-			chunks += len(vals)
+			j += len(vals)
 
 			if vals[0] == cfc[0] {
 				fmt.Println("[JPEG] Invalid AC value, frame can't be restored.")
 				return
 			}
 			if vals[0] == eob[0] {
-				fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", chunks+1, mculen, len(*buf), val)
+				//fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", j+1, i, len(*buf), val)
 				break
+			} else {
+				e.mcus[i] = append(e.mcus[i], vals...)
 			}
 		}
+
+		if len(e.mcus[i]) > 64 {
+			fmt.Println("WTF = ", len(*buf))
+			return
+		}
+
+		e.mcus[i] = append(e.mcus[i], make([]int, 64-len(e.mcus[i]))...)
 	}
 
 	fmt.Println(len(*buf))

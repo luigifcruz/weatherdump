@@ -12,10 +12,6 @@ const firstPacket = 1
 const lastPacket = 2
 
 type Data struct {
-	tempSegments [2047]Segment
-	dataSegments []Segment
-	outputFolder string
-
 	spacecraft  NPOESS.SpacecraftParameters
 	channelData map[uint16]*Channel
 }

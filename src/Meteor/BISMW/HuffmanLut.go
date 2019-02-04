@@ -1,4 +1,9 @@
-package Sensor
+package BISMW
+
+type maskDC struct {
+	code []bool
+	len  int
+}
 
 type maskAC struct {
 	code []bool
@@ -6,48 +11,63 @@ type maskAC struct {
 	zlen int
 }
 
+var dcCategories = [12]maskDC{
+	maskDC{[]bool{false, false}, 0},
+	maskDC{[]bool{false, true, false}, 1},
+	maskDC{[]bool{false, true, true}, 2},
+	maskDC{[]bool{true, false, false}, 3},
+	maskDC{[]bool{true, false, true}, 4},
+	maskDC{[]bool{true, true, false}, 5},
+	maskDC{[]bool{true, true, true, false}, 6},
+	maskDC{[]bool{true, true, true, true, false}, 7},
+	maskDC{[]bool{true, true, true, true, true, false}, 8},
+	maskDC{[]bool{true, true, true, true, true, true, false}, 9},
+	maskDC{[]bool{true, true, true, true, true, true, true, false}, 10},
+	maskDC{[]bool{true, true, true, true, true, true, true, true, false}, 11},
+}
+
 var acCategories = [162]maskAC{
-	maskAC{[]bool{true, false, true, false}, 0, 0},                                                                              // 0/0
-	maskAC{[]bool{false, false}, 1, 0},                                                                                          // 0/1
-	maskAC{[]bool{false, true}, 2, 0},                                                                                           // 0/2
-	maskAC{[]bool{true, false, false}, 3, 0},                                                                                    // 0/3
-	maskAC{[]bool{true, false, true, true}, 4, 0},                                                                               // 0/4
-	maskAC{[]bool{true, true, false, true, false}, 5, 0},                                                                        // 0/5
-	maskAC{[]bool{true, true, true, true, false, false, false}, 6, 0},                                                           // 0/6
-	maskAC{[]bool{true, true, true, true, true, false, false, false}, 7, 0},                                                     // 0/7
-	maskAC{[]bool{true, true, true, true, true, true, false, true, true, false}, 8, 0},                                          // 0/8
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, false, true, false}, 9, 0},  // 0/9
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, false, true, true}, 10, 0},  // 0/10
-	maskAC{[]bool{true, true, false, false}, 1, 1},                                                                              // 1/1
-	maskAC{[]bool{true, true, false, true, true}, 2, 1},                                                                         // 1/2
-	maskAC{[]bool{true, true, true, true, false, false, true}, 3, 1},                                                            // 1/2
-	maskAC{[]bool{true, true, true, true, true, false, true, true, false}, 4, 1},                                                // 1/3
-	maskAC{[]bool{true, true, true, true, true, true, true, false, true, true, false}, 5, 1},                                    // 1/4
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, false, false}, 6, 1},  // 1/6
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, false, true}, 7, 1},   // 1/7
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false}, 8, 1},   // 1/8
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, true, true}, 9, 1},    // 1/9
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, false, false}, 10, 1}, // 1/10
-	maskAC{[]bool{true, true, true, false, false}, 1, 2},                                                                        // 2/1
-	maskAC{[]bool{true, true, true, true, true, false, false, true}, 2, 2},                                                      // 2/2
-	maskAC{[]bool{true, true, true, true, true, true, false, true, true, true}, 3, 2},                                           // 2/3
-	maskAC{[]bool{true, true, true, true, true, true, true, true, false, true, false, false}, 4, 2},                             // 2/4
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, false, true}, 5, 2},   // 2/5
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, true, false}, 6, 2},   // 2/6
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, true, true}, 7, 2},    // 2/7
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, false, false}, 8, 2},   // 2/8
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, false, true}, 9, 2},    // 2/9
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, true, false}, 10, 2},   // 2/10
-	maskAC{[]bool{true, true, true, false, true, false}, 1, 3},                                                                  // 3/1
-	maskAC{[]bool{true, true, true, true, true, false, true, true, true}, 2, 3},                                                 // 3/2
-	maskAC{[]bool{true, true, true, true, true, true, true, true, false, true, false, true}, 3, 3},                              // 3/3
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, true, true}, 4, 3},     // 3/4
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, false, false}, 5, 3},  // 3/5
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, false, true}, 6, 3},   // 3/6
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, true, false}, 7, 3},   // 3/7
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, true, true}, 8, 3},    // 3/8
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, true, false, false}, 9, 3},   // 3/9
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, true, false, true}, 10, 3},   // 3/10
+	maskAC{[]bool{true, false, true, false}, 0, 0},
+	maskAC{[]bool{false, false}, 1, 0},
+	maskAC{[]bool{false, true}, 2, 0},
+	maskAC{[]bool{true, false, false}, 3, 0},
+	maskAC{[]bool{true, false, true, true}, 4, 0},
+	maskAC{[]bool{true, true, false, true, false}, 5, 0},
+	maskAC{[]bool{true, true, true, true, false, false, false}, 6, 0},
+	maskAC{[]bool{true, true, true, true, true, false, false, false}, 7, 0},
+	maskAC{[]bool{true, true, true, true, true, true, false, true, true, false}, 8, 0},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, false, true, false}, 9, 0},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, false, true, true}, 10, 0},
+	maskAC{[]bool{true, true, false, false}, 1, 1},
+	maskAC{[]bool{true, true, false, true, true}, 2, 1},
+	maskAC{[]bool{true, true, true, true, false, false, true}, 3, 1},
+	maskAC{[]bool{true, true, true, true, true, false, true, true, false}, 4, 1},
+	maskAC{[]bool{true, true, true, true, true, true, true, false, true, true, false}, 5, 1},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, false, false}, 6, 1},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, false, true}, 7, 1},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, true, false}, 8, 1},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, false, true, true, true}, 9, 1},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, false, false}, 10, 1},
+	maskAC{[]bool{true, true, true, false, false}, 1, 2},
+	maskAC{[]bool{true, true, true, true, true, false, false, true}, 2, 2},
+	maskAC{[]bool{true, true, true, true, true, true, false, true, true, true}, 3, 2},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, false, true, false, false}, 4, 2},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, false, true}, 5, 2},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, true, false}, 6, 2},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, false, true, true}, 7, 2},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, false, false}, 8, 2},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, false, true}, 9, 2},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, true, false}, 10, 2},
+	maskAC{[]bool{true, true, true, false, true, false}, 1, 3},
+	maskAC{[]bool{true, true, true, true, true, false, true, true, true}, 2, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, false, true, false, true}, 3, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, false, true, true, true, true}, 4, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, false, false}, 5, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, false, true}, 6, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, true, false}, 7, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, false, true, true}, 8, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, true, false, false}, 9, 3},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, true, false, true}, 10, 3},
 	maskAC{[]bool{true, true, true, false, true, true}, 1, 4},
 	maskAC{[]bool{true, true, true, true, true, true, true, false, false, false}, 2, 4},
 	maskAC{[]bool{true, true, true, true, true, true, true, true, true, false, false, true, false, true, true, false}, 3, 4},

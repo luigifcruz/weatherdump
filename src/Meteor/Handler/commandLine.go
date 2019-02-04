@@ -10,8 +10,8 @@ import (
 	"time"
 	"weather-dump/src/CCSDS"
 	"weather-dump/src/CCSDS/Frames"
+	"weather-dump/src/Meteor/BISMW"
 	"weather-dump/src/Meteor/Decoder"
-	"weather-dump/src/Meteor/Sensor"
 )
 
 const frameSize = 892
@@ -70,10 +70,12 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 
 	fmt.Printf("SCID: %d Packets Number: %d\n", scid, len(ch05.GetSpacePackets()))
 
+	bismw := BISMW.NewData(scid)
 	for _, packet := range ch05.GetSpacePackets() {
 		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
-			s := Sensor.NewSensor(packet.GetData())
-			s.Parse()
+			bismw.Parse(packet)
 		}
 	}
+
+	bismw.Process()
 }

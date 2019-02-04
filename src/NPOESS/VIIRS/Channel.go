@@ -6,7 +6,7 @@ import (
 	"weather-dump/src/NPOESS/VIIRS/viirsframes"
 )
 
-const MaxFrameCount = 8192
+const maxFrameCount = 8192
 
 type Channel struct {
 	apid       uint16
@@ -58,19 +58,19 @@ func NewFillSegment(scanNumber uint32) *Segment {
 func (e *Channel) Fix(scft NPOESS.SpacecraftParameters) {
 	e.parameters = ChannelsParameters[e.apid]
 
-	if e.end-e.start > MaxFrameCount {
+	if e.end-e.start > maxFrameCount {
 		fmt.Printf("[VIIRS] Potentially invalid channel %s was found.\n", e.parameters.ChannelName)
 		fmt.Println("	It's too long for the round earth, trying to correct...")
 
-		if (e.end - e.end - e.count) < MaxFrameCount {
+		if (e.end - e.end - e.count) < maxFrameCount {
 			e.start = e.end - e.count
 		}
 
-		if (e.start + e.count - e.start) < MaxFrameCount {
+		if (e.start + e.count - e.start) < maxFrameCount {
 			e.end = e.start + e.count
 		}
 
-		if e.end-e.start > MaxFrameCount {
+		if e.end-e.start > maxFrameCount {
 			fmt.Println("	Cannot find any valid number, skipping channel.")
 			return
 		}
