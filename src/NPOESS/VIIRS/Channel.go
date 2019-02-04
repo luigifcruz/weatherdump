@@ -3,7 +3,7 @@ package VIIRS
 import (
 	"fmt"
 	"weather-dump/src/NPOESS"
-	"weather-dump/src/NPOESS/VIIRS/VIIRSFrames"
+	"weather-dump/src/NPOESS/VIIRS/viirsframes"
 )
 
 const MaxFrameCount = 8192
@@ -36,11 +36,11 @@ func NewChannel(apid uint16) *Channel {
 }
 
 type Segment struct {
-	header *VIIRSFrames.FrameHeader
-	body   [32]VIIRSFrames.FrameBody
+	header *viirsframes.FrameHeader
+	body   [32]viirsframes.FrameBody
 }
 
-func NewSegment(header *VIIRSFrames.FrameHeader) *Segment {
+func NewSegment(header *viirsframes.FrameHeader) *Segment {
 	e := Segment{}
 	e.header = header
 	return &e
@@ -48,9 +48,9 @@ func NewSegment(header *VIIRSFrames.FrameHeader) *Segment {
 
 func NewFillSegment(scanNumber uint32) *Segment {
 	fillFrame := Segment{}
-	fillFrame.header = VIIRSFrames.NewFillFrameHeader(scanNumber)
+	fillFrame.header = viirsframes.NewFillFrameHeader(scanNumber)
 	for i := 0; i < 32; i++ {
-		fillFrame.body[i] = *VIIRSFrames.NewFillFrameBody()
+		fillFrame.body[i] = *viirsframes.NewFillFrameBody()
 	}
 	return &fillFrame
 }

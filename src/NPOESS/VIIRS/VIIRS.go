@@ -5,7 +5,7 @@ import (
 	"os"
 	"weather-dump/src/CCSDS/Frames"
 	"weather-dump/src/NPOESS"
-	"weather-dump/src/NPOESS/VIIRS/VIIRSFrames"
+	"weather-dump/src/NPOESS/VIIRS/viirsframes"
 )
 
 const firstPacket = 1
@@ -46,43 +46,53 @@ func (e Data) SaveAllChannels(outputFolder string) {
 
 func (e Data) SaveTrueColorChannel(outputFolder string) {
 	colorChannels := e.spacecraft.TrueColorChannels
-	fmt.Println("[VIIRS] Exporting True Color Channel.")
+	fmt.Println("[VIIRS] Exporting true color channel.")
+
+	ch01 := e.channelData[colorChannels[0]]
+	ch02 := e.channelData[colorChannels[1]]
+	ch03 := e.channelData[colorChannels[2]]
+
+	// Check if required channels exist.
+	if ch01 == nil || ch02 == nil || ch03 == nil {
+		fmt.Println("[VIIRS] Can't export true color channel. Not all required channels are available.")
+		return
+	}
 
 	// Synchronize all channels scans.
 	firstScan := make([]int, 3)
 	lastScan := make([]int, 3)
 
-	firstScan[0] = int(e.channelData[colorChannels[0]].start)
-	firstScan[1] = int(e.channelData[colorChannels[1]].start)
-	firstScan[2] = int(e.channelData[colorChannels[2]].start)
+	firstScan[0] = int(ch01.start)
+	firstScan[1] = int(ch02.start)
+	firstScan[2] = int(ch03.start)
 
-	lastScan[0] = int(e.channelData[colorChannels[0]].end)
-	lastScan[1] = int(e.channelData[colorChannels[1]].end)
-	lastScan[2] = int(e.channelData[colorChannels[2]].end)
+	lastScan[0] = int(ch01.end)
+	lastScan[1] = int(ch02.end)
+	lastScan[2] = int(ch03.end)
 
-	e.channelData[colorChannels[0]].end = uint32(MinIntSlice(lastScan))
-	e.channelData[colorChannels[1]].end = uint32(MinIntSlice(lastScan))
-	e.channelData[colorChannels[2]].end = uint32(MinIntSlice(lastScan))
+	ch01.end = uint32(MinIntSlice(lastScan))
+	ch02.end = uint32(MinIntSlice(lastScan))
+	ch03.end = uint32(MinIntSlice(lastScan))
 
-	e.channelData[colorChannels[0]].start = uint32(MaxIntSlice(firstScan))
-	e.channelData[colorChannels[1]].start = uint32(MaxIntSlice(firstScan))
-	e.channelData[colorChannels[2]].start = uint32(MaxIntSlice(firstScan))
+	ch01.start = uint32(MaxIntSlice(firstScan))
+	ch02.start = uint32(MaxIntSlice(firstScan))
+	ch03.start = uint32(MaxIntSlice(firstScan))
 
 	// Fix channel parameters.
 	e.Process()
 
 	// Decode all channels.
-	e.channelData[colorChannels[0]].ComposeUncoded("/tmp")
-	e.channelData[colorChannels[1]].ComposeCoded("/tmp", e.channelData[colorChannels[0]])
-	e.channelData[colorChannels[2]].ComposeCoded("/tmp", e.channelData[colorChannels[0]])
+	ch01.ComposeUncoded("/tmp")
+	e.channelData[colorChannels[1]].ComposeCoded("/tmp", ch01)
+	e.channelData[colorChannels[2]].ComposeCoded("/tmp", ch01)
 
 	// Generate the true color image.
-	ExportTrueColor(outputFolder, e.channelData[colorChannels[1]], e.channelData[colorChannels[0]], e.channelData[colorChannels[2]])
+	ExportTrueColor(outputFolder, ch02, ch01, ch03)
 
 	// Cleaning up our garbage.
-	os.Remove(fmt.Sprintf("/tmp/%s.png", e.channelData[colorChannels[0]].fileName))
-	os.Remove(fmt.Sprintf("/tmp/%s.png", e.channelData[colorChannels[1]].fileName))
-	os.Remove(fmt.Sprintf("/tmp/%s.png", e.channelData[colorChannels[2]].fileName))
+	os.Remove(fmt.Sprintf("/tmp/%s.png", ch01.fileName))
+	os.Remove(fmt.Sprintf("/tmp/%s.png", ch02.fileName))
+	os.Remove(fmt.Sprintf("/tmp/%s.png", ch03.fileName))
 }
 
 func (e *Data) Process() {
@@ -101,7 +111,7 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 			ch[apid] = NewChannel(apid)
 		}
 
-		frameHeader := VIIRSFrames.NewFrameHeader(packet.GetData())
+		frameHeader := viirsframes.NewFrameHeader(packet.GetData())
 		ch[apid].scanCount = frameHeader.GetScanNumber()
 		ch[apid].exctdCount = frameHeader.GetSequenceCount() + uint32(frameHeader.GetNumberOfSegments()) + 2
 		ch[apid].segments[ch[apid].scanCount] = NewSegment(frameHeader)
@@ -119,7 +129,7 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 	}
 
 	if ch[apid] != nil {
-		frameBody := VIIRSFrames.NewFrameBody(packet.GetData())
+		frameBody := viirsframes.NewFrameBody(packet.GetData())
 		if frameBody.GetSequenceCount() <= ch[apid].exctdCount && frameBody.GetDetectorNumber() < 32 {
 			ch[apid].segments[ch[apid].scanCount].body[frameBody.GetDetectorNumber()] = *frameBody
 		}

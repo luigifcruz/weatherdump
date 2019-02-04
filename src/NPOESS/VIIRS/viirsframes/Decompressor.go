@@ -1,4 +1,4 @@
-package VIIRSFrames
+package viirsframes
 
 /*
 #include <stdlib.h>
@@ -34,6 +34,7 @@ int decompress(char *input, char *output, int inputLen, int outputLen) {
 import "C"
 import "unsafe"
 
+// Decompress the RICE encoded data into the final 16-bits pixel slice.
 func Decompress(data []byte, inputLen int, outputLen int) ([]byte, int) {
 	var slice = make([]byte, outputLen)
 	err := C.decompress((*C.char)(unsafe.Pointer(&data[0])), (*C.char)(unsafe.Pointer(&slice[0])), C.int(inputLen), C.int(outputLen))

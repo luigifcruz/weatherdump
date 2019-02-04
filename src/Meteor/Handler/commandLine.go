@@ -73,7 +73,7 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 	for _, packet := range ch05.GetSpacePackets() {
 		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
 			s := Sensor.NewSensor(packet.GetData())
-			s.Print()
+			s.Parse()
 		}
 	}
 }

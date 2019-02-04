@@ -79,6 +79,11 @@ func NewDecoder() *Decoder {
 	e.correlator.AddWord(Datalink[id].SyncWords[2])
 	e.correlator.AddWord(Datalink[id].SyncWords[3])
 
+	e.correlator.AddWord(Datalink[id].SyncWords[4])
+	e.correlator.AddWord(Datalink[id].SyncWords[5])
+	e.correlator.AddWord(Datalink[id].SyncWords[6])
+	e.correlator.AddWord(Datalink[id].SyncWords[7])
+
 	return &e
 }
 
@@ -148,6 +153,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			pos := e.correlator.GetHighestCorrelationPosition()
 			corr := e.correlator.GetHighestCorrelation()
 
+			iqInv := (word / 4) > 0
 			switch word % 4 {
 			case 0:
 				phaseShift = SatHelper.DEG_0
@@ -182,7 +188,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 				}
 			}
 
-			e.packetFixer.FixPacket(&e.codedData[0], uint(Datalink[id].CodedFrameSize), phaseShift, false)
+			e.packetFixer.FixPacket(&e.codedData[0], uint(Datalink[id].CodedFrameSize), phaseShift, iqInv)
 
 			if uselastFrameData {
 				for i := 0; i < lastFrameDataBits; i++ {
@@ -210,10 +216,6 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			signalErrors := float32(e.viterbi.GetPercentBER())
 			signalErrors = 100 - (signalErrors * 10)
 			signalQuality := uint8(signalErrors)
-
-			if signalQuality > 100 {
-				signalQuality = 0
-			}
 
 			averageVitCorrections += float32(e.viterbi.GetBER())
 
@@ -275,6 +277,10 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 				vitBitErr = 0
 			}
 
+			if signalQuality > 100 || isCorrupted {
+				signalQuality = 0
+			}
+
 			e.Statistics.PacketNumber = uint64(counter)
 			e.Statistics.VitErrors = uint16(vitBitErr)
 			e.Statistics.FrameBits = uint16(Datalink[id].FrameBits)
@@ -322,7 +328,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			}
 
 			if e.Statistics.TotalPackets%512 == 0 {
-				fmt.Printf("\nAverage Viterbi Corrections: %d\nAverage RS Corrections: %d\nAverage Signal Quality: %d\nBytes Read: %2.2f%% (%d/%d)\nDropped Packages: %2.2f%% (%d/%d)\n",
+				fmt.Printf("\nAverage Viterbi Corrections: %d\nReed-Solomon Corrections: %d\nViterbi Signal Quality: %d\nBytes Read: %2.2f%% (%d/%d)\nDropped Packages: %2.2f%% (%d/%d)\n",
 					e.Statistics.AverageVitCorrections, e.Statistics.AverageRSCorrections, e.Statistics.SignalQuality,
 					float32(e.Statistics.TotalBytesRead)/float32(fi.Size())*100,
 					e.Statistics.TotalBytesRead, fi.Size(),

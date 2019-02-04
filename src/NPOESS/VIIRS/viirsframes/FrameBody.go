@@ -1,4 +1,4 @@
-package VIIRSFrames
+package viirsframes
 
 import (
 	"encoding/binary"
@@ -84,7 +84,6 @@ func (e FrameBody) Print() {
 	fmt.Println()
 }
 
-// Struct Validation
 func (e FrameBody) IsFillerFrame() bool {
 	return e.fillFrame
 }
@@ -93,7 +92,6 @@ func (e FrameBody) IsFillData(aggregationZone int) bool {
 	return e.detectorData[aggregationZone].GetChecksum() == 0x0008
 }
 
-// Struct Get
 func (e FrameBody) GetAggrLen() int {
 	return len(e.detectorData)
 }
@@ -117,7 +115,6 @@ func (e FrameBody) GetID() uint32 {
 	return e.sequenceCount
 }
 
-// Struct Set
 func (e *FrameBody) SetData(zone int, dat *[]byte) {
 	e.detectorData[zone].SetData(dat)
 }

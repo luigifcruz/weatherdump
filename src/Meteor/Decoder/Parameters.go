@@ -28,6 +28,7 @@ var Datalink = map[string]Parameters{
 			0xfc51793e700e6b68,
 			0xa9f7e368e558c2c1,
 			0x03ae86c18ff19497,
-			0x56081c971aa73d3e},
+			0x56081c971aa73d3e,
+		},
 	},
 }

@@ -1,4 +1,4 @@
-package VIIRSFrames
+package viirsframes
 
 import (
 	"encoding/binary"
@@ -97,12 +97,10 @@ func (e FrameHeader) Print() {
 	fmt.Println()
 }
 
-// Struct Validation
 func (e FrameHeader) IsValid() bool {
 	return !e.fillFrame
 }
 
-// Struct Get
 func (e FrameHeader) GetDateString() string {
 	return e.time.GetZulu()
 }
@@ -122,5 +120,3 @@ func (e FrameHeader) GetSequenceCount() uint32 {
 func (e FrameHeader) GetScanNumber() uint32 {
 	return e.scanNumber
 }
-
-// Struct Set

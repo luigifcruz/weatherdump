@@ -6,6 +6,9 @@ import (
 	"reflect"
 )
 
+var eob = []int{-999}
+var cfc = []int{-998}
+
 const sensorDataMinimum = 13
 
 type mcu struct {
@@ -70,50 +73,56 @@ func getValue(dat []bool) int {
 	return result
 }
 
-func findDC(dat []bool) (int, []bool) {
+func findDC(dat *[]bool) int {
+	buf := *dat
 	for _, m := range dcCategories {
 		klen := len(m.code)
-		if len(dat) < klen {
+		if len(buf) < klen {
 			continue
 		}
 
-		if reflect.DeepEqual(dat[:klen], m.code) {
-			if m.len == 0 {
-				return 0, dat[klen+m.len:]
+		if reflect.DeepEqual(buf[:klen], m.code) {
+			if len(buf) < klen+m.len {
+				break
 			}
-			return getValue(dat[klen : klen+m.len]), dat[klen+m.len:]
+			*dat = buf[klen+m.len:]
+			if m.len == 0 {
+				return 0
+			}
+			return getValue(buf[klen : klen+m.len])
 		}
 	}
-	return 0, nil
+	*dat = nil
+	return cfc[0]
 }
 
-func findAC(dat []bool) ([]int, []bool) {
+func findAC(dat *[]bool) []int {
+	buf := *dat
 	for _, m := range acCategories {
 		klen := len(m.code)
-		if len(dat) < klen {
+		if len(buf) < klen {
 			continue
 		}
 
-		if reflect.DeepEqual(dat[:klen], m.code) {
+		if reflect.DeepEqual(buf[:klen], m.code) {
 			if m.clen == 0 && m.zlen == 0 {
-				return nil, dat[klen:]
+				*dat = buf[klen:]
+				return eob
 			}
-			var vals []int
-			vals = make([]int, m.zlen+1)
-			if m.zlen == 15 && m.clen == 0 {
-				fmt.Println("Zero BOMB!!!")
-			} else {
-				if len(dat) < klen+m.clen {
-					return nil, nil
+			vals := make([]int, m.zlen+1)
+			if !(m.zlen == 15 && m.clen == 0) {
+				if len(buf) < klen+m.clen {
+					break
 				}
-
-				vals[m.zlen] = getValue(dat[klen : klen+m.clen])
+				vals[m.zlen] = getValue(buf[klen : klen+m.clen])
 			}
-
-			return vals, dat[klen+m.clen:]
+			*dat = buf[klen+m.clen:]
+			return vals
 		}
 	}
-	return nil, nil
+
+	*dat = nil
+	return cfc
 }
 
 func convertToArray(buf []byte) *[]bool {
@@ -132,7 +141,7 @@ func convertToArray(buf []byte) *[]bool {
 }
 
 func (e Sensor) Print() {
-	fmt.Println("# LRPT Sensor Frame")
+	fmt.Println("### LRPT Sensor Frame")
 	fmt.Printf("Days: %d\n", e.day)
 	fmt.Printf("Milliseconds: %d\n", e.msec)
 	fmt.Printf("Microseconds: %d\n", e.usec)
@@ -143,45 +152,34 @@ func (e Sensor) Print() {
 	fmt.Printf("Huffman Table AC: %04b\n", e.AC)
 	fmt.Printf("Quality Factor Marker: %16b\n", e.QFM)
 	fmt.Printf("Quality Factor: %08b\n", e.QF)
-	fmt.Println()
+}
 
+func (e *Sensor) Parse() {
 	fmt.Printf("[JPEG] Packet size %d\n", len(e.payload))
-	g := convertToArray(e.payload)
+	buf := convertToArray(e.payload)
 
-	chunks, mcus := 0, 0
-
-	for {
-		val, buf := findDC(*g)
-		if len(buf) == 0 {
+	for mculen := 0; mculen < 14; mculen++ {
+		val := findDC(buf)
+		if val == cfc[0] {
 			fmt.Println("[JPEG] Invalid DC value, frame can't be restored.")
 			return
 		}
-		chunks++
 
-		for {
-			var vals []int
-			vals, buf = findAC(buf)
+		for chunks := 0; chunks < 62; {
+			vals := findAC(buf)
 			chunks += len(vals)
 
-			if len(buf) == 0 {
+			if vals[0] == cfc[0] {
 				fmt.Println("[JPEG] Invalid AC value, frame can't be restored.")
 				return
 			}
-			if len(vals) == 0 {
-				fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", chunks, mcus, len(*g), val)
-				g = &buf
+			if vals[0] == eob[0] {
+				fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", chunks+1, mculen, len(*buf), val)
 				break
 			}
 		}
-
-		if mcus == 13 {
-			break
-		}
-
-		mcus++
-		chunks = 0
 	}
 
-	fmt.Println(len(*g))
-	fmt.Println(*g)
+	fmt.Println(len(*buf))
+	//os.Exit(0)
 }

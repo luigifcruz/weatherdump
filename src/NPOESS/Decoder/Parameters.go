@@ -8,7 +8,7 @@ type Parameters struct {
 	SyncWordSize       int
 	RsParityBlockSize  int
 	RsBlocks           int
-	SyncWords          [4]uint64
+	SyncWords          [8]uint64
 }
 
 var Datalink = map[string]Parameters{
@@ -20,10 +20,15 @@ var Datalink = map[string]Parameters{
 		SyncWordSize:       4,
 		RsParityBlockSize:  (32 * 4),
 		RsBlocks:           4,
-		SyncWords: [4]uint64{
+		SyncWords: [8]uint64{
 			0xfc4ef4fd0cc2df89,
 			0x56275254a66b45ec,
 			0x03b10b02f33d2076,
-			0xa9d8adab5994ba89},
+			0xa9d8adab5994ba89,
+			0xfc8df8fe0cc1ef46,
+			0xa91ba1a859978adc,
+			0x03720701f33e1089,
+			0x56e45e57a6687546,
+		},
 	},
 }

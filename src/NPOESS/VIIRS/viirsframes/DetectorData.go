@@ -1,4 +1,4 @@
-package VIIRSFrames
+package viirsframes
 
 import (
 	"encoding/binary"
@@ -23,6 +23,7 @@ func NewDetectorData() *DetectorData {
 	return &DetectorData{}
 }
 
+// FromBinary parses the binary data into the dectector struct.
 func (e *DetectorData) FromBinary(buf *[]byte) {
 	if len(*buf) < detectorDataMinimum {
 		return
@@ -34,7 +35,7 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 
 	cso := e.checksumOffset
 
-	if int(cso) >= len(dat)+4 || cso == 0 {
+	if int(cso) >= len(dat)+4 || cso < 4 {
 		return
 	}
 
@@ -50,6 +51,7 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 	}
 }
 
+// Print the values contained inside the detector struct into stdout.
 func (e DetectorData) Print() {
 	fmt.Println("### VIIRS Aggregator")
 	fmt.Printf("Fill Data: %08b\n", e.fillData)
@@ -60,12 +62,12 @@ func (e DetectorData) Print() {
 	fmt.Println()
 }
 
-// Struct Validation
-// Struct Get
+// GetChecksum value from the detector struct.
 func (e DetectorData) GetChecksum() uint16 {
 	return e.checksumOffset
 }
 
+// GetData from the current detector.
 func (e DetectorData) GetData(syncwork uint32, width int, oversample int, getBuf bool) []byte {
 	if len(e.diffBuf) > 0 && getBuf {
 		return e.diffBuf
@@ -109,13 +111,12 @@ func (e DetectorData) GetData(syncwork uint32, width int, oversample int, getBuf
 	return make([]byte, width*2)
 }
 
-// Struct Set
+// SetData updates the data inside the detector.
 func (e *DetectorData) SetData(dat *[]byte) {
 	e.diffBuf = make([]byte, len(*dat))
 	copy(e.diffBuf, *dat)
 }
 
-// Struct Tools
 func bitSlicer(dat *[]byte, size int) {
 	buf := *dat
 	bits, bytes := 0, 0
