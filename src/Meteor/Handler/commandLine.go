@@ -72,7 +72,7 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 
 	bismw := BISMW.NewData(scid)
 	for _, packet := range ch05.GetSpacePackets() {
-		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
+		if packet.GetAPID() == 64 { //&& packet.GetAPID() <= 69 {
 			bismw.Parse(packet)
 		}
 	}

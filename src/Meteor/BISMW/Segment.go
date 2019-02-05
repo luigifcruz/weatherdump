@@ -23,6 +23,7 @@ type Segment struct {
 	payload []byte
 
 	mcus  [14][]int
+	final [14][64]byte
 	valid bool
 }
 
@@ -151,6 +152,28 @@ func (e Segment) Print() {
 	e.time.Print()
 }
 
+var qTable = [64]int{
+	16, 11, 10, 16, 24, 40, 51, 61,
+	12, 12, 14, 19, 26, 58, 60, 55,
+	14, 13, 16, 24, 40, 57, 69, 56,
+	14, 17, 22, 29, 51, 87, 80, 62,
+	18, 22, 37, 56, 68, 109, 103, 77,
+	24, 35, 55, 64, 81, 104, 113, 92,
+	49, 64, 78, 87, 103, 121, 120, 101,
+	72, 92, 95, 98, 112, 100, 103, 99,
+}
+
+var zigzag = [64]int{
+	0, 1, 5, 6, 14, 15, 27, 28,
+	2, 4, 7, 13, 16, 26, 29, 42,
+	3, 8, 12, 17, 25, 30, 41, 43,
+	9, 11, 18, 24, 31, 40, 44, 53,
+	10, 19, 23, 32, 39, 45, 52, 54,
+	20, 22, 33, 38, 46, 51, 55, 60,
+	21, 34, 37, 47, 50, 56, 59, 61,
+	35, 36, 48, 49, 57, 58, 62, 63,
+}
+
 func (e *Segment) Parse() {
 	buf := convertToArray(e.payload)
 	for i := 0; i < 14; i++ {
@@ -160,7 +183,11 @@ func (e *Segment) Parse() {
 			return
 		}
 
-		e.mcus[i] = []int{val}
+		if i == 0 {
+			e.mcus[i] = []int{val}
+		} else {
+			e.mcus[i] = []int{val + e.mcus[i-1][0]}
+		}
 
 		for j := 0; j < 63; {
 			vals := findAC(buf)
@@ -171,7 +198,7 @@ func (e *Segment) Parse() {
 				return
 			}
 			if vals[0] == eob[0] {
-				fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", j+1, i, len(*buf), val)
+				//fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d %d\n", j+1, i, len(*buf), e.mcus[i][0], val)
 				break
 			} else {
 				e.mcus[i] = append(e.mcus[i], vals...)
@@ -189,4 +216,65 @@ func (e *Segment) Parse() {
 	if len(*buf) > 16 {
 		fmt.Println("[JPEG] Invalid number of remaining bits.")
 	}
+
+	for y := 0; y < 14; y++ {
+		for x := 0; x < 64; x++ {
+			e.mcus[y][x] = e.mcus[y][zigzag[x]]
+
+			f := (200 - 2*float32(e.QF)) / 100.0
+			if (e.QF > 20) && (e.QF < 50) {
+				f = (5000 / float32(e.QF)) / 100.0
+			}
+
+			quantizationValue := int(float32(qTable[x]) * f)
+			if quantizationValue != 0 {
+				e.mcus[y][x] *= quantizationValue
+			}
+		}
+
+		buf := [64]int{}
+		copy(buf[:], e.mcus[y])
+		Meteor.Idct(&buf)
+		copy(e.mcus[y], buf[:])
+
+		for x := 0; x < 64; x++ {
+			e.final[y][x] = byte(e.mcus[y][x] + 128)
+		}
+	}
+	/*
+		name := fmt.Sprintf("./out_%d.jpeg", t)
+		output, err := os.Create(name)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer output.Close()
+
+		img := [64 * 14]byte{}
+		o := 0
+		for y := 0; y < 8; y++ {
+			for x := 0; x < 112; x++ {
+				//fmt.Println(o, x/8, y*8+x-((x/8)*8))
+				img[o] = e.final[x/8][y*8+x-((x/8)*8)]
+				o++
+			}
+		}
+
+		s := image.NewGray(image.Rect(0, 0, 112, 8))
+		s.Pix = img[:]
+		jpeg.Encode(output, s, nil)
+	*/
+}
+
+func (e Segment) ExportSegment() [64 * 14]byte {
+	img := [64 * 14]byte{}
+	o := 0
+	for y := 0; y < 8; y++ {
+		for x := 0; x < 112; x++ {
+			//fmt.Println(o, x/8, y*8+x-((x/8)*8))
+			img[o] = e.final[x/8][y*8+x-((x/8)*8)]
+			o++
+		}
+	}
+	return img
 }

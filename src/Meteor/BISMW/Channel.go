@@ -1,6 +1,10 @@
 package BISMW
 
 import (
+	"fmt"
+	"image"
+	"image/jpeg"
+	"os"
 	"weather-dump/src/Meteor"
 )
 
@@ -35,4 +39,20 @@ func (e *Channel) Fix() {
 	//e.fileName = fmt.Sprintf("%s_%s_BISMW_%s_%s", scft.Filename, scft.SignalName, e.parameters.ChannelName, e.startTime.GetZulu())
 	e.height = e.count * uint32(e.parameters.SegmentHeight) / 14
 	e.width = e.parameters.FinalProductWidth
+
+	var final []byte
+	for i := uint32(0); i < e.count; i++ {
+		buf := e.lines[i].ExportLine()
+		final = append(final, buf[:]...)
+	}
+	name := fmt.Sprintf("./out.jpeg")
+	output, err := os.Create(name)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer output.Close()
+	fmt.Println(len(final))
+	s := image.NewGray(image.Rect(0, 0, 1568, len(final)/1568/14))
+	s.Pix = final
+	jpeg.Encode(output, s, nil)
 }

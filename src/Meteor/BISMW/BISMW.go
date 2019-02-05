@@ -36,9 +36,7 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 
 		for {
 			if frameCount-ch[apid].lastFrame > 30 && frameCount-ch[apid].lastFrame < 16350 {
-				if ch[apid].lines[ch[apid].count] == nil {
-					ch[apid].lines[ch[apid].count] = NewLine()
-				}
+				ch[apid].lines[ch[apid].count] = NewLine()
 				ch[apid].lastFrame += 14
 				ch[apid].count++
 				//fmt.Println(frameCount, ch[apid].lastFrame, frameCount-ch[apid].lastFrame, "Add filler...")
@@ -53,7 +51,7 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 		}
 
 		segment := NewSegment(packet.GetData())
-		ch[apid].lines[ch[apid].count].segments[segment.GetMCUNumber()] = segment
+		ch[apid].lines[ch[apid].count/14].segments[segment.GetMCUNumber()/14] = segment
 
 		ch[apid].lastFrame = frameCount
 		ch[apid].count++
