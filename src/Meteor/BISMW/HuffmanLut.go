@@ -179,7 +179,7 @@ var acCategories = [162]maskAC{
 	maskAC{[]bool{true, true, true, true, true, true, true, true, true, true, true, true, false, false, true, true}, 9, 14},
 	maskAC{[]bool{true, true, true, true, true, true, true, true, true, true, true, true, false, true, false, false}, 10, 14},
 	maskAC{[]bool{true, true, true, true, true, true, true, true, false, false, true}, 0, 15},
-	maskAC{[]bool{true, true, true, true, true, true, true, true, true, true, true, true, false, true, false, true}, 2, 15},
+	maskAC{[]bool{true, true, true, true, true, true, true, true, true, true, true, true, false, true, false, true}, 1, 15},
 	maskAC{[]bool{true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, false}, 2, 15},
 	maskAC{[]bool{true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, true}, 3, 15},
 	maskAC{[]bool{true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false}, 4, 15},

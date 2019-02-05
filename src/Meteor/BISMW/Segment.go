@@ -21,7 +21,9 @@ type Segment struct {
 	QFM     uint16
 	QF      uint8
 	payload []byte
-	mcus    [14][]int
+
+	mcus  [14][]int
+	valid bool
 }
 
 func NewSegment(buf []byte) *Segment {
@@ -150,9 +152,7 @@ func (e Segment) Print() {
 }
 
 func (e *Segment) Parse() {
-	fmt.Printf("[JPEG] Packet size %d\n", len(e.payload))
 	buf := convertToArray(e.payload)
-
 	for i := 0; i < 14; i++ {
 		val := findDC(buf)
 		if val == cfc[0] {
@@ -162,7 +162,7 @@ func (e *Segment) Parse() {
 
 		e.mcus[i] = []int{val}
 
-		for j := 0; j < 62; {
+		for j := 0; j < 63; {
 			vals := findAC(buf)
 			j += len(vals)
 
@@ -171,7 +171,7 @@ func (e *Segment) Parse() {
 				return
 			}
 			if vals[0] == eob[0] {
-				//fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", j+1, i, len(*buf), val)
+				fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d\n", j+1, i, len(*buf), val)
 				break
 			} else {
 				e.mcus[i] = append(e.mcus[i], vals...)
@@ -179,13 +179,14 @@ func (e *Segment) Parse() {
 		}
 
 		if len(e.mcus[i]) > 64 {
-			fmt.Println("WTF = ", len(*buf))
+			fmt.Println("[JPEG] Invalid number of blocks.")
 			return
 		}
 
 		e.mcus[i] = append(e.mcus[i], make([]int, 64-len(e.mcus[i]))...)
 	}
 
-	fmt.Println(len(*buf))
-	//os.Exit(0)
+	if len(*buf) > 16 {
+		fmt.Println("[JPEG] Invalid number of remaining bits.")
+	}
 }
