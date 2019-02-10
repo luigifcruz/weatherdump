@@ -68,14 +68,13 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 		}
 	}
 
-	fmt.Printf("SCID: %d Packets Number: %d\n", scid, len(ch05.GetSpacePackets()))
-
 	bismw := BISMW.NewData(scid)
 	for _, packet := range ch05.GetSpacePackets() {
-		if packet.GetAPID() == 64 { //&& packet.GetAPID() <= 69 {
+		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
 			bismw.Parse(packet)
 		}
 	}
 
 	bismw.Process()
+	bismw.Export(outputFolder)
 }

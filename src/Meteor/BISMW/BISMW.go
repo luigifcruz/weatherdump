@@ -3,22 +3,32 @@ package BISMW
 import (
 	"fmt"
 	"weather-dump/src/CCSDS/Frames"
+	"weather-dump/src/Meteor"
 )
 
 type Data struct {
 	channelData map[uint16]*Channel
+	spacecraft  Meteor.SpacecraftParameters
 }
 
 func NewData(scid uint8) *Data {
 	e := Data{}
 	e.channelData = make(map[uint16]*Channel)
+	e.spacecraft = Meteor.Spacecrafts[scid]
 	return &e
 }
 
 func (e *Data) Process() {
 	fmt.Println("[BISMW] Processing BISMW channels data...")
 	for _, channel := range e.channelData {
-		channel.Fix()
+		channel.Fix(e.spacecraft)
+	}
+}
+
+func (e *Data) Export(outputFolder string) {
+	fmt.Println("[BISMW] Exporting BISMW channels products...")
+	for _, channel := range e.channelData {
+		channel.Export(outputFolder)
 	}
 }
 
@@ -39,9 +49,7 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 				ch[apid].lines[ch[apid].count] = NewLine()
 				ch[apid].lastFrame += 14
 				ch[apid].count++
-				//fmt.Println(frameCount, ch[apid].lastFrame, frameCount-ch[apid].lastFrame, "Add filler...")
 			} else {
-				//fmt.Println(frameCount, ch[apid].lastFrame, frameCount-ch[apid].lastFrame, "Pass.")
 				break
 			}
 		}
