@@ -58,9 +58,7 @@ func (e *Data) Parse(packet Frames.SpacePacketFrame) {
 			ch[apid].lines[ch[apid].count] = NewLine()
 		}
 
-		segment := NewSegment(packet.GetData())
-		ch[apid].lines[ch[apid].count/14].segments[segment.GetMCUNumber()/14] = segment
-
+		ch[apid].lines[ch[apid].count/14].AddMCU(packet.GetData())
 		ch[apid].lastFrame = frameCount
 		ch[apid].count++
 		return

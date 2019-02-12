@@ -9,24 +9,24 @@ var cosine [8][8]float64
 var alpha [8]float64
 
 func initCos() {
-	for y := 0; y <= 7; y++ {
-		for x := 0; x <= 7; x++ {
+	for y := 0; y < 8; y++ {
+		for x := 0; x < 8; x++ {
 			cosine[y][x] = math.Cos(math.Pi / 16.0 * (2.0*float64(y) + 1.0) * float64(x))
 		}
 	}
 
 	alpha[0] = 1.0 / math.Sqrt(2.0)
-	for x := 1; x <= 7; x++ {
+	for x := 1; x < 8; x++ {
 		alpha[x] = 1.0
 	}
 }
 
 func calculateIdct(res, inpt *[64]float64) {
 	initCos()
-	for y := 0; y <= 7; y++ {
-		for x := 0; x <= 7; x++ {
+	for y := 0; y < 8; y++ {
+		for x := 0; x < 8; x++ {
 			var s float64
-			for u := 0; u <= 7; u++ {
+			for u := 0; u < 8; u++ {
 				coeff := inpt[0*8+u] * alpha[0] * cosine[y][0]
 				coeff += inpt[1*8+u] * alpha[1] * cosine[y][1]
 				coeff += inpt[2*8+u] * alpha[2] * cosine[y][2]

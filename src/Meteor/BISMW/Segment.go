@@ -17,7 +17,7 @@ type Segment struct {
 	QFM     uint16
 	QF      uint8
 	payload []byte
-	mcus    [14][64]int
+	mcus    [14][64]float64
 	export  [14][64]byte
 }
 
@@ -25,7 +25,7 @@ func NewSegment(buf []byte) *Segment {
 	e := Segment{}
 	e.FromBinary(buf)
 	e.HuffmanDecode()
-	e.JPEGDecode()
+	e.Dequantize()
 	e.RenderSegment()
 	return &e
 }
@@ -72,7 +72,7 @@ func (e *Segment) HuffmanDecode() {
 			return
 		}
 
-		tmp := []int{val}
+		tmp := []float64{val}
 		if i != 0 {
 			tmp[0] += e.mcus[i-1][0]
 		}
@@ -98,18 +98,18 @@ func (e *Segment) HuffmanDecode() {
 			return
 		}
 
-		tmp = append(tmp, make([]int, 64-len(tmp))...)
+		tmp = append(tmp, make([]float64, 64-len(tmp))...)
 		copy(e.mcus[i][:], tmp[:])
 	}
 }
 
-func (e *Segment) JPEGDecode() {
-	quantizationTable := getQuantizationTable(float32(e.QF))
+func (e *Segment) Dequantize() {
+	quantizationTable := getQuantizationTable(float64(e.QF))
 
 	for y := 0; y < 14; y++ {
 		var input, output [64]float64
 		for x := 0; x < 64; x++ {
-			input[x] = float64(e.mcus[y][zigzag[x]]) * quantizationTable[x]
+			input[x] = e.mcus[y][zigzag[x]] * quantizationTable[x]
 		}
 
 		calculateIdct(&output, &input)
@@ -133,8 +133,7 @@ func (e Segment) RenderSegment() []byte {
 	o := 0
 	for y := 0; y < 8; y++ {
 		for x := 0; x < 112; x++ {
-			//fmt.Println(o, x/8, y*8+x-((x/8)*8))
-			buf[o] = byte(e.export[x/8][y*8+x-((x/8)*8)])
+			buf[o] = byte(e.export[x/8][y*8+x-(x/8*8)])
 			o++
 		}
 	}

@@ -12,6 +12,11 @@ func NewLine() *Line {
 	return &e
 }
 
+func (e *Line) AddMCU(dat []byte) {
+	segment := NewSegment(dat)
+	e.segments[segment.GetMCUNumber()/14] = segment
+}
+
 func (e Line) RenderLine() []byte {
 	var buf = make([]byte, 64*14*14)
 
@@ -22,9 +27,8 @@ func (e Line) RenderLine() []byte {
 				filler := [64 * 14 * 14]byte{}
 				return filler[:]
 			}
-			//fmt.Println(uint8(x/112), o, y*112+x-((x/112)*112))
 			segment := e.segments[uint8(x/112)].RenderSegment()
-			buf[o] = segment[y*112+x-((x/112)*112)]
+			buf[o] = segment[y*112+x-(x/112*112)]
 			o++
 		}
 	}

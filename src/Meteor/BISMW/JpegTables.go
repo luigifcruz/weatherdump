@@ -1,6 +1,6 @@
 package BISMW
 
-var qTable = [64]int{
+var qTable = [64]float64{
 	16, 11, 10, 16, 24, 40, 51, 61,
 	12, 12, 14, 19, 26, 58, 60, 55,
 	14, 13, 16, 24, 40, 57, 69, 56,
@@ -22,17 +22,17 @@ var zigzag = [64]int{
 	35, 36, 48, 49, 57, 58, 62, 63,
 }
 
-func getQuantizationTable(qf float32) []float64 {
+func getQuantizationTable(qf float64) []float64 {
 	var table [64]float64
 	var f float64
 	if (qf > 20) && (qf < 50) {
-		f = 5000 / float64(qf)
+		f = 5000 / qf
 	}
 	if (qf > 50) && (qf < 100) {
-		f = 200 - (2 * float64(qf))
+		f = 200 - 2*qf
 	}
 	for x := 0; x < 64; x++ {
-		table[x] = f * float64(qTable[x]) / 100.0
+		table[x] = f / 100.0 * qTable[x]
 		if table[x] < 1 {
 			table[x] = 1
 		}

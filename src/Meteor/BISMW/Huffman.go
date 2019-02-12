@@ -4,15 +4,15 @@ import (
 	"reflect"
 )
 
-var eob = []int{-999}
-var cfc = []int{-998}
+var eob = []float64{-999}
+var cfc = []float64{-998}
 
-func getValue(dat []bool) int {
+func getValue(dat []bool) float64 {
 	if len(dat) == 0 {
 		return 0
 	}
 
-	var result int
+	var result int64
 	for i := 1; i < len(dat); i++ {
 		if dat[i] {
 			result = result | 0x01<<uint(len(dat)-1-i)
@@ -23,10 +23,10 @@ func getValue(dat []bool) int {
 		result *= -1
 	}
 
-	return result
+	return float64(result)
 }
 
-func findDC(dat *[]bool) int {
+func findDC(dat *[]bool) float64 {
 	buf := *dat
 	for _, m := range dcCategories {
 		klen := len(m.code)
@@ -49,7 +49,7 @@ func findDC(dat *[]bool) int {
 	return cfc[0]
 }
 
-func findAC(dat *[]bool) []int {
+func findAC(dat *[]bool) []float64 {
 	buf := *dat
 	for _, m := range acCategories {
 		klen := len(m.code)
@@ -62,7 +62,7 @@ func findAC(dat *[]bool) []int {
 				*dat = buf[klen:]
 				return eob
 			}
-			vals := make([]int, m.zlen+1)
+			vals := make([]float64, m.zlen+1)
 			if !(m.zlen == 15 && m.clen == 0) {
 				if len(buf) < klen+m.clen {
 					break
