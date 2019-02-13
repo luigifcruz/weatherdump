@@ -2,7 +2,10 @@ package VIIRS
 
 import (
 	"fmt"
+	"image"
+	"image/png"
 	"os"
+	"path/filepath"
 	"weather-dump/src/CCSDS/Frames"
 	"weather-dump/src/NPOESS"
 	"weather-dump/src/NPOESS/VIIRS/viirsframes"
@@ -29,13 +32,18 @@ func (e Data) SaveAllChannels(outputFolder string) {
 			continue
 		}
 
+		var buf []byte
 		reconChannel := e.channelData[i].parameters.ReconstructionBand
 		if reconChannel == 000 {
-			e.channelData[i].ComposeUncoded(outputFolder)
+			e.channelData[i].ComposeUncoded(&buf)
 		} else {
 			if e.channelData[reconChannel] != nil {
-				e.channelData[i].ComposeCoded(outputFolder, e.channelData[reconChannel])
+				e.channelData[i].ComposeCoded(&buf, e.channelData[reconChannel])
 			}
+		}
+		if buf != nil {
+			ProcessImage(&buf, *e.channelData[i])
+			ExportGrayscale(&buf, *e.channelData[i], outputFolder)
 		}
 	}
 }
@@ -77,18 +85,60 @@ func (e Data) SaveTrueColorChannel(outputFolder string) {
 	// Fix channel parameters.
 	e.Process()
 
-	// Decode all channels.
-	ch01.ComposeUncoded("/tmp")
-	e.channelData[colorChannels[1]].ComposeCoded("/tmp", ch01)
-	e.channelData[colorChannels[2]].ComposeCoded("/tmp", ch01)
+	// Create output image struct.
+	img := image.NewRGBA64(image.Rect(0, 0, int(ch01.width), int(ch01.height)))
+	bufferSize := int(ch01.width*ch01.height) * 8
+	finalImage := make([]byte, bufferSize)
 
-	// Generate the true color image.
-	ExportTrueColor(outputFolder, ch02, ch01, ch03)
+	for p := 6; p < bufferSize; p += 8 {
+		finalImage[p+0] = 0xFF
+		finalImage[p+1] = 0xFF
+	}
 
-	// Cleaning up our garbage.
-	os.Remove(fmt.Sprintf("/tmp/%s.png", ch01.fileName))
-	os.Remove(fmt.Sprintf("/tmp/%s.png", ch02.fileName))
-	os.Remove(fmt.Sprintf("/tmp/%s.png", ch03.fileName))
+	// Compose images and fill buffer.
+	var buf []byte
+	ref := 0
+
+	ch01.ComposeUncoded(&buf)
+	ProcessImage(&buf, *ch01)
+
+	for p := 2; p < bufferSize; p += 8 {
+		finalImage[p+0] = buf[ref]
+		finalImage[p+1] = buf[ref]
+		ref += 2
+	}
+
+	buf = nil
+	ref = 0
+	e.channelData[colorChannels[1]].ComposeCoded(&buf, ch01)
+	ProcessImage(&buf, *ch02)
+
+	for p := 0; p < bufferSize; p += 8 {
+		finalImage[p+0] = buf[ref]
+		finalImage[p+1] = buf[ref]
+		ref += 2
+	}
+
+	buf = nil
+	ref = 0
+	e.channelData[colorChannels[2]].ComposeCoded(&buf, ch01)
+	ProcessImage(&buf, *ch03)
+
+	for p := 4; p < bufferSize; p += 8 {
+		finalImage[p+0] = buf[ref]
+		finalImage[p+1] = buf[ref]
+		ref += 2
+	}
+
+	// Render and save the true-color image.
+	img.Pix = finalImage
+	outputName, _ := filepath.Abs(fmt.Sprintf("%s/TRUECOLOR_VIIRS_%s.png", outputFolder, ch01.endTime.GetZulu()))
+	outputFile, err := os.Create(outputName)
+	if err != nil {
+		fmt.Println("[EXPORT] Error saving final image...")
+	}
+	png.Encode(outputFile, img)
+	outputFile.Close()
 }
 
 func (e *Data) Process() {

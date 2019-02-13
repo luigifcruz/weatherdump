@@ -91,62 +91,60 @@ func (e *Channel) Fix(scft NPOESS.SpacecraftParameters) {
 	e.width = e.parameters.FinalProductWidth
 }
 
-func (e Channel) ComposeUncoded(outputFolder string) {
-	var buf []byte
-
+func (e Channel) ComposeUncoded(buf *[]byte) {
 	fmt.Printf("[VIIRS] Rendering Uncoded Channel %s\n", e.parameters.ChannelName)
 
-	if len(e.segments) > 0 {
-		for x := e.end; x >= e.start; x-- {
-			packet := e.segments[x]
-			for i := 0; i < e.parameters.AggregationZoneHeight; i++ {
-				for j, segment := range e.parameters.AggregationZoneWidth {
-					oversampleSize := e.parameters.OversampleZone[j]
-					buf = append(buf, packet.body[i].GetData(j, segment, oversampleSize, false)...)
-				}
+	if !(len(e.segments) > 0) {
+		buf = nil
+		return
+	}
+
+	for x := e.end; x >= e.start; x-- {
+		packet := e.segments[x]
+		for i := 0; i < e.parameters.AggregationZoneHeight; i++ {
+			for j, segment := range e.parameters.AggregationZoneWidth {
+				oversampleSize := e.parameters.OversampleZone[j]
+				*buf = append(*buf, packet.body[i].GetData(j, segment, oversampleSize, false)...)
 			}
 		}
-
-		ExportGrayscale(buf, e, outputFolder)
 	}
 }
 
-func (e *Channel) ComposeCoded(outputFolder string, r *Channel) {
-	var buf []byte
-
+func (e *Channel) ComposeCoded(buf *[]byte, r *Channel) {
 	decFactor := map[bool]int{false: 2, true: 1}
 	bandComp := []rune(e.parameters.ChannelName)[0] == []rune(ChannelsParameters[e.parameters.ReconstructionBand].ChannelName)[0]
 
 	fmt.Printf("[VIIRS] Rendering Coded Channel %s with reconstruction channel %s\n",
 		e.parameters.ChannelName, ChannelsParameters[e.parameters.ReconstructionBand].ChannelName)
 
-	if len(e.segments) > 0 && len(r.segments) > 0 {
-		for x := e.end; x >= e.start; x-- {
-			packet := e.segments[x]
-			for i := 0; i < e.parameters.AggregationZoneHeight; i++ {
-				for j, segment := range e.parameters.AggregationZoneWidth {
-					if r.segments[x] != nil && !packet.body[i].IsFillerFrame() && !r.segments[x].body[i/decFactor[bandComp]].IsFillerFrame() {
-						var image []uint16
+	if !(len(e.segments) > 0 && len(r.segments) > 0) {
+		buf = nil
+		return
+	}
 
-						baseData := packet.body[i].GetData(j, segment, e.parameters.OversampleZone[j], false)
-						reconData := r.segments[x].body[i/decFactor[bandComp]].GetData(j, segment, e.parameters.OversampleZone[j], true)
-						reconPixel := ConvertToU16(reconData)
+	for x := e.end; x >= e.start; x-- {
+		packet := e.segments[x]
+		for i := 0; i < e.parameters.AggregationZoneHeight; i++ {
+			for j, segment := range e.parameters.AggregationZoneWidth {
+				if r.segments[x] != nil && !packet.body[i].IsFillerFrame() && !r.segments[x].body[i/decFactor[bandComp]].IsFillerFrame() {
+					var image []uint16
 
-						for y, basePixel := range ConvertToU16(baseData) {
-							pixel := int16(basePixel) + int16(reconPixel[y/decFactor[bandComp]]) - int16(16383)
-							image = append(image, uint16(pixel))
-						}
+					baseData := packet.body[i].GetData(j, segment, e.parameters.OversampleZone[j], false)
+					reconData := r.segments[x].body[i/decFactor[bandComp]].GetData(j, segment, e.parameters.OversampleZone[j], true)
+					reconPixel := ConvertToU16(reconData)
 
-						diffImage := ConvertToByte(image)
-						e.segments[x].body[i].SetData(j, &diffImage)
-						buf = append(buf, diffImage...)
-					} else {
-						buf = append(buf, make([]byte, segment*2)...)
+					for y, basePixel := range ConvertToU16(baseData) {
+						pixel := int16(basePixel) + int16(reconPixel[y/decFactor[bandComp]]) - int16(16383)
+						image = append(image, uint16(pixel))
 					}
+
+					diffImage := ConvertToByte(image)
+					e.segments[x].body[i].SetData(j, &diffImage)
+					*buf = append(*buf, diffImage...)
+				} else {
+					*buf = append(*buf, make([]byte, segment*2)...)
 				}
 			}
 		}
-
-		ExportGrayscale(buf, *e, outputFolder)
 	}
 }
