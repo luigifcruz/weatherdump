@@ -9,7 +9,6 @@ import (
 	NPOESSHandler "weather-dump/src/NPOESS/Handler"
 
 	"github.com/urfave/cli"
-	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 const frameSize = 892
@@ -24,9 +23,6 @@ func settingsPrint(inputFormat string, outputPath string, datalinkName string) {
 }
 
 func main() {
-	imagick.Initialize()
-	defer imagick.Terminate()
-
 	var outputFolder string
 	var inputFormat string
 

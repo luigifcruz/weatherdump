@@ -6,6 +6,7 @@ import (
 	"image/png"
 	"os"
 	"weather-dump/src/Meteor"
+	"weather-dump/src/imagery"
 )
 
 const maxFrameCount = 8192
@@ -40,6 +41,10 @@ func (e *Channel) Export(outputFolder string) {
 		line := e.lines[i].RenderLine()
 		buf = append(buf, line[:]...)
 	}
+	imagery.HistogramEqualizationU8(&buf)
+	if e.parameters.Inversion {
+		imagery.PixelInversionU8(&buf)
+	}
 	output, _ := os.Create(fmt.Sprintf("%s/%s.png", outputFolder, e.fileName))
 	defer output.Close()
 	s := image.NewGray(image.Rect(0, 0, int(e.width), int(e.height)))
@@ -53,6 +58,6 @@ func (e *Channel) Fix(scft Meteor.SpacecraftParameters) {
 	e.startTime = e.lines[0].GetDate()
 	e.endTime = e.lines[e.count/14].GetDate()
 	e.fileName = fmt.Sprintf("%s_%s_BISMW_%s_%d", scft.Filename, scft.SignalName, e.parameters.ChannelName, e.startTime.GetMilliseconds())
-	e.height = e.count * uint32(e.parameters.SegmentHeight) / 14
-	e.width = e.parameters.FinalProductWidth
+	e.height = e.count * uint32(e.parameters.BlockDim) / 14
+	e.width = e.parameters.FinalWidth
 }

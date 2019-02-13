@@ -24,11 +24,10 @@ type Segment struct {
 func NewSegment(buf []byte) *Segment {
 	e := Segment{}
 	e.FromBinary(buf)
-	valid := e.HuffmanDecode()
+	valid := e.huffmanDecode()
 	if valid {
-		e.Dequantize()
+		e.dequantize()
 	}
-	e.RenderSegment()
 	return &e
 }
 
@@ -52,6 +51,10 @@ func (e Segment) GetMCUNumber() uint8 {
 	return e.MCUN
 }
 
+func (e Segment) GetDate() Meteor.Time {
+	return e.time
+}
+
 func (e Segment) Print() {
 	fmt.Println("### LRPT Segment Frame")
 	fmt.Printf("MCU Number: %d\n", e.MCUN)
@@ -64,7 +67,19 @@ func (e Segment) Print() {
 	e.time.Print()
 }
 
-func (e *Segment) HuffmanDecode() bool {
+func (e Segment) RenderSegment() []byte {
+	var buf = make([]byte, 64*14)
+	o := 0
+	for y := 0; y < 8; y++ {
+		for x := 0; x < 112; x++ {
+			buf[o] = e.export[x/8][(y*8)+(x%8)]
+			o++
+		}
+	}
+	return buf
+}
+
+func (e *Segment) huffmanDecode() bool {
 	buf := convertToArray(e.payload)
 	lastDC := 0.0
 
@@ -104,7 +119,7 @@ func (e *Segment) HuffmanDecode() bool {
 	return true
 }
 
-func (e *Segment) Dequantize() {
+func (e *Segment) dequantize() {
 	quantizationTable := getQuantizationTable(float64(e.QF))
 
 	for y := 0; y < 14; y++ {
@@ -128,20 +143,4 @@ func (e *Segment) Dequantize() {
 			e.export[y][x] = uint8(normalizedPixel)
 		}
 	}
-}
-
-func (e Segment) RenderSegment() []byte {
-	var buf = make([]byte, 64*14)
-	o := 0
-	for y := 0; y < 8; y++ {
-		for x := 0; x < 112; x++ {
-			buf[o] = e.export[x/8][(y*8)+(x%8)]
-			o++
-		}
-	}
-	return buf
-}
-
-func (e Segment) GetDate() Meteor.Time {
-	return e.time
 }

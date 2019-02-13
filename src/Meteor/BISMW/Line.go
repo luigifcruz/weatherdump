@@ -28,6 +28,7 @@ func (e Line) RenderLine() []byte {
 
 			if e.segments[uint8(x/112)] == nil {
 				segment = fillerSegment[:]
+				return buf
 			} else {
 				segment = e.segments[uint8(x/112)].RenderSegment()
 			}
