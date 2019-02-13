@@ -22,17 +22,17 @@ var zigzag = [64]int{
 	35, 36, 48, 49, 57, 58, 62, 63,
 }
 
-func getQuantizationTable(qf float64) []float64 {
-	var table [64]float64
-	var f float64
+func getQuantizationTable(qf float64) []int {
+	var table [64]int
+
 	if (qf > 20) && (qf < 50) {
-		f = 5000 / qf
+		qf = 5000 / qf
+	} else {
+		qf = 200 - (2 * qf)
 	}
-	if (qf > 50) && (qf < 100) {
-		f = 200 - 2*qf
-	}
+
 	for x := 0; x < 64; x++ {
-		table[x] = f / 100.0 * qTable[x]
+		table[x] = int((qf / 100 * qTable[x]) + 0.5)
 		if table[x] < 1 {
 			table[x] = 1
 		}

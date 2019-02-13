@@ -17,15 +17,17 @@ type Segment struct {
 	QFM     uint16
 	QF      uint8
 	payload []byte
-	mcus    [14][64]float64
+	mcus    [14][]float64
 	export  [14][64]byte
 }
 
 func NewSegment(buf []byte) *Segment {
 	e := Segment{}
 	e.FromBinary(buf)
-	e.HuffmanDecode()
-	e.Dequantize()
+	valid := e.HuffmanDecode()
+	if valid {
+		e.Dequantize()
+	}
 	e.RenderSegment()
 	return &e
 }
@@ -62,20 +64,18 @@ func (e Segment) Print() {
 	e.time.Print()
 }
 
-func (e *Segment) HuffmanDecode() {
+func (e *Segment) HuffmanDecode() bool {
 	buf := convertToArray(e.payload)
+	lastDC := 0.0
 
 	for i := 0; i < 14; i++ {
 		val := findDC(buf)
 		if val == cfc[0] {
 			fmt.Println("[JPEG] Invalid DC value, frame can't be restored.")
-			return
+			return false
 		}
-
-		tmp := []float64{val}
-		if i != 0 {
-			tmp[0] += e.mcus[i-1][0]
-		}
+		e.mcus[i] = []float64{val + lastDC}
+		lastDC = e.mcus[i][0]
 
 		for j := 0; j < 63; {
 			vals := findAC(buf)
@@ -83,47 +83,49 @@ func (e *Segment) HuffmanDecode() {
 
 			if vals[0] == cfc[0] {
 				fmt.Println("[JPEG] Invalid AC value, frame can't be restored.")
-				return
+				return false
 			}
-			if vals[0] == eob[0] {
-				//fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %d %d\n", j+1, i, len(*buf), tmp[0], val)
-				break
+			if vals[0] != eob[0] {
+				e.mcus[i] = append(e.mcus[i], vals...)
 			} else {
-				tmp = append(tmp, vals...)
+				//fmt.Printf("EOB! Chunks: %02d MCU#: %02d LEN: %08d DC: %02f %02f\n", j+1, i, len(*buf), e.mcus[i][0], val)
+				break
 			}
 		}
 
-		if len(tmp) > 64 {
-			fmt.Println("[JPEG] Invalid number of blocks.")
-			return
+		if len(e.mcus[i]) > 64 {
+			fmt.Println("[JPEG] Invalid number of blocks. Cropping...")
+			e.mcus[i] = e.mcus[i][:64]
 		}
 
-		tmp = append(tmp, make([]float64, 64-len(tmp))...)
-		copy(e.mcus[i][:], tmp[:])
+		e.mcus[i] = append(e.mcus[i], make([]float64, 64-len(e.mcus[i]))...)
 	}
+
+	return true
 }
 
 func (e *Segment) Dequantize() {
 	quantizationTable := getQuantizationTable(float64(e.QF))
 
 	for y := 0; y < 14; y++ {
-		var input, output [64]float64
+		var buf [64]int64
 		for x := 0; x < 64; x++ {
-			input[x] = e.mcus[y][zigzag[x]] * quantizationTable[x]
+			buf[x] = int64((e.mcus[y][zigzag[x]] * float64(quantizationTable[x])) + 0.5)
 		}
 
-		calculateIdct(&output, &input)
+		idct(&buf)
 
 		for x := 0; x < 64; x++ {
-			normalizedPixel := output[x] + 128
-			e.export[y][x] = uint8(normalizedPixel + 0.5)
+			normalizedPixel := buf[x] + 128
 
 			if normalizedPixel > 255 {
-				e.export[y][x] = 255
+				normalizedPixel = 255
 			}
 			if normalizedPixel < 0 {
-				e.export[y][x] = 0
+				normalizedPixel = 0
 			}
+
+			e.export[y][x] = uint8(normalizedPixel)
 		}
 	}
 }
@@ -133,11 +135,10 @@ func (e Segment) RenderSegment() []byte {
 	o := 0
 	for y := 0; y < 8; y++ {
 		for x := 0; x < 112; x++ {
-			buf[o] = byte(e.export[x/8][y*8+x-(x/8*8)])
+			buf[o] = e.export[x/8][(y*8)+(x%8)]
 			o++
 		}
 	}
-
 	return buf
 }
 

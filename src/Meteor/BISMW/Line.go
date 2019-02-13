@@ -19,16 +19,20 @@ func (e *Line) AddMCU(dat []byte) {
 
 func (e Line) RenderLine() []byte {
 	var buf = make([]byte, 64*14*14)
+	fillerSegment := [64 * 14]byte{}
 
 	o := 0
 	for y := 0; y < 8; y++ {
 		for x := 0; x < 1568; x++ {
+			var segment []byte
+
 			if e.segments[uint8(x/112)] == nil {
-				filler := [64 * 14 * 14]byte{}
-				return filler[:]
+				segment = fillerSegment[:]
+			} else {
+				segment = e.segments[uint8(x/112)].RenderSegment()
 			}
-			segment := e.segments[uint8(x/112)].RenderSegment()
-			buf[o] = segment[y*112+x-(x/112*112)]
+
+			buf[o] = segment[(y*112)+(x%112)]
 			o++
 		}
 	}
