@@ -121,9 +121,12 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 
 	for {
 		n, err := input.Read(e.codedData)
-		e.Statistics.TotalBytesRead += uint64(n)
+		if Datalink[id].CodedFrameSize != n {
+			break
+		}
 
-		if err == nil && Datalink[id].CodedFrameSize == n {
+		if err == nil {
+			e.Statistics.TotalBytesRead += uint64(n)
 			if (e.Statistics.TotalPackets%32 == 0) && e.constSock != nil {
 				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:512])))
 			}

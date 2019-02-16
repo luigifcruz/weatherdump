@@ -13,16 +13,16 @@ class Dashboard extends Component {
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut. 
                     </h2>
                 </div>
-                <div className="Body">
+                <div className="Body BodyFlex">
                     <div className="Satellite">
                         <h3>NPOESS</h3>
                         <h4>NOAA-20 & Suomi</h4>
-                        <Link to="/npoess/filepicker" className="Band">X-Band</Link>
+                        <Link to="/npoess/steps" className="Band">X-Band HRD</Link>
                     </div>
                     <div className="Satellite">
                         <h3>Meteor</h3>
                         <h4>Meteor-MN2</h4>
-                        <Link to="/meteor/filepicker"  className="Band">VHF</Link>
+                        <Link to="/meteor/steps"  className="Band">VHF LRPT</Link>
                     </div>
                 </div>
             </div>

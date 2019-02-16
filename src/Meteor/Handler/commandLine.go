@@ -76,5 +76,5 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 	}
 
 	bismw.Process()
-	bismw.Export(outputFolder)
+	bismw.SaveAllChannels(outputFolder)
 }

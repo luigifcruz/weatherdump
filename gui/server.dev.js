@@ -17,6 +17,8 @@ app.use(
 
 app.use(require("webpack-hot-middleware")(compiler));
 
+app.use('/icons', express.static(path.join(__dirname, "dist")))
+
 app.use('/', express.static(path.join(__dirname, "build")))
 
 app.get('/*', (req, res) => {   

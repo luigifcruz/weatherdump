@@ -25,7 +25,7 @@ func (e *Data) Process() {
 	}
 }
 
-func (e *Data) Export(outputFolder string) {
+func (e *Data) SaveAllChannels(outputFolder string) {
 	fmt.Println("[BISMW] Exporting BISMW channels products...")
 	for _, channel := range e.channelData {
 		channel.Export(outputFolder)

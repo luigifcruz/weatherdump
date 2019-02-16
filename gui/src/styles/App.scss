@@ -1,28 +1,38 @@
 body {
-    font-family: 'Roboto Slab', serif;
-    font-weight: 400;
-    background-color: #282C34;
-    width: 95%;
-    height: 100%;
-    margin-left: 5%;
+    margin: 0em;
     color: white;
-    -webkit-font-smoothing: antialiased;
     overflow: hidden;
+    font-family: 'Roboto Slab', serif;
+    background-color: #212330;
+
+    input {
+        display: none;
+    }
 }
 
 .App {
-    padding: 0;
-    margin: 0;
     width: 95%;
-
+    margin-left: 2.5%;
+    
     .Header {
-        height: 6em;
+        height: 6em; 
 
         .Title {
             color: rgb(255, 255, 255);
             width: 100%;
             font-size: 1.75em;
-            margin-bottom: 0;
+            margin: 0.5em 0 0 0;
+            display: flex;
+
+            .icon {
+                margin-top: 0.1em;
+                margin-bottom: -1em;
+
+                svg {
+                    cursor: pointer;    
+                    margin-right: 0.25em;
+                }
+            }
         }
 
         .Description {
@@ -36,15 +46,41 @@ body {
     }
 
     .Body {
+        height: 68.5vh;
+
+        button {
+            height: 2.75em;
+            width: 20em;
+            border: 2px solid #3F8EFC;
+            color: #3F8EFC;
+            background: none;
+            line-height: 1.8em;
+            padding: 0.35em 0.75em 0.45em 0.75em;
+            margin-top: 1.05em;
+            border-radius: 1.5em;
+            text-decoration: none;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+        }
+    }
+
+    .BodyFlex {
         display: flex;
-        height: 20.5em;
     }
 
     .Footer {
+        position: absolute;
+        bottom: 0em;
+        width: 95%;
+        margin-left: -2.5%;
+        margin-right: -2.5%;
+
         display: flex;
-        margin-top: 0.5em;
-        border-top: 1px solid #607777;
-        padding-top: 3px;
+        height: 2.5em;
+        padding-left: 2.5%;
+        padding-right: 2.5%;
+        background: #282A37;
 
         .Left {
             width: 25%;
