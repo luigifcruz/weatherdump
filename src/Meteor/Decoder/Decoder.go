@@ -72,7 +72,7 @@ func NewDecoder() *Decoder {
 
 	e.syncWord = make([]byte, 4)
 
-	e.reedSolomon.SetCopyParityToOutput(false)
+	e.reedSolomon.SetCopyParityToOutput(true)
 
 	e.correlator.AddWord(Datalink[id].SyncWords[0])
 	e.correlator.AddWord(Datalink[id].SyncWords[1])

@@ -3,9 +3,15 @@ const { app, BrowserWindow } = require('electron')
 let win
 
 function createWindow() {
+    let height = 500;
+
+    if (process.platform == 'darwin') {
+        height = 520
+    }
+
     win = new BrowserWindow({
         width: 900,
-        height: 500,
+        height,
         autoHideMenuBar: true,
         resizable: false
     })

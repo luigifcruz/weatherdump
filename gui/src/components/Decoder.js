@@ -25,8 +25,8 @@ const shaders = Shaders.create({
 
         void main() { 
             vec3 color = vec3(0.0);
-            vec2 st = gl_FragCoord.xy/225.0;
-            color = mix(color, vec3(0.15686,0.17254,0.20392), 1.0);
+            vec2 st = gl_FragCoord.xy/250.0;
+            color = mix(color, vec3(0.12974,0.13725,0.18823), 1.0);
             
             if (n > 0) {
                 for (int i=0; i < 512; i+=2) {
@@ -95,6 +95,10 @@ class Decoder extends Component {
         console.log("[STREAM] Connected to decoder via WebSocket.");
     }
 
+    handleAbort() {
+        this.props.history.goBack()
+    }
+
     render() {
         const { match: { params } } = this.props;
         const { complex, n, stats } = this.state;
@@ -107,18 +111,23 @@ class Decoder extends Component {
 
         return (
             <div className="View">
-                <Websocket url={`ws://localhost:3000/${params.satellite}/constellation`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
-                <Websocket url={`ws://localhost:3000/${params.satellite}/statistics`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
+                <Websocket url={`ws://192.168.0.19:3000/${params.satellite}/constellation`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
+                <Websocket url={`ws://192.168.0.19:3000/${params.satellite}/statistics`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
                 <div className="Header">
-                    <h1 className="Title">Decoding the input file for NPOESS...</h1>
+                    <h1 className="Title">
+                        <div onClick={this.handleAbort.bind(this)} className="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        </div>
+                        Decoding the input file for NPOESS...
+                    </h1>
                     <h2 className="Description">
                     In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while.  
                     </h2>
                 </div>
-                <div className="Body">
+                <div className="Body Flex DecoderFix">
                     <div className="LeftWindow">
                         <div className="Constellation">
-                            <Surface width={225} height={225}>
+                            <Surface width={250} height={250}>
                                 <Node shader={shaders.constellation} uniforms={{ complex, n }} />
                             </Surface>
                             <div className="Label">PSK Constellation</div>
@@ -156,22 +165,22 @@ class Decoder extends Component {
                             <div className="Name">Reed-Solomon Corrections</div>
                         </div>
                         <div className="SignalQuality">
-                            <div className="Quality">{stats.SignalQuality}%</div>
+                            <div className="Number">{stats.SignalQuality}%</div>
                             <div className="Name">Signal Quality</div>
                         </div>
                         <div className="DroppedPackets">
-                            <div className="Quality">{droppedpackets.toFixed(2)}%</div>
+                            <div className="Number">{droppedpackets.toFixed(2)}%</div>
                             <div className="Name">Dropped Packets</div>
                         </div>
                         <div className="SignalQuality">
-                            <div className="Quality">{stats.FrameLock ? stats.VCID : 0}</div>
+                            <div className="Number">{stats.FrameLock ? stats.VCID : 0}</div>
                             <div className="Name">VCID</div>
                         </div>
                         <div className="DroppedPackets">
-                            <div className="Quality">{stats.VitErrors}/{stats.FrameBits}</div>
+                            <div className="Number">{stats.VitErrors}/{stats.FrameBits}</div>
                             <div className="Name">Viterbi Errors</div>
                         </div>
-                        <div className="LockIndicator" style={{ background: stats.FrameLock ? "#00BA8C" : "#E80F4C"  }}>
+                        <div className="LockIndicator" style={{ background: stats.FrameLock ? "#00BA8C" : "#282A37"  }}>
                             {stats.FrameLock ? "LOCKED" : "UNLOCKED"}
                         </div>
                     </div>
@@ -191,7 +200,7 @@ class Decoder extends Component {
                                 })
                             }
                         </div>
-                        <button className="Abort">Abort Decoding</button>
+                        <div onClick={this.handleAbort.bind(this)} className="Abort">Abort Decoding</div>
                     </div>
                 </div>
             </div>

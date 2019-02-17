@@ -47,25 +47,9 @@ body {
 
     .Body {
         height: 68.5vh;
-
-        button {
-            height: 2.75em;
-            width: 20em;
-            border: 2px solid #3F8EFC;
-            color: #3F8EFC;
-            background: none;
-            line-height: 1.8em;
-            padding: 0.35em 0.75em 0.45em 0.75em;
-            margin-top: 1.05em;
-            border-radius: 1.5em;
-            text-decoration: none;
-            font-weight: 700;
-            outline: none;
-            cursor: pointer;
-        }
     }
 
-    .BodyFlex {
+    .Flex {
         display: flex;
     }
 

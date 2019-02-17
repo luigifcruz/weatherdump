@@ -6,6 +6,16 @@
 
 ### Hardware Recommendations
 
+### GUI views to-do list
+- [x] Initial page.
+- [x] Step picker page.
+- [x] Decoder page.
+- [ ] Update tab.
+- [ ] Licenses tab.
+- [ ] About tab.
+- [ ] Confirm operation modal.
+
+
 ### ToDo List
 - Fix decoder's panic.
 - Improve speed of the JPEG stacker. 

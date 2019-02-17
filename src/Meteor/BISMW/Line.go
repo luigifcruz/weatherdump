@@ -1,6 +1,8 @@
 package BISMW
 
-import "weather-dump/src/Meteor"
+import (
+	"weather-dump/src/Meteor"
+)
 
 type Line struct {
 	segments map[uint8]*Segment
