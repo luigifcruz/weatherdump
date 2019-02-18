@@ -118,7 +118,6 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 	fi, _ := os.Stat(inputPath)
 
 	fmt.Printf("[DECODER] Starting decoding the signal. This might take a while...\n")
-
 	for {
 		n, err := input.Read(e.codedData)
 		if Datalink[id].CodedFrameSize != n {
@@ -126,6 +125,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 		}
 
 		if err == nil {
+
 			e.Statistics.TotalBytesRead += uint64(n)
 			if (e.Statistics.TotalPackets%32 == 0) && e.constSock != nil {
 				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:512])))
@@ -232,12 +232,12 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 				e.Statistics.SyncWord[i] = e.decodedData[i]
 			}
 
-			shiftWithConstantSize(&e.decodedData, Datalink[id].SyncWordSize, Datalink[id].FrameSize)
+			shiftWithConstantSize(&e.decodedData, Datalink[id].SyncWordSize, Datalink[id].FrameSize-Datalink[id].SyncWordSize)
 
 			e.Statistics.AverageVitCorrections += uint16(e.viterbi.GetBER())
 			e.Statistics.TotalPackets++
 
-			SatHelper.DeRandomizerDeRandomize(&e.decodedData[0], Datalink[id].CodedFrameSize)
+			SatHelper.DeRandomizerDeRandomize(&e.decodedData[0], Datalink[id].FrameSize-Datalink[id].SyncWordSize)
 
 			derrors := make([]int32, Datalink[id].RsBlocks)
 
@@ -336,7 +336,6 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 					float32(e.Statistics.DroppedPackets)/float32(e.Statistics.TotalPackets)*100,
 					e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
 			}
-
 		} else {
 			if err != io.EOF {
 				fmt.Println(err)

@@ -67,16 +67,14 @@ func (e Segment) Print() {
 	e.time.Print()
 }
 
-func (e Segment) RenderSegment() []byte {
-	var buf = make([]byte, 64*14)
+func (e Segment) RenderSegment(buf *[64 * 14]byte) {
 	o := 0
 	for y := 0; y < 8; y++ {
 		for x := 0; x < 112; x++ {
-			buf[o] = e.export[x/8][(y*8)+(x%8)]
+			(*buf)[o] = e.export[x/8][(y*8)+(x%8)]
 			o++
 		}
 	}
-	return buf
 }
 
 func (e *Segment) huffmanDecode() bool {
@@ -86,7 +84,7 @@ func (e *Segment) huffmanDecode() bool {
 	for i := 0; i < 14; i++ {
 		val := findDC(buf)
 		if val == cfc[0] {
-			fmt.Println("[JPEG] Invalid DC value, frame can't be restored.")
+			//fmt.Println("[JPEG] Invalid DC value, frame can't be restored.")
 			return false
 		}
 		e.mcus[i] = []float64{val + lastDC}
@@ -97,7 +95,7 @@ func (e *Segment) huffmanDecode() bool {
 			j += len(vals)
 
 			if vals[0] == cfc[0] {
-				fmt.Println("[JPEG] Invalid AC value, frame can't be restored.")
+				//fmt.Println("[JPEG] Invalid AC value, frame can't be restored.")
 				return false
 			}
 			if vals[0] != eob[0] {
@@ -109,7 +107,7 @@ func (e *Segment) huffmanDecode() bool {
 		}
 
 		if len(e.mcus[i]) > 64 {
-			fmt.Println("[JPEG] Invalid number of blocks. Cropping...")
+			//fmt.Println("[JPEG] Invalid number of blocks. Cropping...")
 			e.mcus[i] = e.mcus[i][:64]
 		}
 

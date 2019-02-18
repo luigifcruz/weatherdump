@@ -41,10 +41,12 @@ func (e *Channel) Export(outputFolder string) {
 		line := e.lines[i].RenderLine()
 		buf = append(buf, line[:]...)
 	}
+
 	imagery.HistogramEqualizationU8(&buf)
 	if e.parameters.Inversion {
 		imagery.PixelInversionU8(&buf)
 	}
+
 	output, _ := os.Create(fmt.Sprintf("%s/%s.png", outputFolder, e.fileName))
 	defer output.Close()
 	s := image.NewGray(image.Rect(0, 0, int(e.width), int(e.height)))

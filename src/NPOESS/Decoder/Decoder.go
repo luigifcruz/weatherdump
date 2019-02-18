@@ -234,12 +234,12 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 				e.Statistics.SyncWord[i] = e.decodedData[i]
 			}
 
-			shiftWithConstantSize(&e.decodedData, Datalink[id].SyncWordSize, Datalink[id].FrameSize)
+			shiftWithConstantSize(&e.decodedData, Datalink[id].SyncWordSize, Datalink[id].FrameSize-Datalink[id].SyncWordSize)
 
 			e.Statistics.AverageVitCorrections += uint16(e.viterbi.GetBER())
 			e.Statistics.TotalPackets++
 
-			SatHelper.DeRandomizerDeRandomize(&e.decodedData[0], Datalink[id].CodedFrameSize)
+			SatHelper.DeRandomizerDeRandomize(&e.decodedData[0], Datalink[id].FrameSize-Datalink[id].SyncWordSize)
 
 			derrors := make([]int32, Datalink[id].RsBlocks)
 

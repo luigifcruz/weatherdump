@@ -17,8 +17,6 @@
 
 
 ### ToDo List
-- Fix decoder's panic.
-- Improve speed of the JPEG stacker. 
 - Improve LRPT frame stacker.
 
 ### Optimization List
