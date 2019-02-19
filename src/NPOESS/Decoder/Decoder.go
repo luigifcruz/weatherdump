@@ -9,11 +9,11 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 
-	SatHelper "github.com/OpenSatelliteProject/libsathelper"
 	"github.com/gorilla/websocket"
+	SatHelper "github.com/luigifreitas/libsathelper"
 )
 
-const defaultFlywheelRecheck = 4
+const defaultFlywheelRecheck = 1024
 const averageLastNSamples = 8192
 const lastFrameDataBits = 64
 const lastFrameData = lastFrameDataBits / 8
@@ -144,7 +144,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			if !lastFrameOk {
 				e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize))
 			} else {
-				e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize)/16)
+				e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize)/64)
 				if e.correlator.GetHighestCorrelationPosition() != 0 {
 					e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize))
 					flywheelCount = 0

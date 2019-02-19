@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const defaultFlywheelRecheck = 4
+const defaultFlywheelRecheck = 256
 const averageLastNSamples = 8192
 const lastFrameDataBits = 64
 const lastFrameData = lastFrameDataBits / 8
@@ -125,7 +125,6 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 		}
 
 		if err == nil {
-
 			e.Statistics.TotalBytesRead += uint64(n)
 			if (e.Statistics.TotalPackets%32 == 0) && e.constSock != nil {
 				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:512])))
@@ -144,7 +143,7 @@ func (e *Decoder) DecodeFile(inputPath string, outputPath string) {
 			if !lastFrameOk {
 				e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize))
 			} else {
-				e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize)/16)
+				e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize)/64)
 				if e.correlator.GetHighestCorrelationPosition() != 0 {
 					e.correlator.Correlate(&e.codedData[0], uint(Datalink[id].CodedFrameSize))
 					flywheelCount = 0

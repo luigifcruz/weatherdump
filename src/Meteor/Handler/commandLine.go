@@ -34,14 +34,14 @@ func CommandLine(inputPath string, inputFormat string, outputFolder string) {
 
 	outputFolder = fmt.Sprintf("%s/METEOR-LRPT-%s", outputFolder, strings.ToUpper(fileName))
 	os.Mkdir(outputFolder, os.ModePerm)
-
+	start := time.Now()
 	if inputFormat == "grcout" {
 		dec := Decoder.NewDecoder()
 		outputFile := fmt.Sprintf("%s/decoded-%s.bin", outputFolder, strings.ToLower(fileName))
 		dec.DecodeFile(inputPath, outputFile)
 		inputPath = outputFile
 	}
-
+	fmt.Printf("Took %v\n", time.Since(start))
 	file, err := ioutil.ReadFile(inputPath)
 	if err != nil {
 		fmt.Println("[LRPT] Input file not found. Exiting...")
