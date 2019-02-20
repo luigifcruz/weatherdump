@@ -29,4 +29,4 @@ ENV GOPATH=/home/go
 WORKDIR /home/go/src/weather-dump
 
 RUN CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 go get -v github.com/urfave/cli github.com/nfnt/resize github.com/luigifreitas/libsathelper github.com/gorilla/websocket
-ENTRYPOINT CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 go build -o bin/weatherdump_amd64_linux ./main.go
+ENTRYPOINT CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 go build -o bin/weatherdump_amd64_windows ./main.go

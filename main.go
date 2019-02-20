@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
-	MeteorHandler "weather-dump/src/Meteor/Handler"
-	NPOESSHandler "weather-dump/src/NPOESS/Handler"
+	meteor "weather-dump/src/meteor/handler"
+	npoess "weather-dump/src/npoess/handler"
+	"weather-dump/src/remote"
 
 	"github.com/urfave/cli"
 )
@@ -61,7 +62,7 @@ func main() {
 				}
 
 				settingsPrint(outputFolder, outputFolder, "HRD")
-				NPOESSHandler.CommandLine(c.Args().First(), inputFormat, outputFolder)
+				npoess.CommandLine(c.Args().First(), inputFormat, outputFolder)
 				return nil
 			},
 		}, {
@@ -75,7 +76,15 @@ func main() {
 				}
 
 				settingsPrint(outputFolder, outputFolder, "LRPT")
-				MeteorHandler.CommandLine(c.Args().First(), inputFormat, outputFolder)
+				meteor.CommandLine(c.Args().First(), inputFormat, outputFolder)
+				return nil
+			},
+		}, {
+			Name:     "remote",
+			Usage:    "listen to network commands",
+			Category: "DATALINK",
+			Action: func(c *cli.Context) error {
+				remote.New().Listen()
 				return nil
 			},
 		},
