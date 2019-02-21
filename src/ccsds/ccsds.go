@@ -9,7 +9,6 @@ import (
 var Version = parameters.Version
 
 type Worker struct {
-	lastAPID     uint16
 	spacePackets []frames.SpacePacketFrame
 	tmpPacket    *frames.SpacePacketFrame
 	buffer       []byte

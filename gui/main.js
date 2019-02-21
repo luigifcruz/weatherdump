@@ -16,6 +16,11 @@ function createWindow() {
         resizable: false
     })
 
+    if (process.env.NODE_ENV === "development") {
+        win.setSize(900, 750)
+        win.webContents.openDevTools();
+    }
+
     win.loadURL('http://localhost:3002');
 
     win.on('closed', () => {

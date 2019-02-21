@@ -43,8 +43,10 @@ type Worker struct {
 func NewDecoder(uuid string) *Worker {
 	e := Worker{}
 
-	http.HandleFunc("/meteor/constellation", e.constellation)
-	http.HandleFunc("/meteor/statistics", e.statistics)
+	if uuid != "" {
+		http.HandleFunc(fmt.Sprintf("/ws/meteor/%s/constellation", uuid), e.constellation)
+		http.HandleFunc(fmt.Sprintf("/ws/meteor/%s/statistics", uuid), e.statistics)
+	}
 
 	if uselastFrameData {
 		e.viterbiData = make([]byte, Datalink[id].CodedFrameSize+lastFrameDataBits)
@@ -207,12 +209,6 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 			}
 
 			e.viterbi.Decode(&e.viterbiData[0], &e.decodedData[0])
-
-			nrzmDecodeSize := Datalink[id].FrameSize
-
-			if uselastFrameData {
-				nrzmDecodeSize += lastFrameData
-			}
 
 			signalErrors := float32(e.viterbi.GetPercentBER())
 			signalErrors = 100 - (signalErrors * 10)

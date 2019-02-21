@@ -13,6 +13,7 @@ import (
 	npoessDecoder "weather-dump/src/npoess/decoder"
 	npoessProcessor "weather-dump/src/npoess/processor"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	uuid "github.com/satori/go.uuid"
 )
@@ -38,10 +39,13 @@ func New() *Remote {
 }
 
 func (s *Remote) Listen() {
+	origins := handlers.AllowedOrigins([]string{"http://localhost:3002"})
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+
 	r := mux.NewRouter()
-	r.HandleFunc("/{datalink}/register", s.register)
-	r.HandleFunc("/{datalink}/{id}/{process}/{cmd}", s.router)
-	http.Handle("/", r)
+	r.HandleFunc("/api/{datalink}/register", s.register)
+	r.HandleFunc("/api/{datalink}/{id}/{process}/{cmd}", s.router)
+	http.Handle("/", handlers.CORS(origins, headers)(r))
 
 	fmt.Println("[REMOTE] Starting to listen requests...")
 	http.ListenAndServe(":3000", nil)

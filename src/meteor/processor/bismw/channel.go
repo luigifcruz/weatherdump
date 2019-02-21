@@ -9,8 +9,6 @@ import (
 	"weather-dump/src/meteor"
 )
 
-const maxFrameCount = 8192
-
 // Channel struct.
 type Channel struct {
 	apid       uint16

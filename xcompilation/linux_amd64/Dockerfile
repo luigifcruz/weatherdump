@@ -24,6 +24,6 @@ RUN git clone https://github.com/opensatelliteproject/libsathelper.git \
 ENV GOPATH=/home/go
 WORKDIR /home/go/src/weather-dump
 
-RUN go get -v github.com/urfave/cli github.com/nfnt/resize github.com/OpenSatelliteProject/libsathelper github.com/gorilla/websocket
+RUN go get -v github.com/gorilla/mux github.com/satori/go.uuid github.com/urfave/cli github.com/nfnt/resize github.com/OpenSatelliteProject/libsathelper github.com/gorilla/websocket
 
 ENTRYPOINT CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o bin/weatherdump_amd64_linux ./main.go

@@ -42,8 +42,10 @@ type Worker struct {
 func NewDecoder(uuid string) *Worker {
 	e := Worker{}
 
-	http.HandleFunc(fmt.Sprintf("/npoess/%s/constellation", uuid), e.constellation)
-	http.HandleFunc(fmt.Sprintf("/npoess/%s/statistics", uuid), e.statistics)
+	if uuid != "" {
+		http.HandleFunc(fmt.Sprintf("/ws/npoess/%s/constellation", uuid), e.constellation)
+		http.HandleFunc(fmt.Sprintf("/ws/npoess/%s/statistics", uuid), e.statistics)
+	}
 
 	if uselastFrameData {
 		e.viterbiData = make([]byte, Datalink[id].CodedFrameSize+lastFrameDataBits)

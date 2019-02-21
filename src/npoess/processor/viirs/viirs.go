@@ -12,7 +12,6 @@ import (
 )
 
 const firstPacket = 1
-const lastPacket = 2
 
 type Worker struct {
 	channelData map[uint16]*Channel

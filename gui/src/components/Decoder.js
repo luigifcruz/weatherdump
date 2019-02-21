@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import { Shaders, Node, GLSL } from "gl-react";
 import { Surface } from "gl-react-dom"
 import Websocket from 'react-websocket'
-import { Link } from 'react-router-dom'
+import * as rxa from '../redux/actions'
+import { connect } from 'react-redux'
 import '../styles/Decoder.scss'
 
 const shaders = Shaders.create({
@@ -111,12 +112,14 @@ class Decoder extends Component {
 
         return (
             <div className="View">
-                <Websocket url={`ws://192.168.0.19:3000/${params.satellite}/constellation`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
-                <Websocket url={`ws://192.168.0.19:3000/${params.satellite}/statistics`} onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
+                <Websocket url={`ws://192.168.0.19:3000/ws/${params.satellite}/${this.props.appId}/constellation`}
+                    onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
+                <Websocket url={`ws://192.168.0.19:3000/ws/${params.satellite}/${this.props.appId}/statistics`}
+                    onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
                 <div className="Header">
                     <h1 className="Title">
                         <div onClick={this.handleAbort.bind(this)} className="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         </div>
                         Decoding the input file for NPOESS...
                     </h1>
@@ -209,4 +212,5 @@ class Decoder extends Component {
 
 }
 
-export default Decoder
+Decoder.propTypes = rxa.props
+export default connect(rxa.mapStateToProps)(Decoder)  

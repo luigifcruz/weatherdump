@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { connect } from 'react-redux'
+import request from 'superagent'
+import * as rxa from '../redux/actions'
 import '../styles/StepPicker.scss'
 
 const RECORDING = 0
@@ -49,12 +51,26 @@ class StepPicker extends Component {
     }
 
     getUploadedFileName(e) {
-        const filePath = e.target.files[0].path
-        if (filePath == undefined) {
+        const inputFile = e.target.files[0].path
+        if (inputFile == undefined) {
             console.log("Is this running inside a Electron application?")
             alert("Browser navigation isn't supported by this app.")
             return
         }
+
+        const { match: { params } } = this.props;
+
+        request
+        .post(`http://localhost:3000/api/${params.satellite}/register`)
+        .field("workingPath", "/home/luigifcruz/Downloads/out")
+        .then(res => this.props.dispatch(rxa.updateRegistry(res.body.Code)))
+        .then(() => { 
+            request
+            .post(`http://localhost:3000/api/${params.satellite}/${this.props.appId}/decoder/2`)
+            .field("inputFile", inputFile)
+            .then(res => this.props.history.push(`/${params.satellite}/decoder`))
+        })
+        .catch(err =>  console.log(err))
     }
 
     selectInput() {
@@ -70,7 +86,7 @@ class StepPicker extends Component {
                 <div className="Header">
                     <h1 className="Title">
                         <div onClick={this.props.history.goBack} className="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         </div>
                         Where are you at?
                     </h1>
@@ -99,7 +115,7 @@ class StepPicker extends Component {
                     </div>
                     <div className="OptionsPanel">
                         {options[currentTab].map((o,i) => 
-                            <div className="Option">
+                            <div key={i} className="Option">
                                 <h3 onClick={this.selectInput.bind(this)}>{o.title}</h3>
                                 <h4>{o.description}</h4>
                             </div>
@@ -113,4 +129,5 @@ class StepPicker extends Component {
 
 }
 
-export default StepPicker
+StepPicker.propTypes = rxa.props
+export default connect(rxa.mapStateToProps)(StepPicker)  

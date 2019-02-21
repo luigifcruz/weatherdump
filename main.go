@@ -12,8 +12,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-const frameSize = 892
-
 func settingsPrint(inputFormat string, outputPath string, datalinkName string) {
 	fmt.Println("============== WeatherDump ==============")
 	fmt.Println("============= CONFIGURATION =============")
