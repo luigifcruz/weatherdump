@@ -7,7 +7,7 @@ import (
 )
 
 // NASA's Timestamp Epoch is 1st January 1858
-// Probably because Explorer 1 Launch Year
+// Probably because Explorer 1 Launch Year (?)
 
 type Time struct {
 	day          uint16

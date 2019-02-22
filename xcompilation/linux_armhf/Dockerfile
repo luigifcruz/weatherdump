@@ -1,7 +1,6 @@
 FROM golang:1.11
 
-RUN apt-get update && \
-    apt-get install -y build-essential cmake g++-arm-linux-gnueabihf
+RUN apt-get update && apt-get install -y build-essential cmake g++-arm-linux-gnueabihf --no-install-recommends
 
 RUN git clone https://github.com/ruslo/polly.git
 
@@ -24,5 +23,9 @@ RUN git clone https://github.com/luigifreitas/libsathelper.git \
 ENV GOPATH=/home/go
 WORKDIR /home/go/src/weather-dump
 
-RUN CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go get -v github.com/gorilla/mux github.com/satori/go.uuid github.com/urfave/cli github.com/nfnt/resize github.com/OpenSatelliteProject/libsathelper github.com/gorilla/websocket
-ENTRYPOINT CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go build -o bin/weatherdump_armhf_linux ./main.go
+RUN CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go get -v github.com/gorilla/handlers github.com/gorilla/mux github.com/satori/go.uuid github.com/urfave/cli github.com/nfnt/resize github.com/luigifreitas/libsathelper github.com/gorilla/websocket
+RUN cd /home/go/src/github.com && mkdir ./OpenSatelliteProject ./OpenSatelliteProject/libsathelper && mv ./luigifreitas/libsathelper/* ./OpenSatelliteProject/libsathelper
+
+ADD generator.sh /go/generator.sh
+RUN chmod +x /go/generator.sh && ls -lh
+ENTRYPOINT ["/go/generator.sh"]

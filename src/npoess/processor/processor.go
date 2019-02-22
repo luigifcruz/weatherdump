@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
+	"weather-dump/src/interfaces"
 	"weather-dump/src/npoess/processor/viirs"
 
 	"github.com/gorilla/websocket"
@@ -22,7 +23,7 @@ type Worker struct {
 	statsSock *websocket.Conn
 }
 
-func NewProcessor(uuid string) *Worker {
+func NewProcessor(uuid string) interfaces.Processor {
 	e := Worker{}
 	e.ccsds = ccsds.New()
 	e.viirs = viirs.New()
@@ -33,7 +34,7 @@ func NewProcessor(uuid string) *Worker {
 }
 
 func (e *Worker) Work(inputFile string) {
-	fmt.Println("[PROCESSOR] Decoding CCSDS packets...")
+	fmt.Println("[PRC] Decoding CCSDS packets...")
 
 	file, _ := ioutil.ReadFile(inputFile)
 	for i := len(file); i > 0; i -= frameSize {
@@ -49,24 +50,24 @@ func (e *Worker) Work(inputFile string) {
 		}
 	}
 
-	fmt.Printf("[PROCESSOR] Decoding %d VCID 16 packets...\n", len(e.ccsds.GetSpacePackets()))
+	fmt.Printf("[PRC] Decoding %d VCID 16 packets...\n", len(e.ccsds.GetSpacePackets()))
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
 			e.viirs.Parse(packet)
 		}
 	}
 
-	fmt.Println("[PROCESSOR] Processing channels...")
+	fmt.Println("[PRC] Processing channels...")
 	e.viirs.Process(e.scid)
 
-	fmt.Println("[PROCESSOR] Finished decoding VCID 16 packets...")
+	fmt.Println("[PRC] Finished decoding VCID 16 packets...")
 }
 
 func (e *Worker) ExportAll(outputPath string) {
-	fmt.Printf("[PROCESSOR] Exporting VIIRS science products to %s...\n", outputPath)
+	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
 	e.viirs.SaveAllChannels(outputPath)
 	e.viirs.SaveTrueColorChannel(e.scid, outputPath)
-	fmt.Println("[PROCESSOR] Done! Products saved.")
+	fmt.Println("[PRC] Done! Products saved.")
 }
 
 func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {

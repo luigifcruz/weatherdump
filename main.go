@@ -5,9 +5,8 @@ import (
 	"log"
 	"os"
 
-	meteor "weather-dump/src/meteor/handler"
-	npoess "weather-dump/src/npoess/handler"
 	"weather-dump/src/remote"
+	"weather-dump/src/terminal"
 
 	"github.com/urfave/cli"
 )
@@ -42,7 +41,6 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:        "output",
-			Value:       "./output",
 			Usage:       "folder where the products will be saved",
 			Destination: &outputFolder,
 		},
@@ -60,7 +58,7 @@ func main() {
 				}
 
 				settingsPrint(outputFolder, outputFolder, "HRD")
-				npoess.CommandLine(c.Args().First(), inputFormat, outputFolder)
+				terminal.HandleInput(c.Args().First(), inputFormat, outputFolder, "hrd")
 				return nil
 			},
 		}, {
@@ -74,7 +72,7 @@ func main() {
 				}
 
 				settingsPrint(outputFolder, outputFolder, "LRPT")
-				meteor.CommandLine(c.Args().First(), inputFormat, outputFolder)
+				terminal.HandleInput(c.Args().First(), inputFormat, outputFolder, "lrpt")
 				return nil
 			},
 		}, {

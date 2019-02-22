@@ -1,7 +1,6 @@
 package ccsds
 
 import (
-	"fmt"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/ccsds/parameters"
 )
@@ -63,7 +62,7 @@ func (e *Worker) CreatePacket(buf []byte) {
 
 func (e *Worker) ParseMPDU(MPDU frames.MultiplexingFrame) {
 	if !MPDU.IsValid() {
-		fmt.Println("[CCSDS] Not Valid MPDU frame, skipping...")
+		//fmt.Println("[CCSDS] Not Valid MPDU frame, skipping...")
 		return
 	}
 
@@ -71,7 +70,7 @@ func (e *Worker) ParseMPDU(MPDU frames.MultiplexingFrame) {
 	fhp := MPDU.GetFirstHeaderPointer()
 
 	if MPDU.HaveNewPackage() && fhp > uint16(len(dat)) {
-		fmt.Println("[CCSDS] First header pointer bigger than buffer, skipping...")
+		//fmt.Println("[CCSDS] First header pointer bigger than buffer, skipping...")
 		return
 	}
 

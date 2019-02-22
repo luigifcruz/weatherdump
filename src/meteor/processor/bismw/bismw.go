@@ -17,14 +17,14 @@ func New() *Worker {
 }
 
 func (e *Worker) Process(scid uint8) {
-	fmt.Println("[BISMW] Processing BISMW channels data...")
+	fmt.Println("[SEN] Processing BISMW channels data...")
 	for _, channel := range e.channelData {
 		channel.Fix(meteor.Spacecrafts[scid])
 	}
 }
 
 func (e *Worker) SaveAllChannels(outputFolder string) {
-	fmt.Println("[BISMW] Exporting BISMW channels products...")
+	fmt.Println("[SEN] Exporting BISMW channels products...")
 	for _, channel := range e.channelData {
 		channel.Export(outputFolder)
 	}

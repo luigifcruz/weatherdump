@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"weather-dump/src/interfaces"
 
 	b64 "encoding/base64"
 	"encoding/json"
@@ -39,7 +40,7 @@ type Worker struct {
 	statsSock       *websocket.Conn
 }
 
-func NewDecoder(uuid string) *Worker {
+func NewDecoder(uuid string) interfaces.Decoder {
 	e := Worker{}
 
 	if uuid != "" {
@@ -93,7 +94,7 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 	var isCorrupted bool
 	lastFrameOk := false
 
-	fmt.Printf("[DECODER] Initializing decoding process...\n")
+	fmt.Printf("[DEC] Initializing decoding process...\n")
 
 	var averageRSCorrections float32
 	var averageVitCorrections float32
@@ -119,7 +120,7 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 
 	fi, _ := os.Stat(inputPath)
 
-	fmt.Printf("[DECODER] Starting decoding the signal. This might take a while...\n")
+	fmt.Printf("[DEC] Starting decoding the signal. This might take a while...\n")
 
 	for {
 		n, err := input.Read(e.codedData)
@@ -171,7 +172,7 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 			}
 
 			if corr < Datalink[id].MinCorrelationBits {
-				fmt.Printf("[DECODER] Not enough correlations %d/%d. Skipping...\n", corr, Datalink[id].MinCorrelationBits)
+				fmt.Printf("[DEC] Not enough correlations %d/%d. Skipping...\n", corr, Datalink[id].MinCorrelationBits)
 				continue
 			}
 
@@ -349,7 +350,7 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 		}
 	}
 
-	fmt.Printf("[DECODER] Decoded file saved as %s\n", outputPath)
+	fmt.Printf("[DEC] Decoded file saved as %s\n", outputPath)
 }
 
 func (e *Worker) constellation(w http.ResponseWriter, r *http.Request) {

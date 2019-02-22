@@ -47,7 +47,7 @@ func (e Worker) SaveAllChannels(outputFolder string) {
 
 func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 	colorChannels := npoess.Spacecrafts[scid].TrueColorChannels
-	fmt.Println("[VIIRS] Exporting true color channel.")
+	fmt.Println("[SEN] Exporting true color channel.")
 
 	ch01 := e.channelData[colorChannels[0]]
 	ch02 := e.channelData[colorChannels[1]]
@@ -55,7 +55,7 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 
 	// Check if required channels exist.
 	if ch01 == nil || ch02 == nil || ch03 == nil {
-		fmt.Println("[VIIRS] Can't export true color channel. Not all required channels are available.")
+		fmt.Println("[SEN] Can't export true color channel. Not all required channels are available.")
 		return
 	}
 
@@ -139,7 +139,7 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 }
 
 func (e *Worker) Process(scid uint8) {
-	fmt.Println("[VIIRS] Processing VIIRS channels data...")
+	fmt.Println("[SEN] Processing VIIRS channels data...")
 	for _, channel := range e.channelData {
 		channel.Fix(npoess.Spacecrafts[scid])
 	}
