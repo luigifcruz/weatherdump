@@ -3,9 +3,6 @@ package remote
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"regexp"
-	"strings"
 	"weather-dump/src/interfaces"
 	meteorDecoder "weather-dump/src/meteor/decoder"
 	meteorProcessor "weather-dump/src/meteor/processor"
@@ -21,8 +18,8 @@ type State struct {
 	locked            bool
 	workingPath       string
 	activatedDatalink string
-	decoderMakers     map[string]func(string) interfaces.Decoder
-	processorMakers   map[string]func(string) interfaces.Processor
+	decoderMakers     interfaces.DecoderMakers
+	processorMakers   interfaces.ProcessorMakers
 	processor         interfaces.Processor
 }
 
@@ -41,6 +38,7 @@ func (s *Remote) Listen() {
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 
 	r := mux.NewRouter()
+	r.HandleFunc("/api/{datalink}/terminate", s.terminate)
 	r.HandleFunc("/api/{datalink}/register", s.register)
 	r.HandleFunc("/api/{datalink}/{id}/{process}/{cmd}", s.router)
 	http.Handle("/", handlers.CORS(origins, headers)(r))
@@ -57,17 +55,21 @@ func (s *Remote) register(w http.ResponseWriter, r *http.Request) {
 	s.states[u1].locked = false
 	s.states[u1].activatedDatalink = vars["datalink"]
 
-	s.states[u1].processorMakers = map[string]func(string) interfaces.Processor{
+	s.states[u1].processorMakers = interfaces.ProcessorMakers{
 		"lrpt": meteorProcessor.NewProcessor,
 		"hrd":  npoessProcessor.NewProcessor,
 	}
 
-	s.states[u1].decoderMakers = map[string]func(string) interfaces.Decoder{
+	s.states[u1].decoderMakers = interfaces.DecoderMakers{
 		"lrpt": meteorDecoder.NewDecoder,
 		"hrd":  npoessDecoder.NewDecoder,
 	}
 
 	ResSuccess(w, u1.String(), "")
+}
+
+func (e *Remote) terminate(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (s *Remote) router(w http.ResponseWriter, r *http.Request) {
@@ -99,61 +101,4 @@ func (s *Remote) router(w http.ResponseWriter, r *http.Request) {
 	default:
 		ResError(w, "INVALID_PROCESS", "")
 	}
-}
-
-func (s *Remote) decoderHandler(w http.ResponseWriter, r *http.Request, vars map[string]string, id uuid.UUID) {
-	inputFile := r.FormValue("inputFile")
-
-	if _, err := os.Stat(inputFile); os.IsNotExist(err) || inputFile == "" {
-		ResError(w, "INPUT_FILE_NOT_FOUND", "")
-		return
-	}
-
-	var fileName string
-	m, err := regexp.Compile("^.*\\/(.*)\\.\\w+$")
-	if err == nil {
-		fileName = m.FindStringSubmatch(inputFile)[1]
-	}
-	outputFile := fmt.Sprintf("%s/decoded-%s.bin", s.states[id].workingPath, strings.ToLower(fileName))
-
-	go func() {
-		s.states[id].locked = true
-		s.states[id].decoderMakers[vars["datalink"]](id.String()).Work(inputFile, outputFile)
-		s.states[id].locked = false
-	}()
-
-	ResSuccess(w, "DECODER_STARTED", outputFile)
-}
-
-func (s *Remote) processorHandler(w http.ResponseWriter, r *http.Request, vars map[string]string, id uuid.UUID) {
-	inputFile := r.FormValue("inputFile")
-
-	if _, err := os.Stat(inputFile); os.IsNotExist(err) || inputFile == "" {
-		ResError(w, "INPUT_FILE_NOT_FOUND", "")
-		return
-	}
-
-	go func() {
-		s.states[id].locked = true
-		s.states[id].processor = s.states[id].processorMakers[vars["datalink"]](id.String())
-		s.states[id].processor.Work(inputFile)
-		s.states[id].locked = false
-	}()
-
-	ResSuccess(w, "PROCESSOR_STARTED", "")
-}
-
-func (s *Remote) exporterHandler(w http.ResponseWriter, r *http.Request, vars map[string]string, id uuid.UUID) {
-	if s.states[id].processor == nil {
-		ResError(w, "PROCESSOR_NOT_LOADED", "")
-		return
-	}
-
-	go func() {
-		s.states[id].locked = true
-		go s.states[id].processor.ExportAll(s.states[id].workingPath)
-		s.states[id].locked = false
-	}()
-
-	ResSuccess(w, "EXPORTER_STARTED", "")
 }

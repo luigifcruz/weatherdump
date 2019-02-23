@@ -24,7 +24,7 @@ func ExportGrayscale(buf *[]byte, e Channel, outputFolder string) {
 
 	outputFile, err := os.Create(outputName)
 	if err != nil {
-		fmt.Println("[EXPORT] Error saving final image...")
+		fmt.Println("[EXP] Error saving final image...", err)
 	}
 	png.Encode(outputFile, img)
 	outputFile.Close()

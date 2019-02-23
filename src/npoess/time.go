@@ -3,6 +3,7 @@ package npoess
 import (
 	"encoding/binary"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -28,6 +29,10 @@ func (e Time) Print() {
 	fmt.Printf("Microseconds: %d\n", e.microseconds)
 	fmt.Printf("RFC3339: %s\n", e.GetZulu())
 	fmt.Println()
+}
+
+func (e Time) GetZuluSafe() string {
+	return strings.Replace(e.GetZulu(), ":", "", -1)
 }
 
 func (e Time) GetZulu() string {

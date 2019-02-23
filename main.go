@@ -11,16 +11,22 @@ import (
 	"github.com/urfave/cli"
 )
 
-func settingsPrint(inputFormat string, outputPath string, datalinkName string) {
-	fmt.Println("============== WeatherDump ==============")
-	fmt.Println("============= CONFIGURATION =============")
-	fmt.Println("Datalink:", datalinkName)
-	fmt.Println("Input Format:", inputFormat)
-	fmt.Println("Output Folder:", outputPath)
-	fmt.Println("=========================================")
-}
+const welcome = `
+======================= Open Satellite Project =======================
+__          __        _   _               _____                        
+\ \        / /       | | | |             |  __ \                       
+ \ \  /\  / /__  __ _| |_| |__   ___ _ __| |  | |_   _ _ __ ___  _ __  
+  \ \/  \/ / _ \/ _' | __| '_ \ / _ \ '__| |  | | | | | '_ ' _ \| '_ \ 
+   \  /\  /  __/ (_| | |_| | | |  __/ |  | |__| | |_| | | | | | | |_) |
+    \/  \/ \___|\__,_|\__|_| |_|\___|_|  |_____/ \__,_|_| |_| |_| .__/ 
+                                                                | |    
+								|_|
+========================= CLI Version Beta 1 =========================    
+`
 
 func main() {
+	fmt.Println(welcome)
+
 	var outputFolder string
 	var inputFormat string
 
@@ -57,7 +63,6 @@ func main() {
 					os.Exit(0)
 				}
 
-				settingsPrint(outputFolder, outputFolder, "HRD")
 				terminal.HandleInput(c.Args().First(), inputFormat, outputFolder, "hrd")
 				return nil
 			},
@@ -71,7 +76,6 @@ func main() {
 					os.Exit(0)
 				}
 
-				settingsPrint(outputFolder, outputFolder, "LRPT")
 				terminal.HandleInput(c.Args().First(), inputFormat, outputFolder, "lrpt")
 				return nil
 			},

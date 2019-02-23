@@ -129,7 +129,7 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 
 	// Render and save the true-color image.
 	img.Pix = finalImage
-	outputName, _ := filepath.Abs(fmt.Sprintf("%s/TRUECOLOR_VIIRS_%s.png", outputFolder, ch01.endTime.GetZulu()))
+	outputName, _ := filepath.Abs(fmt.Sprintf("%s/TRUECOLOR_VIIRS_%s.png", outputFolder, ch01.endTime.GetZuluSafe()))
 	outputFile, err := os.Create(outputName)
 	if err != nil {
 		fmt.Println("[EXPORT] Error saving final image...")
@@ -139,7 +139,6 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 }
 
 func (e *Worker) Process(scid uint8) {
-	fmt.Println("[SEN] Processing VIIRS channels data...")
 	for _, channel := range e.channelData {
 		channel.Fix(npoess.Spacecrafts[scid])
 	}

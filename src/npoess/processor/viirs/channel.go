@@ -59,7 +59,7 @@ func (e *Channel) Fix(scft npoess.SpacecraftParameters) {
 	e.parameters = ChannelsParameters[e.apid]
 
 	if e.end-e.start > maxFrameCount {
-		fmt.Printf("[VIIRS] Potentially invalid channel %s was found.\n", e.parameters.ChannelName)
+		fmt.Printf("[SEN] Potentially invalid channel %s was found.\n", e.parameters.ChannelName)
 		fmt.Println("	It's too long for the round earth, trying to correct...")
 
 		if (e.end - e.end - e.count) < maxFrameCount {
@@ -86,13 +86,13 @@ func (e *Channel) Fix(scft npoess.SpacecraftParameters) {
 
 	e.startTime = e.segments[e.start].header.GetDate()
 	e.endTime = e.segments[e.end].header.GetDate()
-	e.fileName = fmt.Sprintf("%s_%s_VIIRS_%s_%s", scft.Filename, scft.SignalName, e.parameters.ChannelName, e.startTime.GetZulu())
+	e.fileName = fmt.Sprintf("%s_%s_VIIRS_%s_%s", scft.Filename, scft.SignalName, e.parameters.ChannelName, e.startTime.GetZuluSafe())
 	e.height = (e.end - e.start) * uint32(e.parameters.AggregationZoneHeight)
 	e.width = e.parameters.FinalProductWidth
 }
 
 func (e Channel) ComposeUncoded(buf *[]byte) {
-	fmt.Printf("[VIIRS] Rendering Uncoded Channel %s\n", e.parameters.ChannelName)
+	fmt.Printf("[SEN] Rendering Uncoded Channel %s\n", e.parameters.ChannelName)
 
 	if !(len(e.segments) > 0) {
 		buf = nil
@@ -114,7 +114,7 @@ func (e *Channel) ComposeCoded(buf *[]byte, r *Channel) {
 	decFactor := map[bool]int{false: 2, true: 1}
 	bandComp := []rune(e.parameters.ChannelName)[0] == []rune(ChannelsParameters[e.parameters.ReconstructionBand].ChannelName)[0]
 
-	fmt.Printf("[VIIRS] Rendering Coded Channel %s with reconstruction channel %s\n",
+	fmt.Printf("[SEN] Rendering Coded Channel %s with reconstruction channel %s\n",
 		e.parameters.ChannelName, ChannelsParameters[e.parameters.ReconstructionBand].ChannelName)
 
 	if !(len(e.segments) > 0 && len(r.segments) > 0) {

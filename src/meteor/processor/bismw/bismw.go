@@ -17,7 +17,6 @@ func New() *Worker {
 }
 
 func (e *Worker) Process(scid uint8) {
-	fmt.Println("[SEN] Processing BISMW channels data...")
 	for _, channel := range e.channelData {
 		channel.Fix(meteor.Spacecrafts[scid])
 	}

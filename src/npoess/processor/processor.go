@@ -34,8 +34,6 @@ func NewProcessor(uuid string) interfaces.Processor {
 }
 
 func (e *Worker) Work(inputFile string) {
-	fmt.Println("[PRC] Decoding CCSDS packets...")
-
 	file, _ := ioutil.ReadFile(inputFile)
 	for i := len(file); i > 0; i -= frameSize {
 		f := frames.NewTransferFrame(file[(len(file) - i):])
@@ -50,17 +48,15 @@ func (e *Worker) Work(inputFile string) {
 		}
 	}
 
-	fmt.Printf("[PRC] Decoding %d VCID 16 packets...\n", len(e.ccsds.GetSpacePackets()))
+	fmt.Printf("[PRC] Found %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
 			e.viirs.Parse(packet)
 		}
 	}
-
-	fmt.Println("[PRC] Processing channels...")
 	e.viirs.Process(e.scid)
 
-	fmt.Println("[PRC] Finished decoding VCID 16 packets...")
+	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
 func (e *Worker) ExportAll(outputPath string) {

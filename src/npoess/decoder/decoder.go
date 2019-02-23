@@ -172,7 +172,7 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 			}
 
 			if corr < Datalink[id].MinCorrelationBits {
-				fmt.Printf("[DEC] Not enough correlations %d/%d. Skipping...\n", corr, Datalink[id].MinCorrelationBits)
+				//fmt.Printf("[DEC] Not enough correlations %d/%d. Skipping...\n", corr, Datalink[id].MinCorrelationBits)
 				continue
 			}
 
@@ -334,12 +334,10 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 			}
 
 			if e.Statistics.TotalPackets%512 == 0 {
-				fmt.Printf("\nAverage Viterbi Corrections: %d\nReed-Solomon Corrections: %d\nViterbi Signal Quality: %d\nBytes Read: %2.2f%% (%d/%d)\nDropped Packages: %2.2f%% (%d/%d)\n",
-					e.Statistics.AverageVitCorrections, e.Statistics.AverageRSCorrections, e.Statistics.SignalQuality,
+				fmt.Printf("[DEC] (%04.1f%%) Dropped Packets: %4.1f%%; Signal Quality: %2d%%\n",
 					float32(e.Statistics.TotalBytesRead)/float32(fi.Size())*100,
-					e.Statistics.TotalBytesRead, fi.Size(),
 					float32(e.Statistics.DroppedPackets)/float32(e.Statistics.TotalPackets)*100,
-					e.Statistics.DroppedPackets, e.Statistics.TotalPackets)
+					e.Statistics.SignalQuality)
 			}
 
 		} else {
@@ -350,7 +348,7 @@ func (e *Worker) Work(inputPath string, outputPath string) {
 		}
 	}
 
-	fmt.Printf("[DEC] Decoded file saved as %s\n", outputPath)
+	fmt.Printf("[DEC] Decoding finished! File saved as %s\n", outputPath)
 }
 
 func (e *Worker) constellation(w http.ResponseWriter, r *http.Request) {

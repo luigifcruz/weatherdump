@@ -13,7 +13,7 @@ import (
 )
 
 func HandleInput(inputFile string, inputFormat string, outputPath string, datalink string) {
-	fmt.Println("[CLI] Decoding started...", outputPath)
+	fmt.Printf("[CLI] Activating %s workflow...\n", strings.ToUpper(datalink))
 
 	workingPath := filepath.Dir(inputFile)
 	inputFileName := filepath.Base(inputFile)
@@ -28,12 +28,12 @@ func HandleInput(inputFile string, inputFormat string, outputPath string, datali
 		os.Mkdir(outputPath, os.ModePerm)
 	}
 
-	var processorMakers = map[string]func(string) interfaces.Processor{
+	var processorMakers = interfaces.ProcessorMakers{
 		"lrpt": meteorProcessor.NewProcessor,
 		"hrd":  npoessProcessor.NewProcessor,
 	}
 
-	var decoderMakers = map[string]func(string) interfaces.Decoder{
+	var decoderMakers = interfaces.DecoderMakers{
 		"lrpt": meteorDecoder.NewDecoder,
 		"hrd":  npoessDecoder.NewDecoder,
 	}

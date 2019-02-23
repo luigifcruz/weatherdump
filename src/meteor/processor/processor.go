@@ -49,17 +49,15 @@ func (e *Worker) Work(inputFile string) {
 		}
 	}
 
-	fmt.Printf("[PRC] Decoding %d VCID 5 packets...\n", len(e.ccsds.GetSpacePackets()))
+	fmt.Printf("[PRC] Found %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
 			e.bismw.Parse(packet)
 		}
 	}
-
-	fmt.Println("[PRC] Processing channels...")
 	e.bismw.Process(e.scid)
 
-	fmt.Println("[PRC] Finished decoding packets...")
+	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
 func (e *Worker) ExportAll(outputPath string) {

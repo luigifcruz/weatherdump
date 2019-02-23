@@ -102,7 +102,7 @@ func (e FrameHeader) IsValid() bool {
 }
 
 func (e FrameHeader) GetDateString() string {
-	return e.time.GetZulu()
+	return e.time.GetZuluSafe()
 }
 
 func (e FrameHeader) GetDate() npoess.Time {
