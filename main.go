@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"weather-dump/src/remote"
-	"weather-dump/src/terminal"
+	"weather-dump/src/handlers/remote"
+	"weather-dump/src/handlers/terminal"
 
 	"github.com/urfave/cli"
 )
