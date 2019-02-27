@@ -23,7 +23,7 @@ RUN git clone https://github.com/luigifreitas/libsathelper.git \
 ENV GOPATH=/home/go
 WORKDIR /home/go/src/weather-dump
 
-RUN CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go get -v github.com/gorilla/handlers github.com/gorilla/mux github.com/satori/go.uuid github.com/urfave/cli github.com/nfnt/resize github.com/luigifreitas/libsathelper github.com/gorilla/websocket
+RUN CXX=arm-linux-gnueabihf-g++ CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go get -v github.com/gorilla/handlers github.com/gorilla/mux github.com/satori/go.uuid gopkg.in/alecthomas/kingpin.v2 github.com/nfnt/resize github.com/luigifreitas/libsathelper github.com/gorilla/websocket
 RUN cd /home/go/src/github.com && mkdir ./OpenSatelliteProject ./OpenSatelliteProject/libsathelper && mv ./luigifreitas/libsathelper/* ./OpenSatelliteProject/libsathelper
 
 ADD generator.sh /go/generator.sh

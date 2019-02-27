@@ -15,7 +15,7 @@ const devConfig = {
         './src/client/index.js'
     ],
     output: {
-        path: path.resolve(__dirname, 'build'),
+        path: path.resolve(__dirname, 'resources'),
         filename: 'bundle.js',
         publicPath: "/"
     },

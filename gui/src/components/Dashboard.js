@@ -17,12 +17,12 @@ class Dashboard extends Component {
                     <div className="Satellite">
                         <h3>NPOESS</h3>
                         <h4>NOAA-20 & Suomi</h4>
-                        <Link to="/npoess/steps" className="Band">X-Band HRD</Link>
+                        <Link to="/steps/hrd" className="Band">X-Band HRD</Link>
                     </div>
                     <div className="Satellite">
                         <h3>Meteor</h3>
                         <h4>Meteor-MN2</h4>
-                        <Link to="/meteor/steps"  className="Band">VHF LRPT</Link>
+                        <Link to="/steps/lrpt"  className="Band">VHF LRPT</Link>
                     </div>
                 </div>
             </div>

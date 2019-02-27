@@ -1,15 +1,29 @@
 import PropTypes from 'prop-types'
 
-export const UPDATE_REGISTRY = "UPDATE_REGISTRY"
+export const UPDATE_PROCESS_ID = "UPDATE_PROCESS_ID"
+export const UPDATE_DECODED_FILE = "UPDATE_DECODED_FILE"
+export const UPDATE_PROCESSED_FILE = "UPDATE_PROCESSED_FILE"
 
 export const props = {
-    'appId': PropTypes.string
+    'processId': PropTypes.string,
+    'decodedFile': PropTypes.string,
+    'processedFile': PropTypes.string,
 }
 
 export const mapStateToProps = (state) => ({
-    'appId': state.appId
+    'processId': state.processId,
+    'decodedFile': state.decodedFile,
+    'processedFile': state.processedFile,
 });
 
-export function updateRegistry(uuid) {
-    return { type: UPDATE_REGISTRY, uuid }
+export function updateDecodedFile(path) {
+    return { type: UPDATE_DECODED_FILE, path }
+}
+
+export function updateProcessedFile(path) {
+    return { type: UPDATE_PROCESSED_FILE, path }
+}
+
+export function updateProcessId(id) {
+    return { type: UPDATE_PROCESS_ID, id }
 }

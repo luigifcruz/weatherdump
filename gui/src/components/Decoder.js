@@ -10,7 +10,7 @@ const shaders = Shaders.create({
     constellation: {
         frag: GLSL`
         precision highp float;
-        uniform float complex[512];
+        uniform float complex[200];
         uniform int n;
 
         float circle(in vec2 _st, in vec2 pos, in float _radius){
@@ -30,7 +30,7 @@ const shaders = Shaders.create({
             color = mix(color, vec3(0.12974,0.13725,0.18823), 1.0);
             
             if (n > 0) {
-                for (int i=0; i < 512; i+=2) {
+                for (int i=0; i < 250; i+=2) {
                     float x, y;
     
                     if (complex[i] > 127.0) {
@@ -112,9 +112,9 @@ class Decoder extends Component {
 
         return (
             <div className="View">
-                <Websocket url={`ws://192.168.0.19:3000/ws/${params.satellite}/${this.props.appId}/constellation`}
+                <Websocket url={`ws://localhost:3000/${params.datalink}/${this.props.processId}/constellation`}
                     onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
-                <Websocket url={`ws://192.168.0.19:3000/ws/${params.satellite}/${this.props.appId}/statistics`}
+                <Websocket url={`ws://localhost:3000/${params.datalink}/${this.props.processId}/statistics`}
                     onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
                 <div className="Header">
                     <h1 className="Title">
@@ -194,7 +194,7 @@ class Decoder extends Component {
                                 stats.ReceivedPacketsPerChannel.map((received, i) => {
                                     if (received > 0) {
                                         return (
-                                            <div className="Channel">
+                                            <div key={i} className="Channel">
                                                 <div className="VCID">{i}</div>
                                                 <div className="Count">{received}</div>
                                             </div>

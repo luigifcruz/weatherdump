@@ -1,13 +1,12 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, protocol } = require('electron');
+const express = require('express');
+const path = require('path');
+const http = require('http');
 
 let win
 
 function createWindow() {
     let height = 500;
-
-    if (process.platform == 'darwin') {
-        height = 520
-    }
 
     win = new BrowserWindow({
         width: 900,
@@ -16,12 +15,11 @@ function createWindow() {
         resizable: false
     })
 
-    if (process.env.NODE_ENV === "development") {
-        win.setSize(900, 750)
-        win.webContents.openDevTools();
-    }
+    win.setSize(900, 760)
+    win.webContents.openDevTools();
 
-    win.loadURL('http://localhost:3002');
+    win.loadURL("http://localhost:3002/index.html")
+    win.focus();
 
     win.on('closed', () => {
         win = null

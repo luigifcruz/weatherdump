@@ -1,0 +1,7 @@
+set(CMAKE_SYSTEM_NAME Darwin)
+set(TOOLCHAIN_PREFIX x86_64-apple-darwin15)
+
+set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-clang)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-clang++)
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")

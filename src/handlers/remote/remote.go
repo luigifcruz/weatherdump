@@ -40,7 +40,7 @@ func (s *Remote) Listen() {
 	http.Handle("/", httpHandlers.CORS(origins, headers)(r))
 
 	fmt.Println("[RMT] Starting to listen requests...")
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe("127.0.0.1:3000", nil)
 }
 
 func (s *Remote) register() uuid.UUID {

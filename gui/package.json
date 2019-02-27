@@ -1,52 +1,73 @@
 {
-  "name": "weatherapp",
-  "version": "1.0.0",
-  "description": "WeatherApp GUI",
-  "main": "main.js",
+  "name": "weatherdump",
+  "version": "1.0.0b",
+  "description": "WeatherDump GUI",
+  "main": "electron.prod.js",
   "scripts": {
-    "electron": "electron .",
-    "prod": "webpack --config webpack.config.prod.js && node server.prod.js",
     "dev": "webpack --config webpack.config.dev.js && node server.dev.js",
+    "dev-electron": "electron electron.dev.js",
     "build": "webpack --config webpack.config.prod.js"
   },
-  "author": "Luigi Freitas Cruz",
+  "build": {
+    "artifactName": "weatherdump-gui-${version}-${os}.${ext}",
+    "icon": "./resources/icon_by_eucalyp.png",
+    "files": [
+      "electron.prod.js"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    },
+    "mac": {
+      "target": [
+        "zip"
+      ]
+    },
+    "extraFiles": [
+      {
+        "from": "resources",
+        "to": "resources/app/gui",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../dist/weatherdump-cli-${os}-${arch}",
+        "to": "resources/app/engine",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  },
+  "author": "Open Satellite Project",
   "license": "MIT",
   "dependencies": {
-    "async": "^2.6.2",
-    "async-task": "^0.4.2",
+    "express": "^4.13.4"
+  },
+  "devDependencies": {
+    "electron": "^4.0.4",
     "babel-plugin-transform-runtime": "^6.23.0",
-    "cookie-parser": "^1.4.4",
-    "dgram-browserify": "0.0.13",
-    "ejs": "^2.5.2",
-    "express": "^4.13.4",
     "gl-react": "^3.15.0",
     "gl-react-dom": "^3.15.0",
-    "json-loader": "^0.5.4",
-    "luxon": "^1.11.2",
-    "md5": "^2.1.0",
-    "node-uuid": "^1.4.7",
-    "pondjs": "^0.8.9",
     "prop-types": "^15.7.2",
     "react": "^16.8.1",
-    "react-clock": "^2.3.0",
-    "react-cookie": "^3.0.4",
-    "react-copy-to-clipboard": "^5.0.1",
     "react-dom": "^16.8.1",
-    "react-google-maps": "^9.4.5",
     "react-hot-loader": "^4.6.5",
-    "react-live-clock": "^3.0.0",
     "react-redux": "^6.0.0",
     "react-router-dom": "^4.3.1",
     "react-websocket": "^2.0.1",
     "recompose": "^0.30.0",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "ringjs": "0.0.1",
-    "suncalc": "^1.8.0",
     "superagent": "^4.0.0-beta.5",
-    "superagent-prefix": "0.0.2"
-  },
-  "devDependencies": {
+    "superagent-prefix": "0.0.2",
     "@babel/core": "^7.1.0",
     "@babel/preset-env": "^7.3.1",
     "@babel/preset-react": "^7.0.0",
@@ -55,7 +76,6 @@
     "css-hot-loader": "^1.4.2",
     "css-loader": "^2.1.0",
     "del-webpack-plugin": "^1.1.0",
-    "electron": "^4.0.4",
     "mini-css-extract-plugin": "^0.5.0",
     "node-sass": "^4.9.3",
     "sass-loader": "^7.1.0",

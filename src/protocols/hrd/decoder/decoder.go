@@ -44,8 +44,8 @@ func NewDecoder(uuid string) interfaces.Decoder {
 	e := Worker{}
 
 	if uuid != "" {
-		http.HandleFunc(fmt.Sprintf("/ws/npoess/%s/constellation", uuid), e.constellation)
-		http.HandleFunc(fmt.Sprintf("/ws/npoess/%s/statistics", uuid), e.statistics)
+		http.HandleFunc(fmt.Sprintf("/hrd/%s/constellation", uuid), e.constellation)
+		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
 	}
 
 	if uselastFrameData {
@@ -130,7 +130,7 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 		if err == nil {
 			e.Statistics.TotalBytesRead += uint64(n)
 			if (e.Statistics.TotalPackets%32 == 0) && e.constSock != nil {
-				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:512])))
+				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:256])))
 			}
 
 			if e.Statistics.TotalPackets%averageLastNSamples == 0 {

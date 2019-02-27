@@ -1,8 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CompressionWebpackPlugin = require('compression-webpack-plugin');
-const DelWebpackPlugin = require('del-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const prodConfig = {
@@ -10,7 +8,7 @@ const prodConfig = {
     target: 'web',
     entry: './src/client/index.js',
     output: {
-        path: path.resolve(__dirname, 'build'),
+        path: path.resolve(__dirname, 'resources'),
         filename: 'bundle.js'
     },
     performance: {
@@ -45,17 +43,6 @@ const prodConfig = {
         new MiniCssExtractPlugin({
             filename: "[name].css",
             allChunks: false
-        }),
-        new CompressionWebpackPlugin({
-            filename: '[path].gz[query]',
-            algorithm: 'gzip',
-            test: new RegExp('\\.(js|css)$'),
-            cache: true
-        }),
-        new DelWebpackPlugin({
-            exclude: ['bundle.js.gz', 'index.html', 'main.css.gz'],
-            keepGeneratedAssets: false,
-            info: true,
         })
     ]
 };

@@ -2,16 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
+	remoteHandler "weather-dump/src/handlers/remote"
+	terminalHandler "weather-dump/src/handlers/terminal"
 
-	"weather-dump/src/handlers/remote"
-	"weather-dump/src/handlers/terminal"
-
-	"github.com/urfave/cli"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-const welcome = `
+const startMessage = `
 ======================= Open Satellite Project =======================
 __          __        _   _               _____                        
 \ \        / /       | | | |             |  __ \                       
@@ -24,74 +21,32 @@ __          __        _   _               _____
 ========================= CLI Version Beta 1 =========================    
 `
 
+var (
+	output = kingpin.Flag("output", "Custom output folder. Default is the current input file folder.").Default("").String()
+
+	hrd       = kingpin.Command("hrd", "Activate workflow for the HRD protocol (NPOESS & NPP).")
+	hrdFile   = hrd.Arg("file", "input file path").Required().ExistingFile()
+	hrdFormat = hrd.Flag("decoded", "input file format").Short('d').Default("false").Bool()
+
+	lrpt       = kingpin.Command("lrpt", "Activate workflow for the LRPT protocol (Meteor-MN2).")
+	lrptFile   = lrpt.Arg("file", "input file path").Required().ExistingFile()
+	lrptFormat = lrpt.Flag("decoded", "input file format").Short('d').Default("false").Bool()
+
+	remote = kingpin.Command("remote", "Activate the remote API for the GUI.")
+)
+
 func main() {
-	fmt.Println(welcome)
+	fmt.Println(startMessage)
 
-	var outputFolder string
-	var inputFormat string
+	kingpin.CommandLine.HelpFlag.Short('h')
+	kingpin.Version("Beta 1")
 
-	app := cli.NewApp()
-
-	app.Name = "weatherdump"
-	app.UsageText = "weatherdump [OPTIONS] [DATALINK] [FILE_PATH]"
-	app.Author = "Luigi Cruz (@luigifcruz) for Open Satellite Project"
-	app.Usage = "OSP's universal decoder for sun-synchronous satellites."
-	app.Version = "1.0.0"
-
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:        "format",
-			Value:       "grcout",
-			Usage:       "input format [grcout or decoded]",
-			Destination: &inputFormat,
-		},
-		cli.StringFlag{
-			Name:        "output",
-			Usage:       "folder where the products will be saved",
-			Destination: &outputFolder,
-		},
-	}
-
-	app.Commands = []cli.Command{
-		{
-			Name:     "hrd",
-			Usage:    "decoder for X-Band High Rate Data (HRD) signal (Suomi & NOAA-20)",
-			Category: "DATALINK",
-			Action: func(c *cli.Context) error {
-				if len(c.Args().First()) == 0 {
-					fmt.Println("[ERROR] Missing file_path.")
-					os.Exit(0)
-				}
-
-				terminal.HandleInput(c.Args().First(), inputFormat, outputFolder, "hrd")
-				return nil
-			},
-		}, {
-			Name:     "lrpt",
-			Usage:    "decoder for VHF band Low Rate Picture Transfer (LRPT) signal (MeteorM-N2)",
-			Category: "DATALINK",
-			Action: func(c *cli.Context) error {
-				if len(c.Args().First()) == 0 {
-					fmt.Println("[ERROR] Missing file_path.")
-					os.Exit(0)
-				}
-
-				terminal.HandleInput(c.Args().First(), inputFormat, outputFolder, "lrpt")
-				return nil
-			},
-		}, {
-			Name:     "remote",
-			Usage:    "listen to network commands",
-			Category: "DATALINK",
-			Action: func(c *cli.Context) error {
-				remote.New().Listen()
-				return nil
-			},
-		},
-	}
-
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
+	switch kingpin.Parse() {
+	case "hrd":
+		terminalHandler.HandleInput(*hrdFile, *hrdFormat, *output, "hrd")
+	case "lrpt":
+		terminalHandler.HandleInput(*lrptFile, *lrptFormat, *output, "lrpt")
+	case "remote":
+		remoteHandler.New().Listen()
 	}
 }

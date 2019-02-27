@@ -140,5 +140,6 @@ func (e *Segment) dequantize() {
 
 			e.export[y][x] = uint8(normalizedPixel)
 		}
+		e.mcus[y] = nil
 	}
 }

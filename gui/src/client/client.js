@@ -5,6 +5,7 @@ import { configureStore } from '../redux/store'
 import App from '../components/App'
 import Dashboard from '../components/Dashboard'
 import Decoder from '../components/Decoder'
+import About from '../components/About'
 import StepPicker from '../components/StepPicker'
 
 const store = configureStore();
@@ -16,9 +17,10 @@ export default class Client extends Component {
                 <BrowserRouter>
                     <App>
                         <Switch>
-                            <Route exact path="/" component={Dashboard}/>
-                            <Route exact path="/:satellite/steps" component={StepPicker}/>
-                            <Route exact path="/:satellite/decoder" component={Decoder}/>
+                            <Route exact path="/index.html" component={Dashboard}/>
+                            <Route exact path="/about" component={About}/>
+                            <Route exact path="/steps/:datalink" component={StepPicker}/>
+                            <Route exact path="/decoder/:datalink" component={Decoder}/>
                         </Switch>
                     </App>
                 </BrowserRouter>

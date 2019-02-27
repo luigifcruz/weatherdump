@@ -1,6 +1,10 @@
 package handlers
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"weather-dump/src/handlers/interfaces"
 	npoessDecoder "weather-dump/src/protocols/hrd/decoder"
 	npoessProcessor "weather-dump/src/protocols/hrd/processor"
@@ -18,4 +22,28 @@ var AvailableDecoders = interfaces.DecoderMakers{
 var AvailableProcessors = interfaces.ProcessorMakers{
 	"lrpt": meteorProcessor.NewProcessor,
 	"hrd":  npoessProcessor.NewProcessor,
+}
+
+// GenerateDirectories takes user paths and returns the standard output scheme.
+func GenerateDirectories(inputFile string, outputPath string) (string, string) {
+	inputFileName := filepath.Base(inputFile)
+	inputFileName = strings.TrimSuffix(inputFileName, filepath.Ext(inputFile))
+	workingPath := filepath.Dir(inputFile)
+
+	if outputPath != "" {
+		workingPath = outputPath
+		if _, err := os.Stat(workingPath); os.IsNotExist(err) {
+			os.Mkdir(workingPath, os.ModePerm)
+		}
+	}
+
+	if !strings.Contains(inputFile, "/OUTPUT_") {
+		workingPath = fmt.Sprintf("%s/OUTPUT_%s", workingPath, strings.ToUpper(inputFileName))
+	}
+
+	if _, err := os.Stat(workingPath); os.IsNotExist(err) {
+		os.Mkdir(workingPath, os.ModePerm)
+	}
+
+	return workingPath, inputFileName
 }

@@ -1,12 +1,12 @@
 import {
-    UPDATE_REGISTRY
+    UPDATE_PROCESS_ID
 } from "./actions"
 
 export default function reducer(state, action) {
     switch (action.type) {
-        case UPDATE_REGISTRY:
+        case UPDATE_PROCESS_ID:
         return Object.assign({}, state, {
-            appId: action.uuid
+            processId: action.id
         })
         default:
         return state;

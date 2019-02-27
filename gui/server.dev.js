@@ -17,13 +17,7 @@ app.use(
 
 app.use(require("webpack-hot-middleware")(compiler));
 
-app.use('/icons', express.static(path.join(__dirname, "dist")))
+app.use('/', express.static(path.join(__dirname, "resources")))
 
-app.use('/', express.static(path.join(__dirname, "build")))
-
-app.get('/*', (req, res) => {   
-    res.sendFile(path.join(__dirname, "dist/index.html"));
-})
-
-const server = http.createServer(app).listen(3002);
+http.createServer(app).listen(3002);
 console.log(`Simulator started at port 3002...`);

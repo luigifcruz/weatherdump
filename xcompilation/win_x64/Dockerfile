@@ -17,7 +17,7 @@ RUN git clone https://github.com/racerxdl/libcorrect.git \
 RUN git clone https://github.com/luigifreitas/libsathelper.git \
     && cd libsathelper \
     && mkdir build && cd build \
-    && cmake -DCMAKE_INSTALL_PREFIX=/usr/x86_64-w64-mingw32/ -DARCHITECTURE=x86_64 -DCMAKE_TOOLCHAIN_FILE=../../polly/linux-mingw-w64-gnuxx11.cmake -DBUILD_SHARED_LIBS=OFF .. && make -j8 && make install \
+    && cmake -DCMAKE_INSTALL_PREFIX=/usr/x86_64-w64-mingw32/ -DARCHITECTURE=x86_64 -DCMAKE_TOOLCHAIN_FILE=../../polly/linux-mingw-w64-gnuxx11.cmake .. && make -j8 && make install \
     && cd ./../..
 RUN git clone https://github.com/luigifreitas/mingw-std-threads.git \
     && cd mingw-std-threads \
@@ -27,7 +27,7 @@ RUN git clone https://github.com/luigifreitas/mingw-std-threads.git \
 ENV GOPATH=/home/go
 WORKDIR /home/go/src/weather-dump
 
-RUN CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 go get -v github.com/gorilla/handlers github.com/gorilla/mux github.com/satori/go.uuid github.com/urfave/cli github.com/nfnt/resize github.com/luigifreitas/libsathelper github.com/gorilla/websocket
+RUN CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 go get -v github.com/gorilla/handlers github.com/gorilla/mux github.com/satori/go.uuid gopkg.in/alecthomas/kingpin.v2 github.com/nfnt/resize github.com/luigifreitas/libsathelper github.com/gorilla/websocket
 RUN cd /home/go/src/github.com && mkdir ./OpenSatelliteProject ./OpenSatelliteProject/libsathelper && mv ./luigifreitas/libsathelper/* ./OpenSatelliteProject/libsathelper
 
 ADD generator.sh /go/generator.sh

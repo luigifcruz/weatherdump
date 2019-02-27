@@ -61,14 +61,11 @@ class StepPicker extends Component {
         const { match: { params } } = this.props;
 
         request
-        .post(`http://localhost:3000/api/${params.satellite}/register`)
-        .field("workingPath", "/home/luigifcruz/Downloads/out")
-        .then(res => this.props.dispatch(rxa.updateRegistry(res.body.Code)))
-        .then(() => { 
-            request
-            .post(`http://localhost:3000/api/${params.satellite}/${this.props.appId}/decoder/2`)
-            .field("inputFile", inputFile)
-            .then(res => this.props.history.push(`/${params.satellite}/decoder`))
+        .post(`http://localhost:3000/${params.datalink}/start/decoder`)
+        .field("inputFile", inputFile)
+        .then((res) => {
+            this.props.dispatch(rxa.updateProcessId(res.body.Code))
+            this.props.history.push(`/decoder/${params.datalink}`)
         })
         .catch(err =>  console.log(err))
     }
@@ -91,7 +88,7 @@ class StepPicker extends Component {
                         Where are you at?
                     </h1>
                     <h2 className="Description">
-                    From the recording thru processing, the WeatherApp supports a myriad of input options. To proceed, select below where are you at in the receiving process and what kind of input file you want to process. 
+                    From the recording thru processing, the WeatherDump supports a myriad of input options. To proceed, select below where are you at in the receiving process and what kind of input file you want to process. 
                     </h2>
                 </div>
                 <div className="Body">
