@@ -9,6 +9,7 @@
     "build": "webpack --config webpack.config.prod.js"
   },
   "build": {
+    "productName": "WeatherDump",
     "artifactName": "weatherdump-gui-${version}-${os}.${ext}",
     "icon": "./resources/icon_by_eucalyp.png",
     "files": [

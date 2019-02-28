@@ -7,10 +7,10 @@ fix-permission:
 	sudo chown -fR $(shell whoami) release-builds/* || :
 
 build-cli-compiler:
-	docker build -t weatherdump_linux_x64 ./xcompilation/linux_x64
-	docker build -t weatherdump_linux_armhf ./xcompilation/linux_armhf
-	docker build -t weatherdump_win_x64 ./xcompilation/win_x64
-	docker build -t weatherdump_mac_x64 ./xcompilation/mac_x64
+	cd ./xcompilation && docker build -t weatherdump_linux_x64 -f Dockerfile.linux_x64 .
+	cd ./xcompilation && docker build -t weatherdump_linux_armhf -f Dockerfile.linux_armhf .
+	cd ./xcompilation && docker build -t weatherdump_win_x64 -f Dockerfile.win_x64 .
+	cd ./xcompilation && docker build -t weatherdump_mac_x64 -f Dockerfile.mac_x64 .
 
 build-cli-release:
 	mkdir -p release-builds ./dist
@@ -47,5 +47,6 @@ build-web-resources:
 	cd ./gui && npm i && npm run build && cd -
 
 clean:
+	make fix-permission
 	rm -rf ./dist ./gui/dist ./gui/node_modules
 	rm -rf ./gui/resources/*.css ./gui/resources/*.js

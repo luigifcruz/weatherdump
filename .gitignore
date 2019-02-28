@@ -11,4 +11,4 @@ gui/resources/*.css
 release-builds/*
 dist/*
 gui/dist/*
-xcompilation/mac_x64/tarball/*
+xcompilation/tarball/*
