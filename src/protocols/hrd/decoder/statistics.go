@@ -1,5 +1,6 @@
 package decoder
 
+// Statistics struct for the decoder.
 type Statistics struct {
 	SCID                      uint8
 	VCID                      uint8
@@ -20,4 +21,11 @@ type Statistics struct {
 	TotalBytes                uint64
 	SyncWord                  [4]uint8
 	FrameLock                 uint8
+	Finished                  bool
+}
+
+// Finish decoding process.
+func (e *Statistics) Finish() {
+	e.Finished = true
+	e.TotalBytesRead = e.TotalBytes
 }

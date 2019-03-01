@@ -21,7 +21,11 @@
             margin-left: 0.75em;
             margin-top: 0em;
             font-size: 1em;
-            line-height: 1.95em;
+            line-height: 1.85em;
+        }
+
+        .feather { 
+            margin-top: 0.22em;
         }
     }
 
@@ -67,6 +71,16 @@
 
         background: #282A37;
         border-radius: 0.25em;
+    }
+
+    .Deactivated {
+        h3 {
+            cursor: auto;
+        }
+
+        h3:hover {
+            text-decoration: none !important;
+        }
     }
 }
 

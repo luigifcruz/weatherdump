@@ -2,6 +2,7 @@ package remote
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"weather-dump/src/handlers"
 
@@ -31,7 +32,7 @@ func New() *Remote {
 	return &e
 }
 
-func (s *Remote) Listen() {
+func (s *Remote) Listen(port string) {
 	origins := httpHandlers.AllowedOrigins([]string{"http://localhost:3002"})
 	headers := httpHandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 
@@ -39,8 +40,8 @@ func (s *Remote) Listen() {
 	r.HandleFunc("/{datalink}/{cmd}/{handler}", s.router)
 	http.Handle("/", httpHandlers.CORS(origins, headers)(r))
 
-	fmt.Println("[RMT] Starting to listen requests...")
-	http.ListenAndServe("127.0.0.1:3000", nil)
+	fmt.Println("[RMT] Starting to listen requests from port " + port + "...")
+	log.Fatal(http.ListenAndServe("127.0.0.1:"+port, nil))
 }
 
 func (s *Remote) register() uuid.UUID {

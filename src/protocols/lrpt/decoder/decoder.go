@@ -131,7 +131,7 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 		if err == nil {
 			e.Statistics.TotalBytesRead += uint64(n)
 			if (e.Statistics.TotalPackets%32 == 0) && e.constSock != nil {
-				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:256])))
+				e.constSock.WriteMessage(1, []byte(b64.StdEncoding.EncodeToString(e.codedData[:200])))
 			}
 
 			if e.Statistics.TotalPackets%averageLastNSamples == 0 {
@@ -319,10 +319,7 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 			}
 
 			if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
-				json, err := json.Marshal(e.Statistics)
-				if err == nil {
-					e.statsSock.WriteMessage(1, []byte(json))
-				}
+				e.updateStatistics(e.Statistics)
 			}
 
 			if e.Statistics.TotalPackets%512 == 0 {
@@ -339,7 +336,16 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 		}
 	}
 
+	e.Statistics.Finish()
+	e.updateStatistics(e.Statistics)
 	fmt.Printf("[DEC] Decoding finished! File saved as %s\n", outputPath)
+}
+
+func (e *Worker) updateStatistics(s Statistics) {
+	json, err := json.Marshal(s)
+	if err == nil {
+		e.statsSock.WriteMessage(1, []byte(json))
+	}
 }
 
 func (e *Worker) constellation(w http.ResponseWriter, r *http.Request) {

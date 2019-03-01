@@ -34,6 +34,8 @@ func NewProcessor(uuid string) interfaces.Processor {
 }
 
 func (e *Worker) Work(inputFile string) {
+	fmt.Println("[PRC] WARNING! This processor is currently in BETA development state.")
+
 	file, _ := ioutil.ReadFile(inputFile)
 	for i := len(file); i > 0; i -= frameSize {
 		f := frames.NewTransferFrame(file[(len(file) - i):])

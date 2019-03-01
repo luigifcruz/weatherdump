@@ -23,6 +23,7 @@ func (s *Remote) decoderStart(w http.ResponseWriter, r *http.Request, vars map[s
 
 	go func() {
 		handlers.AvailableDecoders[vars["datalink"]](id.String()).Work(inputFile, decodedFile, &s.processes[id].heartbeart)
+		s.terminate(id)
 	}()
 
 	ResSuccess(w, id.String(), decodedFile)
@@ -41,6 +42,7 @@ func (s *Remote) processorStart(w http.ResponseWriter, r *http.Request, vars map
 		processor := handlers.AvailableProcessors[vars["datalink"]](id.String())
 		processor.Work(inputFile)
 		processor.ExportAll(workingPath)
+		s.terminate(id)
 	}()
 
 	ResSuccess(w, "PROCESSOR_STARTED", "")

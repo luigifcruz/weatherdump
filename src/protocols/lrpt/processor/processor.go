@@ -33,7 +33,7 @@ func NewProcessor(uuid string) interfaces.Processor {
 }
 
 func (e *Worker) Work(inputFile string) {
-	fmt.Println("[PRC] Decoding CCSDS packets...")
+	fmt.Println("[PRC] WARNING! This processor is currently in ALPHA development state.")
 
 	file, _ := ioutil.ReadFile(inputFile)
 	for i := len(file); i > 0; i -= frameSize {

@@ -3,7 +3,10 @@ import Reducer from './reducer'
 import createLogger from 'redux-logger'
 
 let defaultState = {
-    "appId": null
+    'processId': null,
+    'processDatalink': null,
+    'decodedFile': null,
+    'processedFile': null,
 }
 
 const middleware = [ createLogger ]

@@ -5,6 +5,28 @@
     border-radius: 0.75em;
     margin-right: 1em;
     padding: 0.5em 0.5em 1.25em 0.5em;
+    position: relative;
+
+    label {
+        position: absolute;
+        font-size: 0.85em;
+        font-weight: bold;
+        padding: .15em .45em .1em .45em;
+        border-radius: .25em;
+        line-height: 1.425em; 
+        right: 0.95em;
+        top: 0.85em;
+    }
+
+    .Beta {
+        background: #619B8A;
+        
+    }
+
+    .Alpha {
+        background: #F35B04;
+        line-height: 1.4em; 
+    }
 
     a {
         border: 2px solid #3F8EFC;

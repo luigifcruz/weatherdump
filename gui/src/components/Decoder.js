@@ -4,6 +4,7 @@ import { Surface } from "gl-react-dom"
 import Websocket from 'react-websocket'
 import * as rxa from '../redux/actions'
 import { connect } from 'react-redux'
+import request from 'superagent'
 import '../styles/Decoder.scss'
 
 const shaders = Shaders.create({
@@ -30,7 +31,7 @@ const shaders = Shaders.create({
             color = mix(color, vec3(0.12974,0.13725,0.18823), 1.0);
             
             if (n > 0) {
-                for (int i=0; i < 250; i+=2) {
+                for (int i=0; i < 200; i+=2) {
                     float x, y;
     
                     if (complex[i] > 127.0) {
@@ -56,38 +57,39 @@ const shaders = Shaders.create({
 });
 
 function _base64ToArrayBuffer(base64) {
-    var wordArray =  window.atob(base64);
+    var wordArray = window.atob(base64);
     var len = wordArray.length,
-		u8_array = new Uint8Array(len),
-		offset = 0, word, i
-	;
-	for (i=0; i<len; i++) {
+        u8_array = new Uint8Array(len),
+        offset = 0, word, i
+        ;
+    for (i = 0; i < len; i++) {
         word = wordArray.charCodeAt(i);
         u8_array[offset++] = (word & 0xff);
-	}
-	return u8_array;
+    }
+    return u8_array;
 }
 
 class Decoder extends Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         this.state = {
-          complex: [],
-          stats: {
-            TotalBytesRead: 0.0,
-            TotalBytes: 0.0,
-            RsErrors: [-1, -1, -1, -1],
-            SignalQuality: 0,
-            ReceivedPacketsPerChannel: []
-          },
-          n: 0
+            complex: [],
+            stats: {
+                TotalBytesRead: 0.0,
+                TotalBytes: 0.0,
+                RsErrors: [-1, -1, -1, -1],
+                SignalQuality: 0,
+                ReceivedPacketsPerChannel: [],
+                Finished: false
+            },
+            n: 0
         };
     }
 
     handleConstellation(data) {
-        this.setState({ complex: _base64ToArrayBuffer(data), n: this.state.n+1 })
+        this.setState({ complex: _base64ToArrayBuffer(data), n: this.state.n + 1 })
     }
-    
+
     handleStatistics(stats) {
         this.setState({ stats: JSON.parse(stats) })
     }
@@ -97,6 +99,15 @@ class Decoder extends Component {
     }
 
     handleAbort() {
+        request
+            .post(`http://localhost:3000/${this.props.processDatalink}/abort/decoder`)
+            .field("id", this.props.processId)
+            .then((res) => {
+                this.props.dispatch(rxa.updateProcessId(null))
+                this.props.dispatch(rxa.updateProcessDatalink(null))
+                console.log("Process aborted.")
+            })
+            .catch(err => console.log(err))
         this.props.history.goBack()
     }
 
@@ -104,18 +115,18 @@ class Decoder extends Component {
         const { match: { params } } = this.props;
         const { complex, n, stats } = this.state;
 
-        let percentage = (stats.TotalBytesRead/stats.TotalBytes)*100
+        let percentage = (stats.TotalBytesRead / stats.TotalBytes) * 100
         percentage = isNaN(percentage) ? 0 : percentage
 
-        let droppedpackets = (stats.DroppedPackets/stats.TotalPackets)*100
+        let droppedpackets = (stats.DroppedPackets / stats.TotalPackets) * 100
         droppedpackets = isNaN(droppedpackets) ? 0 : droppedpackets
 
         return (
             <div className="View">
                 <Websocket url={`ws://localhost:3000/${params.datalink}/${this.props.processId}/constellation`}
-                    onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)}/>
+                    onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)} />
                 <Websocket url={`ws://localhost:3000/${params.datalink}/${this.props.processId}/statistics`}
-                    onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)}/>
+                    onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)} />
                 <div className="Header">
                     <h1 className="Title">
                         <div onClick={this.handleAbort.bind(this)} className="icon">
@@ -124,7 +135,7 @@ class Decoder extends Component {
                         Decoding the input file for NPOESS...
                     </h1>
                     <h2 className="Description">
-                    In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while.  
+                        In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while.
                     </h2>
                 </div>
                 <div className="Body Flex DecoderFix">
@@ -183,7 +194,7 @@ class Decoder extends Component {
                             <div className="Number">{stats.VitErrors}/{stats.FrameBits}</div>
                             <div className="Name">Viterbi Errors</div>
                         </div>
-                        <div className="LockIndicator" style={{ background: stats.FrameLock ? "#00BA8C" : "#282A37"  }}>
+                        <div className="LockIndicator" style={{ background: stats.FrameLock ? "#00BA8C" : "#282A37" }}>
                             {stats.FrameLock ? "LOCKED" : "UNLOCKED"}
                         </div>
                     </div>

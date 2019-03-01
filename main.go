@@ -32,7 +32,8 @@ var (
 	lrptFile   = lrpt.Arg("file", "input file path").Required().ExistingFile()
 	lrptFormat = lrpt.Flag("decoded", "input file format").Short('d').Default("false").Bool()
 
-	remote = kingpin.Command("remote", "Activate the remote API for the GUI.")
+	remote     = kingpin.Command("remote", "Activate the remote API for the GUI.")
+	remotePort = remote.Arg("port", "server listen port").Default("3000").String()
 )
 
 func main() {
@@ -47,6 +48,6 @@ func main() {
 	case "lrpt":
 		terminalHandler.HandleInput(*lrptFile, *lrptFormat, *output, "lrpt")
 	case "remote":
-		remoteHandler.New().Listen()
+		remoteHandler.New().Listen(*remotePort)
 	}
 }
