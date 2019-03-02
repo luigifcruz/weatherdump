@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"weather-dump/src/assets"
 	"weather-dump/src/handlers/interfaces"
 
 	b64 "encoding/base64"
@@ -35,7 +36,7 @@ type Worker struct {
 	reedSolomon     SatHelper.ReedSolomon
 	correlator      SatHelper.Correlator
 	packetFixer     SatHelper.PacketFixer
-	Statistics      Statistics
+	Statistics      assets.Statistics
 	constSock       *websocket.Conn
 	statsSock       *websocket.Conn
 }
@@ -349,7 +350,7 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 	fmt.Printf("[DEC] Decoding finished! File saved as %s\n", outputPath)
 }
 
-func (e *Worker) updateStatistics(s Statistics) {
+func (e *Worker) updateStatistics(s assets.Statistics) {
 	json, err := json.Marshal(s)
 	if err == nil {
 		e.statsSock.WriteMessage(1, []byte(json))

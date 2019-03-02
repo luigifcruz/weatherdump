@@ -242,26 +242,49 @@
         }
     }
 
-    .Abort {
-        width: 100%;
-        background: transparent;
-        border: 2px solid #EAE151;
-        width: 100%;
-        height: 2.1em;
-        margin-top: 0.575em;
-        color: #EAE151;
-        border-radius: 0.5em;
-        text-align: center;
-        line-height: 2em;
-        font-weight: 700;
-        cursor: pointer;
-    }
+    .ControllBox {
+        .Button {  
+            background: transparent;
+            border: 2px solid #EAE151;
+            height: 2.1em;
+            margin-top: 0.575em;
+            border-radius: 0.5em;
+            text-align: center;
+            line-height: 2em;
+            font-weight: 700;
+            cursor: pointer;
+            float: left;
+        }
 
-    .Abort:hover {
-        background-color: #EF233C;
-        border-color: #EF233C;
-        color: white;
-        transition: background-color 100ms ease-in-out;
-        transition: border-color 100ms ease-in-out;
+        .Button:hover {
+            background-color: #EF233C;
+            border-color: #EF233C;
+            color: white;
+            transition: background-color 100ms ease-in-out;
+            transition: border-color 100ms ease-in-out;
+        }
+
+        .Large {
+            width: 100%;
+        }
+    
+        .Small {
+            padding: 0em 1em 0em 1em;
+        }
+
+        .Abort {
+            color: #EAE151;
+            background: blue;
+        }
+    
+        .Open {
+            color: black;
+            background: blue;
+        }
+    
+        .Next {
+            color: orange;
+            background: blue;
+        }
     }
 }

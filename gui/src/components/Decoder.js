@@ -90,12 +90,23 @@ class Decoder extends Component {
         this.setState({ complex: _base64ToArrayBuffer(data), n: this.state.n + 1 })
     }
 
-    handleStatistics(stats) {
-        this.setState({ stats: JSON.parse(stats) })
+    handleStatistics(payload) {
+        const stats = JSON.parse(payload)
+        if (this.state.stats.Finished != stats.Finished && stats.Finished) {
+            this.handleFinish()
+        }
+        this.setState({ stats })
     }
 
     handleEvent(data) {
         console.log("[STREAM] Connected to decoder via WebSocket.");
+    }
+
+    handleFinish() {
+        console.log("Decoder finished processing the file.")
+        new Notification('Decoder Finished', {
+            body: 'WeatherDump finished decoding your file.'
+        })
     }
 
     handleAbort() {
@@ -214,7 +225,16 @@ class Decoder extends Component {
                                 })
                             }
                         </div>
-                        <div onClick={this.handleAbort.bind(this)} className="Abort">Abort Decoding</div>
+                        <div className="ControllBox">
+                        {(this.state.stats.Finished) ? (
+                            <div onClick={this.handleAbort.bind(this)} className="Button Large Abort">Abort Decoding</div>
+                        ) : (
+                            <div>
+                                <div onClick={this.handleAbort.bind(this)} className="Button Small Open">Open File</div>
+                                <div onClick={this.handleAbort.bind(this)} className="Button Small Next">Proceed</div>
+                            </div>
+                        )}
+                        </div>
                     </div>
                 </div>
             </div>

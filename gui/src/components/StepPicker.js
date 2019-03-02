@@ -55,6 +55,7 @@ class StepPicker extends Component {
             .then((res) => {
                 this.props.dispatch(rxa.updateProcessId(res.body.Code))
                 this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
+                this.props.dispatch(rxa.updateDecodedFile(res.body.Description))
                 this.props.history.push(`/decoder/${params.datalink}`)
             })
             .catch(err => console.log(err))

@@ -1,4 +1,4 @@
-package decoder
+package assets
 
 // Statistics struct for the decoder.
 type Statistics struct {
