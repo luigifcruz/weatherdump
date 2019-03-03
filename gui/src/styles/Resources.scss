@@ -1,29 +1,9 @@
-$khronos-green: #087E8B;
+$name-color: #24C18B;
+$background-color: #212330;
+$background-hightlight-color: #282A37;
+$light-background-text-color: #A2A0A1;
+$faint-background-text-color: #63667B;
 
-$heavy-text: #493E44;
-
-$light-text: #7D7979;
-$light-filler: #F1F1F1;
-
-$background-color: #FEFFFE;
-
-.NoHover {
-    pointer-events: none;
-}
-
-.Unbuttonfy {
-    outline: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-}
-
-.Unbuttonfy::-moz-focus-inner {
-    border: 0;
-}
-
-@mixin centerer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
+$blue-color: #3F8EFC;
+$orange-color: #FB5607;
+$green-color: #059C75;

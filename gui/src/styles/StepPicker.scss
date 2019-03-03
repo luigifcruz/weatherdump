@@ -1,52 +1,5 @@
 
-.SelectionPanel {
-    margin-top: 0.15em;
-    display: flex;
-
-    .Tabs {
-        height: 2em;
-        padding: 0.15em 1.5em 0.15em 0.75em;
-        border-radius: 2em;
-        display: flex;
-        cursor: pointer;
-        margin-right: 0.5em;
-
-        svg {
-            margin-top: 0.35em;
-            margin-left: 0.5em;
-            width: 20px;
-        }
-
-        h3 {
-            margin-left: 0.75em;
-            margin-top: 0em;
-            font-size: 1em;
-            line-height: 1.85em;
-        }
-
-        .feather { 
-            margin-top: 0.22em;
-        }
-    }
-
-    .Tabs:hover {
-        background: #282A37;
-    }
-
-    .Selected {
-        background: #059C75;   
-    }
-
-    .Selected:hover {
-        background: #059C75 !important;
-    }
-}
-
-.OptionsPanel {
-    display: flex;
-    margin-top: 0.75em;
-    height: 18.5em;
-
+.StepPicker {
     .Option {
         padding: 0.5em 1em 0.5em 1em;
         margin-right: 0.75em;
@@ -69,7 +22,7 @@
             margin: 0.5em 0.5em 0em 0em;
         }
 
-        background: #282A37;
+        background: $background-hightlight-color;
         border-radius: 0.25em;
     }
 
@@ -82,16 +35,4 @@
             text-decoration: none !important;
         }
     }
-}
-
-.Tools {
-    position: relative;
-}
-
-
-.nextButton {
-    position: absolute;
-    bottom: 5em;
-    right: 3.25em;
-    width: 15em !important;
 }

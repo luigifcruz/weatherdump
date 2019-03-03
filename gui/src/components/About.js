@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import '../styles/About.scss'
+import '../styles/TabView.scss'
 
 const ABOUT = 0
 const FEEDBACK = 1
@@ -33,8 +34,8 @@ class About extends Component {
                         WeatherDump
                     </h1>
                 </div>
-                <div className="Body Flex">
-                    <div className="SelectionPanel">
+                <div className="Body About">
+                    <div className="TabViewHeader">
                         <div className={currentTab == ABOUT ? "Tabs Selected" : "Tabs"} onClick={this.handleSelection.bind(this, ABOUT)}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                             <h3>About</h3>
@@ -50,6 +51,18 @@ class About extends Component {
                         <div className={currentTab == LICENSES ? "Tabs Selected" : "Tabs"} onClick={this.handleSelection.bind(this, LICENSES)}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-pen-tool"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
                             <h3>Licenses</h3>
+                        </div>
+                    </div>
+                    <div className="TabViewBody">
+                        <div className="LeftContainer">
+                            <figure>
+                                <img className="MainIcon" src="/icon_by_eucalyp.png"/>
+                                <figcaption>Icon made by <a target="_blank" href="https://www.flaticon.com/authors/eucalyp">Eucalyp</a> from <a target="_blank" href="https://www.flaticon.com">Flaticon</a>.</figcaption>
+                            </figure>
+                        </div>
+                        <div className="RightContainer">
+                            <div className="AppName">WeatherDump</div>
+                            <div className="AppSubtitle">by <a target="_blank" href="https://github.com/opensatelliteproject">Open Satellite Project</a></div>
                         </div>
                     </div>
                 </div>

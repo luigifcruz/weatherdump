@@ -1,7 +1,5 @@
-const { app, BrowserWindow, protocol } = require('electron');
-const express = require('express');
-const path = require('path');
-const http = require('http');
+const { app, BrowserWindow, shell } = require('electron');
+const url = require('url')
 
 let win
 
@@ -20,6 +18,16 @@ function createWindow() {
 
     win.loadURL("http://localhost:3002/index.html")
     win.focus();
+
+    win.webContents.on('new-window', function(e, payload) {
+        e.preventDefault();
+        const url = new URL(payload);
+        if (url.hostname == "localhost") {
+            shell.openItem(url.pathname);
+        } else {
+            shell.openExternal(url.href);
+        }
+    });
 
     win.on('closed', () => {
         win = null

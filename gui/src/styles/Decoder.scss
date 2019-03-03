@@ -1,290 +1,283 @@
-.DecoderFix { 
+.Decoder { 
     margin-top: -0.35em;
-}
 
-.LeftWindow {
-    width: 30%;
-    height: 100%;
-
-    .Constellation {
-        width: 250px;
-        height: 275px;
-        padding: 10px;
-        background: #282A37;
-        border-radius: 0.5em;
+    .LeftWindow {
+        width: 30%;
+        height: 100%;
     
-        .Label {
-            width: 100%;
-            text-align: center;
-            margin-top: 5px;
-            font-size: 0.85em;
-            color: #A2A0A1;
-            font-weight: 700;
-        }
-    
-        .ProgressBar {
-            margin-left: -10px;
-            padding-top: 1em;
-            position: absolute;
-            height: 15px;
-            width: 270px;
-    
-            .Text {
-                display: flex;
-                font-size: 0.8em;
-    
-                .Percentage {
-                    font-family: 'Roboto Mono', monospace;
-                    color: #A2A0A1;
-                    text-align: right;
-                    font-weight: 7500;
-                    width: 30%;
-                }
-                
-                .Description {
-                    color: #A2A0A1;
-                    text-align: left;
-                    font-weight: 500;
-                    width: 70%;
-                }
-            }
-    
-            .Body {
+        .Constellation {
+            width: 250px;
+            height: 275px;
+            padding: 10px;
+            background: $background-hightlight-color;
+            border-radius: 0.5em;
+        
+            .Label {
                 width: 100%;
-                height: 1.25em;
-                margin-bottom: 0.25em;
-                background: #282A37;
-                border-radius: 0.5em;
-    
-                .Progress {
-                    height: 100%;
-                    background: #FB5607;
-                    border-radius: 0.5em;
-                }
+                text-align: center;
+                margin-top: 5px;
+                font-size: 0.85em;
+                color: $light-background-text-color;
+                font-weight: 700;
             }
-        }
-    }    
-}
-
-.CenterWindow {
-    width: 35%;
-    margin-left: 1.75em;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-
-    .LockIndicator {
-        width: 100%;
-        height: 2.35em;
-        margin-top: 0.575em;
-        color: white;
-        border-radius: 0.5em;
-        text-align: center;
-        line-height: 2.31em;
-        font-weight: 700;
-        transition: background-color 100ms ease-in-out;
-    }
-
-    .DroppedPackets {
-        width: 9.25em;
-        height: 4.05em;
-        border-radius: 0.5em;
-        background: #282A37;
-        padding: 0.5em;
-        margin: 0.75em 0 0 0.75em;
-
-        .Number {
-            width: 100%;
-            text-align: center;
-            font-size: 1.75em;
-            font-family: 'Roboto Mono', monospace;
-            margin-top: 0.05em;
-            color: white;
-        }
-
-        .Name {
-            width: 100%;
-            text-align: center;
-            color: #A2A0A1;
-            font-size: 0.8em;
-            font-weight: 700;
-            margin-top: 0.4em;
-        }
-    }
-
-    .SignalQuality {
-        width: 5.5em;
-        height: 4.05em;
-        border-radius: 0.5em;
-        background: #282A37;
-        padding: 0.5em;
-        margin-top: 0.75em;
-
-        .Number {
-            width: 100%;
-            text-align: center;
-            font-size: 1.75em;
-            margin-top: 0.05em;
-            font-family: 'Roboto Mono', monospace;
-            color: white;
-        }
-
-        .Name {
-            width: 100%;
-            text-align: center;
-            color: #A2A0A1;
-            font-size: 0.8em;
-            font-weight: 700;
-            margin-top: 0.4em;
-        }
-    }
-
-    .ReedSolomon {                
-        width: 17em;
-        height: 5.75em;
-        border-radius: 0.5em;
-        background: #282A37;
-        padding: 0.5em 0 0.5em 0.5em;
-
-        .Name {
-            width: 100%;
-            margin-left: -0.15em;
-            text-align: center;
-            color: #A2A0A1;
-            font-size: 0.85em;
-            font-weight: 700;
-            margin-top: 0.5em;
-        }
-
-        .Indicator {
-            display: flex;
-            
-            .Block {
-                width: 4em;
-                height: 3.75em;
-                padding: 0.25em 0.5em 0.25em 0.5em;
-                margin-right: 0.5em;
-                border-radius: 0.5em;
-                background: #212330;
-
-                .Corrections {
-                    font-size: 1.75em;
-                    color: white;
-                    text-align: center;
-                    font-family: 'Roboto Mono', monospace;
-                    width: 100%;
-                }
-
-                .Label {
+        
+            .ProgressBar {
+                margin-left: -10px;
+                padding-top: 1em;
+                position: absolute;
+                height: 15px;
+                width: 270px;
+        
+                .Text {
+                    display: flex;
                     font-size: 0.8em;
-                    margin-top: 0.25em;
-                    color: #85888B;
-                    font-weight: 700;
-                    text-align: center;
+        
+                    .Percentage {
+                        font-family: 'Roboto Mono', monospace;
+                        color: $light-background-text-color;
+                        text-align: right;
+                        width: 30%;
+                    }
+                    
+                    .Description {
+                        color: $faint-background-text-color;
+                        text-align: left;
+                        font-weight: 500;
+                        width: 70%;
+                    }
+                }
+        
+                .Body {
                     width: 100%;
+                    height: 1.25em;
+                    margin-bottom: 0.25em;
+                    background: $background-hightlight-color;
+                    border-radius: 0.5em;
+        
+                    .Progress {
+                        height: 100%;
+                        background: $orange-color;
+                        border-radius: 0.5em;
+                    }
                 }
             }
-        }
+        }    
     }
-}   
-
-.RightWindow {
-    width: 35%;
-    margin-left: 0.9em;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-
-    .ChannelList {
-        width: 100%;
-        height: 17.85em;
-        border-radius: 0.5em;
-        background: #282A37;
-        padding: 0 0 0.5em 0.5em;
+    
+    .CenterWindow {
+        width: 35%;
+        margin-left: 1.75em;
         display: flex;
         flex-wrap: wrap;
-        overflow: hidden;
         align-content: flex-start;
-
-        .Label {
+    
+        .LockIndicator {
             width: 100%;
-            text-align: center;
-            margin-top: 0.75em;
-            font-size: 0.8em;
-            color: #A2A0A1;
-            font-weight: 700;
-        }
-
-        .Channel {
-            width: 6.6em;
-            height: 1.21em;
-            border-radius: 0.5em;
-            background: #212330;
-            padding: 0.5em;
-            margin: 0.5em 0.25em 0 0.25em;
-            font-family: 'Roboto Mono', monospace;
-            display: flex;
-
-            .VCID {
-                width: 30%;
-                color: #A2A0A1;
-                font-weight: 700;
-                font-size: 1.15em;
-                line-height: 1em;
-                text-align: left;
-            }
-
-            .Count {
-                width: 70%;
-                text-align: right;
-                line-height: 1.15em;
-            }
-        }
-    }
-
-    .ControllBox {
-        .Button {  
-            background: transparent;
-            border: 2px solid #EAE151;
-            height: 2.1em;
+            height: 2.35em;
             margin-top: 0.575em;
+            color: white;
             border-radius: 0.5em;
             text-align: center;
-            line-height: 2em;
+            line-height: 2.31em;
             font-weight: 700;
-            cursor: pointer;
-            float: left;
-        }
-
-        .Button:hover {
-            background-color: #EF233C;
-            border-color: #EF233C;
-            color: white;
             transition: background-color 100ms ease-in-out;
-            transition: border-color 100ms ease-in-out;
         }
-
-        .Large {
+    
+        .DroppedPackets {
+            width: 9.25em;
+            height: 4.05em;
+            border-radius: 0.5em;
+            background: $background-hightlight-color;
+            padding: 0.5em;
+            margin: 0.75em 0 0 0.75em;
+    
+            .Number {
+                width: 100%;
+                text-align: center;
+                font-size: 1.75em;
+                font-family: 'Roboto Mono', monospace;
+                margin-top: 0.05em;
+                color: white;
+            }
+    
+            .Name {
+                width: 100%;
+                text-align: center;
+                color: $light-background-text-color;
+                font-size: 0.8em;
+                font-weight: 700;
+                margin-top: 0.4em;
+            }
+        }
+    
+        .SignalQuality {
+            width: 5.5em;
+            height: 4.05em;
+            border-radius: 0.5em;
+            background: $background-hightlight-color;
+            padding: 0.5em;
+            margin-top: 0.75em;
+    
+            .Number {
+                width: 100%;
+                text-align: center;
+                font-size: 1.75em;
+                margin-top: 0.05em;
+                font-family: 'Roboto Mono', monospace;
+                color: white;
+            }
+    
+            .Name {
+                width: 100%;
+                text-align: center;
+                color: $light-background-text-color;
+                font-size: 0.8em;
+                font-weight: 700;
+                margin-top: 0.4em;
+            }
+        }
+    
+        .ReedSolomon {                
+            width: 17em;
+            height: 5.75em;
+            border-radius: 0.5em;
+            background: $background-hightlight-color;
+            padding: 0.5em 0 0.5em 0.5em;
+    
+            .Name {
+                width: 100%;
+                margin-left: -0.15em;
+                text-align: center;
+                color: $light-background-text-color;
+                font-size: 0.85em;
+                font-weight: 700;
+                margin-top: 0.5em;
+            }
+    
+            .Indicator {
+                display: flex;
+                
+                .Block {
+                    width: 4em;
+                    height: 3.75em;
+                    padding: 0.25em 0.5em 0.25em 0.5em;
+                    margin-right: 0.5em;
+                    border-radius: 0.5em;
+                    background: $background-color;
+    
+                    .Corrections {
+                        font-size: 1.75em;
+                        color: white;
+                        text-align: center;
+                        font-family: 'Roboto Mono', monospace;
+                        width: 100%;
+                    }
+    
+                    .Label {
+                        font-size: 0.8em;
+                        margin-top: 0.25em;
+                        color: $faint-background-text-color;
+                        font-weight: 700;
+                        text-align: center;
+                        width: 100%;
+                    }
+                }
+            }
+        }
+    }   
+    
+    .RightWindow {
+        width: 35%;
+        margin-left: 0.9em;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+    
+        .ChannelList {
             width: 100%;
-        }
+            height: 17.85em;
+            border-radius: 0.5em;
+            background: $background-hightlight-color;
+            padding: 0 0 0.5em 0.5em;
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+            align-content: flex-start;
     
-        .Small {
-            padding: 0em 1em 0em 1em;
+            .Label {
+                width: 100%;
+                text-align: center;
+                margin-top: 0.75em;
+                font-size: 0.8em;
+                color: $light-background-text-color;
+                font-weight: 700;
+            }
+    
+            .Channel {
+                width: 6.6em;
+                height: 1.21em;
+                border-radius: 0.5em;
+                background: $background-color;
+                padding: 0.5em;
+                margin: 0.5em 0.25em 0 0.25em;
+                font-family: 'Roboto Mono', monospace;
+                display: flex;
+    
+                .VCID {
+                    width: 30%;
+                    color: $faint-background-text-color;
+                    font-weight: 700;
+                    font-size: 1.15em;
+                    line-height: 1em;
+                    text-align: left;
+                }
+    
+                .Count {
+                    width: 70%;
+                    text-align: right;
+                    line-height: 1.15em;
+                }
+            }
         }
 
-        .Abort {
-            color: #EAE151;
-            background: blue;
-        }
+        .ControllBox {
+            width: 100%;
+
+            .Button {  
+                background: transparent;
+                border: 2px solid $orange-color;
+                height: 2.1em;
+                margin-top: 0.575em;
+                border-radius: 0.5em;
+                text-align: center;
+                line-height: 2em;
+                font-weight: 700;
+                cursor: pointer;
+                padding: 0em 5% 0em 5%;
+                
+            }
+   
+            .Button:hover {
+                transition: background-color 100ms ease-in-out;
+                transition: border-color 100ms ease-in-out;
+            }
     
-        .Open {
-            color: black;
-            background: blue;
-        }
-    
-        .Next {
-            color: orange;
-            background: blue;
+            .Abort {
+                color: $orange-color;
+            }
+        
+            .Open {
+                color: $orange-color;
+                border-color: $orange-color;
+                float: left;
+            }
+        
+            .Next {
+                border-color: $green-color;
+                background: $green-color;
+                padding: 0em 2em 0em 2em;
+                float: right;
+            }
         }
     }
 }

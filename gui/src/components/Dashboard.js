@@ -13,18 +13,18 @@ class Dashboard extends Component {
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut.
                     </h2>
                 </div>
-                <div className="Body Flex">
+                <div className="Body Flex Dashboard">
                     <div className="Satellite">
                         <h3>NPOESS</h3>
                         <label className="Beta">BETA</label>
                         <h4>NOAA-20 & Suomi</h4>
-                        <Link to="/steps/hrd" className="Band">X-Band HRD</Link>
+                        <Link to="/steps/hrd" className="Band">X-Band</Link>
                     </div>
                     <div className="Satellite">
                         <h3>Meteor</h3>
                         <label className="Alpha">ALPHA</label>
                         <h4>Meteor-MN2</h4>
-                        <Link to="/steps/lrpt" className="Band">VHF LRPT</Link>
+                        <Link to="/steps/lrpt" className="Band">VHF</Link>
                     </div>
                 </div>
             </div>

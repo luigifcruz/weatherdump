@@ -1,0 +1,48 @@
+.TabViewHeader {
+    margin-top: 0.15em;
+    display: flex;
+
+    .Tabs {
+        height: 2em;
+        padding: 0.15em 1.5em 0.15em 0.75em;
+        border-radius: 2em;
+        display: flex;
+        cursor: pointer;
+        margin-right: 0.5em;
+
+        svg {
+            margin-top: 0.35em;
+            margin-left: 0.5em;
+            width: 20px;
+        }
+
+        h3 {
+            margin-left: 0.75em;
+            margin-top: 0em;
+            font-size: 1em;
+            line-height: 1.85em;
+        }
+
+        .feather { 
+            margin-top: 0.22em;
+        }
+    }
+
+    .Tabs:hover {
+        background: $background-hightlight-color;
+    }
+
+    .Selected {
+        background: $green-color;   
+    }
+
+    .Selected:hover {
+        background: $green-color !important;
+    }
+}
+
+.TabViewBody {
+    display: flex;
+    margin-top: 0.75em;
+    height: 18.5em;
+}

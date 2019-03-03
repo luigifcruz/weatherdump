@@ -1,7 +1,5 @@
-const { app, BrowserWindow, protocol } = require('electron');
-const express = require('express');
+const { app, BrowserWindow, protocol, shell } = require('electron');
 const path = require('path');
-const http = require('http');
 const { spawn } = require('child_process');
 const url = require('url')
 
@@ -33,6 +31,15 @@ function createWindow() {
     }))
 
     win.focus();
+    win.webContents.on('new-window', function(e, payload) {
+        e.preventDefault();
+        const url = new URL(payload);
+        if (url.hostname == "localhost") {
+            shell.openItem(url.pathname);
+        } else {
+            shell.openExternal(url.href);
+        }
+    });
 
     win.on('closed', () => {
         win = null

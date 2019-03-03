@@ -14,13 +14,13 @@ class App extends Component {
                 {this.props.children}
                 <div className="Footer">
                     <div className="Left">
-                        GUI Beta 1 • <Link to="/about">About</Link>
+                        Beta Version 1 • <Link to="/about">About</Link>
                     </div>
                     <div className="Center">
                         WeatherDump
                     </div>
                     <div className="Right">
-                        Open Satellite Project
+                        <a target="_blank" href="https://github.com/opensatelliteproject">Open Satellite Project</a>
                     </div>
                 </div>
             </div>

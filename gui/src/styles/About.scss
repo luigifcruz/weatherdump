@@ -1,0 +1,43 @@
+.About {
+    .LeftContainer {
+        width: 20em;
+    
+        img {
+            height: 15em;
+            margin-top: 0.75em;
+        }
+    
+        figcaption {
+            font-size: 0.85em;
+            color: #63667B;
+    
+            a {
+                color: #63667B !important;
+            }
+        }
+    }
+    
+    .RightContainer {
+        border-left: 1px solid #62646D;
+        padding-left: 1.5em;
+        margin-left: 1.25em;
+        height: 66vh;
+    
+        .AppName {
+            font-size: 2.5em;
+            color: #63667B;
+            font-family: 'Racing Sans One', cursive;
+        }
+
+        .AppSubtitle {
+            color: #63667B;
+            font-size: 0.85em;
+            margin-bottom: 2em;
+
+            a {
+                color: #63667B !important;
+            }
+        }
+    }
+}
+
