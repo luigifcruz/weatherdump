@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import '../styles/About.scss'
 import '../styles/TabView.scss'
+import { version, engineVersion } from '../../package.json'
 
 const ABOUT = 0
 const FEEDBACK = 1
@@ -23,7 +24,7 @@ class About extends Component {
 
     render() {
         const { currentTab } = this.state
-
+        
         return (
             <div className="View">
                 <div className="Header Reduced">
@@ -63,6 +64,14 @@ class About extends Component {
                         <div className="RightContainer">
                             <div className="AppName">WeatherDump</div>
                             <div className="AppSubtitle">by <a target="_blank" href="https://github.com/opensatelliteproject">Open Satellite Project</a></div>
+                            <div className="AppDescription">
+                                <div>Interface Version: {version}</div>
+                                <div>Engine Version: {engineVersion}</div>
+                                <div>Build Date: {BUILD_DATE}</div>
+                            </div>
+                            <div className="AppDescription">
+                                <div>This program comes with absolutely no warranty.</div>
+                            </div>
                         </div>
                     </div>
                 </div>

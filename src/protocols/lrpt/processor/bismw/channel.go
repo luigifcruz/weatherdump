@@ -2,11 +2,9 @@ package bismw
 
 import (
 	"fmt"
-	"image"
-	"image/png"
-	"os"
+	"path/filepath"
 	"weather-dump/src/protocols/lrpt"
-	"weather-dump/src/tools/imagery"
+	"weather-dump/src/tools/img"
 )
 
 // Channel struct.
@@ -40,16 +38,13 @@ func (e *Channel) Export(outputFolder string) {
 		buf = append(buf, line[:]...)
 	}
 
-	imagery.HistogramEqualizationU8(&buf)
+	i := img.NewGray(&buf, int(e.width), int(e.height)).Equalize()
 	if e.parameters.Inversion {
-		imagery.PixelInversionU8(&buf)
+		i.Invert()
 	}
 
-	output, _ := os.Create(fmt.Sprintf("%s/%s.png", outputFolder, e.fileName))
-	defer output.Close()
-	s := image.NewGray(image.Rect(0, 0, int(e.width), int(e.height)))
-	s.Pix = buf
-	png.Encode(output, s)
+	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputFolder, e.fileName))
+	i.ExportPNG(outputName)
 }
 
 // Fix the channel metadata.

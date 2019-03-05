@@ -1,6 +1,7 @@
 {
   "name": "weatherdump",
   "version": "1.0.0b",
+  "engineVersion": "1.0.0b",
   "description": "WeatherDump GUI",
   "main": "electron.prod.js",
   "scripts": {

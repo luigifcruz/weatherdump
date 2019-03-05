@@ -8,47 +8,19 @@ import '../styles/Processor.scss'
 class Processor extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            
-        };
+        this.state = {};
     }
 
-    handleStatistics(payload) {
-        const stats = JSON.parse(payload)
-        if (this.state.stats.Finished != this.props.Finished && stats.Finished) {
-            this.handleFinish()
-        }
-        this.setState({ stats })
+    handleAbort() {
+        this.props.history.goBack()
     }
-
-    handleEvent(data) {
-        console.log("[STREAM] Connected to decoder via WebSocket.");
-    }
-
-    handleOpenDecodedFolder() {
-        let filePath = this.props.decodedFile.split('/')
-        filePath.pop()
-        window.open(filePath.join('/'), '_blank');
-    }
-
+    
     render() {
         const { match: { params } } = this.props;
         const { complex, n, stats } = this.state;
 
-        let percentage = (stats.TotalBytesRead / stats.TotalBytes) * 100
-        percentage = isNaN(percentage) ? 0 : percentage
-
-        let droppedpackets = (stats.DroppedPackets / stats.TotalPackets) * 100
-        droppedpackets = isNaN(droppedpackets) ? 0 : droppedpackets
-
         return (
             <div className="View">
-                {(this.props.processId != null) ? (
-                    <div>
-                        <Websocket url={`ws://localhost:3000/${params.datalink}/${this.props.processId}/constellation`}
-                            onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)} />
-                    </div>        
-                ) :  null}
                 <div className="Header">
                     <h1 className="Title">
                         <div onClick={this.handleAbort.bind(this)} className="icon">
@@ -60,12 +32,51 @@ class Processor extends Component {
                         In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while.
                     </h2>
                 </div>
-                <div className="Body Flex Processor"></div>
+                <div className="Body Processor">
+                    <div className="Options">
+                        <div className="Option">
+                            <div className="Name">Image Enhancement</div>
+                            <div className="List">
+                                <div className="Item">
+                                    <div className="Label">Histogram Equalization</div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <div className="Item">
+                                    <div className="Label">Invert Infrared Pixels</div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <div className="Item Active">
+                                    <div className="Label">Flip Image</div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="Option">
+                            <div className="Name">Overlay Options</div>
+                        </div>
+                        <div className="Option">
+                            <div className="Name">Export Format</div>
+                            <div className="List">
+                                <div className="Item">
+                                    <div className="Label">Lossless PNG</div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <div className="Item">
+                                    <div className="Label">Lossless JPEG</div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="StartButton">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-play"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        </div>
+                    </div>
+                </div>
             </div>
         )
     }
 
 }
 
-Decoder.propTypes = rxa.props
-export default connect(rxa.mapStateToProps)(Decoder)  
+Processor.propTypes = rxa.props
+export default connect(rxa.mapStateToProps)(Processor)  

@@ -345,8 +345,11 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 		}
 	}
 
-	e.Statistics.Finish()
-	e.updateStatistics(e.Statistics)
+	if e.statsSock != nil {
+		e.Statistics.Finish()
+		e.updateStatistics(e.Statistics)
+	}
+
 	fmt.Printf("[DEC] Decoding finished! File saved as %s\n", outputPath)
 }
 

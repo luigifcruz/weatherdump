@@ -6,9 +6,11 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"weather-dump/src/assets"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/protocols/hrd"
 	viirsFrames "weather-dump/src/protocols/hrd/processor/viirs/frames"
+	"weather-dump/src/tools/img"
 )
 
 const firstPacket = 1
@@ -23,7 +25,7 @@ func New() *Worker {
 	return &e
 }
 
-func (e Worker) SaveAllChannels(outputFolder string) {
+func (e Worker) Export(delegate *assets.ExportDelegate, outputFolder string) {
 	for _, i := range ChannelsIndex {
 		if e.channelData[i] == nil {
 			continue
@@ -39,8 +41,24 @@ func (e Worker) SaveAllChannels(outputFolder string) {
 			}
 		}
 		if buf != nil {
-			ProcessImage(&buf, *e.channelData[i])
-			ExportGrayscale(&buf, *e.channelData[i], outputFolder)
+			outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputFolder, e.channelData[i].fileName))
+			i := img.NewGray16(&buf, int(e.channelData[i].width), int(e.channelData[i].height))
+
+			if delegate.Equalize {
+				i.Equalize()
+			}
+
+			if delegate.Flip {
+				i.Flop()
+			}
+
+			if delegate.ExportPNG {
+				i.ExportPNG(outputName)
+			}
+
+			if delegate.QualityJPEG > 0 {
+				i.ExportJPEG(outputName, delegate.QualityJPEG)
+			}
 		}
 	}
 }
@@ -83,7 +101,7 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 	e.Process(scid)
 
 	// Create output image struct.
-	img := image.NewRGBA64(image.Rect(0, 0, int(ch01.width), int(ch01.height)))
+	i := image.NewRGBA64(image.Rect(0, 0, int(ch01.width), int(ch01.height)))
 	bufferSize := int(ch01.width*ch01.height) * 8
 	finalImage := make([]byte, bufferSize)
 
@@ -97,7 +115,7 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 	ref := 0
 
 	ch01.ComposeUncoded(&buf)
-	ProcessImage(&buf, *ch01)
+	img.NewGray16(&buf, int(ch01.width), int(ch01.height)).Flop().Equalize()
 
 	for p := 2; p < bufferSize; p += 8 {
 		finalImage[p+0] = buf[ref]
@@ -108,7 +126,7 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 	buf = nil
 	ref = 0
 	e.channelData[colorChannels[1]].ComposeCoded(&buf, ch01)
-	ProcessImage(&buf, *ch02)
+	img.NewGray16(&buf, int(ch02.width), int(ch02.height)).Flop().Equalize()
 
 	for p := 0; p < bufferSize; p += 8 {
 		finalImage[p+0] = buf[ref]
@@ -119,7 +137,7 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 	buf = nil
 	ref = 0
 	e.channelData[colorChannels[2]].ComposeCoded(&buf, ch01)
-	ProcessImage(&buf, *ch03)
+	img.NewGray16(&buf, int(ch03.width), int(ch03.height)).Flop().Equalize()
 
 	for p := 4; p < bufferSize; p += 8 {
 		finalImage[p+0] = buf[ref]
@@ -128,13 +146,13 @@ func (e Worker) SaveTrueColorChannel(scid uint8, outputFolder string) {
 	}
 
 	// Render and save the true-color image.
-	img.Pix = finalImage
+	i.Pix = finalImage
 	outputName, _ := filepath.Abs(fmt.Sprintf("%s/TRUECOLOR_VIIRS_%s.png", outputFolder, ch01.endTime.GetZuluSafe()))
 	outputFile, err := os.Create(outputName)
 	if err != nil {
 		fmt.Println("[EXPORT] Error saving final image...")
 	}
-	png.Encode(outputFile, img)
+	png.Encode(outputFile, i)
 	outputFile.Close()
 }
 

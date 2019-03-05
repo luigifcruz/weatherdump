@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"weather-dump/src/assets"
 	"weather-dump/src/handlers"
 )
 
-func HandleInput(inputFile string, inputDecoded bool, outputPath string, datalink string) {
+func HandleInput(datalink, inputFile, outputPath string, inputDecoded bool, processorDelegate *assets.ExportDelegate) {
 	fmt.Printf("[CLI] Activating %s workflow...\n", strings.ToUpper(datalink))
 
 	heartbeat := true
@@ -26,5 +27,5 @@ func HandleInput(inputFile string, inputDecoded bool, outputPath string, datalin
 
 	processor := handlers.AvailableProcessors[datalink]("")
 	processor.Work(inputFile)
-	processor.ExportAll(workingPath)
+	processor.Export(processorDelegate, workingPath)
 }

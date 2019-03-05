@@ -32,11 +32,19 @@
         .AppSubtitle {
             color: #63667B;
             font-size: 0.85em;
-            margin-bottom: 2em;
+            margin-bottom: 1.5em;
+            font-style: italic;
 
             a {
                 color: #63667B !important;
             }
+        }
+
+        .AppDescription {
+            color: #63667B;
+            font-size: 0.95em;
+            margin-bottom: 2em;
+            font-style: italic;
         }
     }
 }

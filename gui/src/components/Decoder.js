@@ -103,7 +103,6 @@ class Decoder extends Component {
     }
 
     handleFinish() {
-        console.log("Decoder finished processing the file.")
         new Notification('Decoder Finished', {
             body: 'WeatherDump finished decoding your file.'
         })
@@ -113,15 +112,17 @@ class Decoder extends Component {
     }
 
     handleAbort() {
-        request
+        this.props.history.goBack()
+        if (this.props.processId != null) {
+            request
             .post(`http://localhost:3000/${this.props.processDatalink}/abort/decoder`)
             .field("id", this.props.processId)
             .then((res) => {
-                handleFinish()
+                this.handleFinish()
                 console.log("Process aborted.")
             })
             .catch(err => console.log(err))
-        this.props.history.goBack()
+        }
     }
 
     handleOpenDecodedFolder() {

@@ -1,3 +1,102 @@
 .Processor {
-    
+    .List {
+        margin-top: 0.25em;
+        position: absolute;
+
+        .Item {
+            margin: 0.5em;
+            padding: 0.5em;
+            font-size: 0.85em;
+            border-radius: 0.5em;
+            border: 2px solid transparent;
+            background: $background-hightlight-color;
+            cursor: pointer;
+            display: flex;
+
+            .feather {
+                margin-left: 0.3em;
+            }
+        }
+
+        .Active {
+            border-color: $green-color;
+
+            .feather {
+                display: inline-flex !important;
+                color: $green-color;
+            }
+        }
+    }
+
+    .Channels {
+        display: flex;
+        box-sizing: border-box;
+        border: 0.2em solid $background-hightlight-color;
+        border-radius: 0.5em;
+        width: 100%;
+        height: 50%;
+
+        .List {
+            width: 94.5%;
+            margin: 0.25em;
+            display: flex;
+
+            .Item {
+                margin-right: 0em;
+            }
+        }
+    }
+
+    .Options {
+        display: flex;
+        margin-top: 1em;
+        width: 100%;
+        height: 44%;
+
+        .Option {
+            display: flex;
+            box-sizing: border-box;
+            margin-right: 0.5em;
+            border: 0.2em solid $background-hightlight-color;
+            border-radius: 0.5em;
+            width: 30%;
+
+            .List {
+                width: 15.75em;
+
+                .Item {
+                    height: 0.85em;
+                    line-height: 0.90em;
+                }
+
+                .feather {
+                    display: none;
+                    margin-top: -0.1em;
+                }
+
+                .Active .feather {
+                    position: absolute;
+                    right: 1.25em;
+                }
+            }
+        }
+    }
+
+    .StartButton {
+        width: 7%;
+        height: 100%;
+        border-radius: 0.5em;
+        text-align: center;
+        line-height: 10em;
+        cursor: pointer;
+        background-color: $green-color;
+    }
+
+    .Name {
+        margin: -0.95em 0em 0em 0.85em;
+        padding: 0em 0.75em 0em 0.75em;
+        background: $background-color;
+        text-align: center;
+        width: auto;
+    }
 }

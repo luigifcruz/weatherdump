@@ -2,6 +2,8 @@ const webpack = require('webpack');
 const path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
+const buildDate = new Date().toISOString()
+
 const devConfig = {
     mode: 'development',
     target: 'web',
@@ -52,7 +54,8 @@ const devConfig = {
         }),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify('development')
+            'process.env.NODE_ENV': JSON.stringify('development'),
+            'BUILD_DATE': JSON.stringify(buildDate)
         }),
     ]
 };

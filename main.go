@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"weather-dump/src/assets"
 	remoteHandler "weather-dump/src/handlers/remote"
 	terminalHandler "weather-dump/src/handlers/terminal"
 
@@ -24,13 +25,19 @@ __          __        _   _               _____
 var (
 	output = kingpin.Flag("output", "Custom output folder. Default is the current input file folder.").Default("").String()
 
-	hrd       = kingpin.Command("hrd", "Activate workflow for the HRD protocol (NPOESS & NPP).")
-	hrdFile   = hrd.Arg("file", "input file path").Required().ExistingFile()
-	hrdFormat = hrd.Flag("decoded", "input file format").Short('d').Default("false").Bool()
+	inputFormat = kingpin.Flag("decoded", "input file format").Short('d').Default("false").Bool()
 
-	lrpt       = kingpin.Command("lrpt", "Activate workflow for the LRPT protocol (Meteor-MN2).")
-	lrptFile   = lrpt.Arg("file", "input file path").Required().ExistingFile()
-	lrptFormat = lrpt.Flag("decoded", "input file format").Short('d').Default("false").Bool()
+	exportPNG   = kingpin.Flag("png", "histogram equalize output images").Default("true").Bool()
+	qualityJPEG = kingpin.Flag("jpeg", "histogram equalize output images").Default("0").Int()
+	equalize    = kingpin.Flag("equalize", "histogram equalize output images").Short('e').Default("true").Bool()
+	invert      = kingpin.Flag("invert", "invert output images").Short('i').Default("true").Bool()
+	flip        = kingpin.Flag("flip", "flip output images").Short('f').Default("true").Bool()
+
+	hrd          = kingpin.Command("hrd", "Activate workflow for the HRD protocol (NPOESS & NPP).")
+	hrdInputFile = hrd.Arg("file", "input file path").Required().ExistingFile()
+
+	lrpt          = kingpin.Command("lrpt", "Activate workflow for the LRPT protocol (Meteor-MN2).")
+	lrptInputFile = lrpt.Arg("file", "input file path").Required().ExistingFile()
 
 	remote     = kingpin.Command("remote", "Activate the remote API for the GUI.")
 	remotePort = remote.Arg("port", "server listen port").Default("3000").String()
@@ -42,12 +49,19 @@ func main() {
 	kingpin.CommandLine.HelpFlag.Short('h')
 	kingpin.Version("Beta 1")
 
-	switch kingpin.Parse() {
-	case "hrd":
-		terminalHandler.HandleInput(*hrdFile, *hrdFormat, *output, "hrd")
-	case "lrpt":
-		terminalHandler.HandleInput(*lrptFile, *lrptFormat, *output, "lrpt")
-	case "remote":
+	datalink := kingpin.Parse()
+
+	if datalink == "remote" {
 		remoteHandler.New().Listen(*remotePort)
 	}
+
+	delegate := &assets.ExportDelegate{
+		Equalize:    *equalize,
+		Flip:        *flip,
+		Invert:      *invert,
+		ExportPNG:   *exportPNG,
+		QualityJPEG: *qualityJPEG,
+	}
+
+	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *inputFormat, delegate)
 }

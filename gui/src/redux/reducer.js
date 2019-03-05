@@ -2,7 +2,7 @@ import {
     UPDATE_PROCESS_ID,
     UPDATE_PROCESS_DATALINK,
     UPDATE_DECODED_FILE,
-    UPDATE_PROCESSED_FILE
+    UPDATE_PROCESSED_FOLDER
 } from "./actions"
 
 export default function reducer(state, action) {
@@ -19,9 +19,9 @@ export default function reducer(state, action) {
         return Object.assign({}, state, {
             decodedFile: action.path
         })
-        case UPDATE_PROCESSED_FILE:
+        case UPDATE_PROCESSED_FOLDER:
         return Object.assign({}, state, {
-            processedFile: action.path
+            processedFolder: action.path
         })
         default:
         return state;

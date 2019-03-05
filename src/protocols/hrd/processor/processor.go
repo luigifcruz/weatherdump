@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"weather-dump/src/assets"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
@@ -61,10 +62,9 @@ func (e *Worker) Work(inputFile string) {
 	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
-func (e *Worker) ExportAll(outputPath string) {
+func (e *Worker) Export(delegate *assets.ExportDelegate, outputPath string) {
 	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
-	e.viirs.SaveAllChannels(outputPath)
-	e.viirs.SaveTrueColorChannel(e.scid, outputPath)
+	e.viirs.Export(delegate, outputPath)
 	fmt.Println("[PRC] Done! Products saved.")
 }
 

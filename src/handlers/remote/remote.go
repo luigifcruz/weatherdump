@@ -52,6 +52,10 @@ func (s *Remote) register() uuid.UUID {
 }
 
 func (s *Remote) terminate(id uuid.UUID) {
+	if s.processes[id] == nil {
+		return
+	}
+
 	s.processes[id].heartbeart = false
 	delete(s.processes, id)
 	fmt.Printf("[RMT] Process terminated: %s\n", id.String())

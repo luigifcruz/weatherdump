@@ -48,6 +48,17 @@ class StepPicker extends Component {
             return
         }
 
+        switch (this.state.currentTab) {
+            case DECODING:
+            this.handleDecoding(inputFile)
+            break;
+            case PROCESSING:
+            this.handleProcessing(inputFile)
+            break;
+        }
+    }
+
+    handleDecoding(inputFile) {
         const { match: { params } } = this.props;
 
         request
@@ -58,6 +69,21 @@ class StepPicker extends Component {
                 this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
                 this.props.dispatch(rxa.updateDecodedFile(res.body.Description))
                 this.props.history.push(`/decoder/${params.datalink}`)
+            })
+            .catch(err => console.log(err))
+    }
+
+    handleProcessing(inputFile) {
+        const { match: { params } } = this.props;
+
+        request
+            .post(`http://localhost:3000/${params.datalink}/start/processor`)
+            .field("inputFile", inputFile)
+            .then((res) => {
+                this.props.dispatch(rxa.updateProcessId(res.body.Code))
+                this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
+                this.props.dispatch(rxa.updateProcessedFolder(res.body.Description))
+                this.props.history.push(`/processor/${params.datalink}`)
             })
             .catch(err => console.log(err))
     }

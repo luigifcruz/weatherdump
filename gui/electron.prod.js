@@ -58,6 +58,10 @@ app.on('ready', () => {
 
     startEngine()
     createWindow()
+
+    if (process.platform === 'win32') {
+        app.setAppUserModelId('com.osp.weatherdump')
+    }
 })
 
 app.on('window-all-closed', () => {
