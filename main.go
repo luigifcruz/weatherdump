@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 	"weather-dump/src/assets"
 	remoteHandler "weather-dump/src/handlers/remote"
 	terminalHandler "weather-dump/src/handlers/terminal"
@@ -63,5 +65,7 @@ func main() {
 		QualityJPEG: *qualityJPEG,
 	}
 
+	start := time.Now()
 	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *inputFormat, delegate)
+	log.Printf("Task finished in %s", time.Since(start))
 }

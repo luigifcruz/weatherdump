@@ -23,9 +23,9 @@ type FrameBody struct {
 }
 
 func NewFillFrameBody() *FrameBody {
-	e := FrameBody{}
-	e.fillFrame = true
-	return &e
+	return &FrameBody{
+		fillFrame: true,
+	}
 }
 
 func NewFrameBody(buf []byte) *FrameBody {
@@ -115,6 +115,6 @@ func (e FrameBody) GetID() uint32 {
 	return e.sequenceCount
 }
 
-func (e *FrameBody) SetData(zone int, dat *[]byte) {
+func (e *FrameBody) SetData(zone int, dat []byte) {
 	e.detectorData[zone].SetData(dat)
 }

@@ -31,10 +31,10 @@ type FrameHeader struct {
 }
 
 func NewFillFrameHeader(scanNumber uint32) *FrameHeader {
-	e := FrameHeader{}
-	e.scanNumber = scanNumber
-	e.fillFrame = true
-	return &e
+	return &FrameHeader{
+		scanNumber: scanNumber,
+		fillFrame:  true,
+	}
 }
 
 func NewFrameHeader(buf []byte) *FrameHeader {

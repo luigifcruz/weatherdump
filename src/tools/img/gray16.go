@@ -126,7 +126,10 @@ func (e *Gray16) ExportPNG(outputFile string) {
 	img := image.NewGray16(image.Rect(0, 0, e.width, e.height))
 	img.Pix = *e.buf
 
-	png.Encode(o, img)
+	enc := &png.Encoder{
+		CompressionLevel: png.NoCompression,
+	}
+	enc.Encode(o, img)
 }
 
 func (e *Gray16) ExportJPEG(outputFile string, quality int) {

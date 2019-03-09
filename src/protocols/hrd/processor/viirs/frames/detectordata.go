@@ -68,53 +68,47 @@ func (e DetectorData) GetChecksum() uint16 {
 }
 
 // GetData from the current detector.
-func (e DetectorData) GetData(syncwork uint32, width int, oversample int, getBuf bool) []byte {
+func (e DetectorData) GetData(syncWord uint32, width int, oversample int, getBuf bool) []byte {
 	if len(e.diffBuf) > 0 && getBuf {
 		return e.diffBuf
 	}
 
-	if len(e.aggregator) > 8 && (syncwork == e.syncWord || e.syncWord == 0xC000FFEE) {
-		var buf []byte
-		size := width * 2 * oversample // 16-bits pixels * oversample
-		dat, err := Decompress(e.aggregator, len(e.aggregator), size)
-
-		if err == 1 {
-			return make([]byte, width*2)
-		}
-
-		if oversample == 1 {
-			return dat
-		}
-
-		for x := 0; x < size; x += oversample * 2 {
-			var val uint16
-
-			if oversample > 1 {
-				val += binary.BigEndian.Uint16(dat[x : x+2])
-				val += binary.BigEndian.Uint16(dat[x+2 : x+4])
-			}
-
-			if oversample > 2 {
-				val += binary.BigEndian.Uint16(dat[x+4 : x+6])
-			}
-
-			val /= uint16(oversample)
-
-			b := make([]byte, 2)
-			binary.BigEndian.PutUint16(b, val)
-			buf = append(buf, b...)
-		}
-
-		return buf
+	if len(e.aggregator) < 8 && (syncWord != e.syncWord || e.syncWord != 0xC000FFEE) {
+		return make([]byte, width*2)
 	}
 
-	return make([]byte, width*2)
+	size := width * 2 * oversample
+	dat, _ := Decompress(e.aggregator, len(e.aggregator), size)
+
+	if oversample == 1 {
+		return dat
+	}
+
+	buf := make([]byte, width*2)
+	for x := 0; x < size; x += oversample * 2 {
+		var val uint16
+
+		switch oversample {
+		case 2:
+			val += binary.BigEndian.Uint16(dat[x:])
+			val += binary.BigEndian.Uint16(dat[x+2:])
+		case 3:
+			val += binary.BigEndian.Uint16(dat[x:])
+			val += binary.BigEndian.Uint16(dat[x+2:])
+			val += binary.BigEndian.Uint16(dat[x+4:])
+		}
+
+		val /= uint16(oversample)
+		binary.BigEndian.PutUint16(buf[x/oversample:], val)
+	}
+
+	return buf
 }
 
 // SetData updates the data inside the detector.
-func (e *DetectorData) SetData(dat *[]byte) {
-	e.diffBuf = make([]byte, len(*dat))
-	copy(e.diffBuf, *dat)
+func (e *DetectorData) SetData(dat []byte) {
+	e.diffBuf = make([]byte, len(dat))
+	copy(e.diffBuf, dat)
 }
 
 func bitSlicer(dat *[]byte, size int) {

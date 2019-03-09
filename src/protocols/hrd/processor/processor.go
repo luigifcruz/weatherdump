@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"weather-dump/src/assets"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
+	"weather-dump/src/protocols/hrd"
 	"weather-dump/src/protocols/hrd/processor/viirs"
+	"weather-dump/src/tools/img"
 
 	"github.com/gorilla/websocket"
 )
@@ -57,14 +60,52 @@ func (e *Worker) Work(inputFile string) {
 			e.viirs.Parse(packet)
 		}
 	}
-	e.viirs.Process(e.scid)
 
 	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
 func (e *Worker) Export(delegate *assets.ExportDelegate, outputPath string) {
 	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
-	e.viirs.Export(delegate, outputPath)
+	for _, apid := range viirs.ChannelsIndex {
+		if e.viirs.Channel(apid) == nil {
+			continue
+		}
+
+		e.viirs.Channel(apid).Fix(hrd.Spacecrafts[e.scid])
+
+		w, h := e.viirs.Channel(apid).GetDimensions()
+		buf := make([]byte, w*h*2)
+
+		reconChannel := e.viirs.Channel(apid).GetReconstructionBand()
+		if reconChannel == 000 {
+			e.viirs.Channel(apid).ComposeUncoded(&buf)
+		} else {
+			if e.viirs.Channel(reconChannel) == nil {
+				continue
+			}
+			e.viirs.Channel(apid).ComposeCoded(&buf, e.viirs.Channel(reconChannel))
+		}
+
+		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, e.viirs.Channel(apid).GetFileName()))
+
+		i := img.NewGray16(&buf, w, h)
+
+		if delegate.Equalize {
+			i.Equalize()
+		}
+
+		if delegate.Flip {
+			i.Flop()
+		}
+
+		if delegate.ExportPNG {
+			i.ExportPNG(outputName)
+		}
+
+		if delegate.QualityJPEG > 0 {
+			i.ExportJPEG(outputName, delegate.QualityJPEG)
+		}
+	}
 	fmt.Println("[PRC] Done! Products saved.")
 }
 
