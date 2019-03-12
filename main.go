@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
-	"weather-dump/src/assets"
 	remoteHandler "weather-dump/src/handlers/remote"
 	terminalHandler "weather-dump/src/handlers/terminal"
+	"weather-dump/src/tools/img"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -29,11 +28,11 @@ var (
 
 	inputFormat = kingpin.Flag("decoded", "input file format").Short('d').Default("false").Bool()
 
-	exportPNG   = kingpin.Flag("png", "histogram equalize output images").Default("true").Bool()
-	qualityJPEG = kingpin.Flag("jpeg", "histogram equalize output images").Default("0").Int()
-	equalize    = kingpin.Flag("equalize", "histogram equalize output images").Short('e').Default("true").Bool()
-	invert      = kingpin.Flag("invert", "invert output images").Short('i').Default("true").Bool()
-	flip        = kingpin.Flag("flip", "flip output images").Short('f').Default("true").Bool()
+	exportPNG  = kingpin.Flag("png", "export pictures as PNG").Default("false").Bool()
+	exportJPEG = kingpin.Flag("jpeg", "export pictures as JPEG").Default("false").Bool()
+	equalize   = kingpin.Flag("equalize", "histogram equalize output pictures (--no-equalize turn-off)").Short('e').Default("true").Bool()
+	invert     = kingpin.Flag("invert", "invert infrared output pictures (--no-invert turn-off)").Short('i').Default("true").Bool()
+	flop       = kingpin.Flag("flop", "flop output pictures (--no-flop turn-off)").Short('f').Default("true").Bool()
 
 	hrd          = kingpin.Command("hrd", "Activate workflow for the HRD protocol (NPOESS & NPP).")
 	hrdInputFile = hrd.Arg("file", "input file path").Required().ExistingFile()
@@ -57,15 +56,15 @@ func main() {
 		remoteHandler.New().Listen(*remotePort)
 	}
 
-	delegate := &assets.ExportDelegate{
-		Equalize:    *equalize,
-		Flip:        *flip,
-		Invert:      *invert,
-		ExportPNG:   *exportPNG,
-		QualityJPEG: *qualityJPEG,
-	}
+	wf := img.NewPipeline()
+
+	wf.AddPipe("Equalize", *equalize)
+	wf.AddPipe("Flop", *flop)
+	wf.AddPipe("Invert", *invert)
+	wf.AddPipe("ExportPNG", *exportPNG)
+	wf.AddPipe("ExportJPEG", *exportJPEG)
 
 	start := time.Now()
-	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *inputFormat, delegate)
-	log.Printf("Task finished in %s", time.Since(start))
+	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *inputFormat, wf)
+	fmt.Printf("Tasks finished in %s\n", time.Since(start))
 }

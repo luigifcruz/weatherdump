@@ -2,9 +2,9 @@ package bismw
 
 import (
 	"fmt"
-	"path/filepath"
+	"runtime"
+	"sync"
 	"weather-dump/src/protocols/lrpt"
-	"weather-dump/src/tools/img"
 )
 
 // Channel struct.
@@ -23,28 +23,46 @@ type Channel struct {
 
 // NewChannel instance.
 func NewChannel(apid uint16) *Channel {
-	e := Channel{}
-	e.apid = apid
-	e.lines = make(map[uint32]*Line)
-	e.count = 0
-	return &e
+	return &Channel{
+		apid:  apid,
+		lines: make(map[uint32]*Line),
+		count: 0,
+	}
 }
 
 // Export the image of the respective channel.
-func (e *Channel) Export(outputFolder string) {
-	var buf []uint8
-	for i := uint32(0); i < e.count; i++ {
-		line := e.lines[i].RenderLine()
-		buf = append(buf, line[:]...)
+func (e *Channel) Compose() *[]byte {
+	buf := make([]byte, e.count*8*e.width)
+
+	threads := runtime.NumCPU()
+	var wg sync.WaitGroup
+	wg.Add(threads)
+
+	for t := 0; t < threads; t++ {
+		end := int(e.count) / threads * (t + 1)
+
+		if t == threads-1 {
+			end = int(e.count)
+		}
+
+		go func(wg *sync.WaitGroup, start, finish int) {
+			defer wg.Done()
+			for i := start; i < finish; i++ {
+				e.lines[uint32(i)].RenderLine(&buf, int(i)*8*int(e.width))
+			}
+		}(&wg, int(e.count)/threads*t, end)
 	}
 
-	i := img.NewGray(&buf, int(e.width), int(e.height)).Equalize()
-	if e.parameters.Inversion {
-		i.Invert()
-	}
+	wg.Wait()
+	return &buf
+}
 
-	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputFolder, e.fileName))
-	i.ExportPNG(outputName)
+func (e Channel) GetFileName() string {
+	return e.fileName
+}
+
+func (e Channel) GetDimensions() (int, int) {
+	return int(e.width), int(e.height)
 }
 
 // Fix the channel metadata.

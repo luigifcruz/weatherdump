@@ -1,9 +1,7 @@
 package bismw
 
 import (
-	"fmt"
 	"weather-dump/src/ccsds/frames"
-	"weather-dump/src/protocols/lrpt"
 )
 
 type Worker struct {
@@ -11,22 +9,11 @@ type Worker struct {
 }
 
 func New() *Worker {
-	e := Worker{}
-	e.channelData = make(map[uint16]*Channel)
-	return &e
+	return &Worker{make(map[uint16]*Channel)}
 }
 
-func (e *Worker) Process(scid uint8) {
-	for _, channel := range e.channelData {
-		channel.Fix(lrpt.Spacecrafts[scid])
-	}
-}
-
-func (e *Worker) SaveAllChannels(outputFolder string) {
-	fmt.Println("[SEN] Exporting BISMW channels products...")
-	for _, channel := range e.channelData {
-		channel.Export(outputFolder)
-	}
+func (e *Worker) Channel(apid uint16) *Channel {
+	return e.channelData[apid]
 }
 
 func (e *Worker) Parse(packet frames.SpacePacketFrame) {

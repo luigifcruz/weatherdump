@@ -1,10 +1,10 @@
 package bismw
 
-var eob = []float64{-99999}
-var cfc = []float64{-99998}
+var eob = []int64{-99999}
+var cfc = []int64{-99998}
 
-func getValue(dat []bool) float64 {
-	var result int
+func getValue(dat []bool) int64 {
+	var result int64
 	for i := 0; i < len(dat); i++ {
 		if dat[i] {
 			result = result | 0x01<<uint(len(dat)-1-i)
@@ -13,7 +13,7 @@ func getValue(dat []bool) float64 {
 	if !dat[0] {
 		result -= (1 << uint(len(dat))) - 1
 	}
-	return float64(result)
+	return result
 }
 
 func fastEqual(a, b []bool) bool {
@@ -25,7 +25,7 @@ func fastEqual(a, b []bool) bool {
 	return true
 }
 
-func findDC(dat *[]bool) float64 {
+func findDC(dat *[]bool) int64 {
 	buf := *dat
 	bufl := len(*dat)
 	for _, m := range dcCategories {
@@ -50,7 +50,7 @@ func findDC(dat *[]bool) float64 {
 	return cfc[0]
 }
 
-func findAC(dat *[]bool) []float64 {
+func findAC(dat *[]bool) []int64 {
 	bufl := len(*dat)
 	for _, m := range acCategories {
 		klen := len(m.code)
@@ -63,7 +63,7 @@ func findAC(dat *[]bool) []float64 {
 				*dat = (*dat)[klen:]
 				return eob
 			}
-			vals := make([]float64, m.zlen+1)
+			vals := make([]int64, m.zlen+1)
 			if !(m.zlen == 15 && m.clen == 0) {
 				if bufl < klen+m.clen {
 					break

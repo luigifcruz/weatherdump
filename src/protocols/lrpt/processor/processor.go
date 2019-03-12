@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"weather-dump/src/assets"
+	"path/filepath"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
+	"weather-dump/src/protocols/lrpt"
 	"weather-dump/src/protocols/lrpt/processor/bismw"
+	"weather-dump/src/tools/img"
 
 	"github.com/gorilla/websocket"
 )
@@ -25,9 +27,10 @@ type Worker struct {
 }
 
 func NewProcessor(uuid string) interfaces.Processor {
-	e := Worker{}
-	e.ccsds = ccsds.New()
-	e.bismw = bismw.New()
+	e := Worker{
+		ccsds: ccsds.New(),
+		bismw: bismw.New(),
+	}
 
 	http.HandleFunc(fmt.Sprintf("/meteor/%s/statistics", uuid), e.statistics)
 	return &e
@@ -56,14 +59,30 @@ func (e *Worker) Work(inputFile string) {
 			e.bismw.Parse(packet)
 		}
 	}
-	e.bismw.Process(e.scid)
 
 	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
-func (e *Worker) Export(delegate *assets.ExportDelegate, outputPath string) {
+func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	fmt.Printf("[PRC] Exporting BISMW science products to %s...\n", outputPath)
-	e.bismw.SaveAllChannels(outputPath)
+
+	for _, apid := range bismw.ChannelsIndex {
+		channel := e.bismw.Channel(apid)
+
+		if channel == nil {
+			continue
+		}
+
+		channel.Fix(lrpt.Spacecrafts[e.scid])
+		buf := channel.Compose()
+		w, h := channel.GetDimensions()
+
+		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, channel.GetFileName()))
+		wf.Marshal("Invert", bismw.ChannelsParameters[apid].Inversion)
+		wf.Target(img.NewGray(buf, w, h)).Process().Export(outputName, 100)
+		wf.Unmarshal()
+	}
+
 	fmt.Println("[PRC] Done! Products saved.")
 }
 

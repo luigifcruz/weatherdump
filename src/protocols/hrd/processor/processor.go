@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
-	"weather-dump/src/assets"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
@@ -64,48 +63,35 @@ func (e *Worker) Work(inputFile string) {
 	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
-func (e *Worker) Export(delegate *assets.ExportDelegate, outputPath string) {
+func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
+
 	for _, apid := range viirs.ChannelsIndex {
-		if e.viirs.Channel(apid) == nil {
+		channel := e.viirs.Channel(apid)
+
+		if channel == nil {
 			continue
 		}
 
-		e.viirs.Channel(apid).Fix(hrd.Spacecrafts[e.scid])
+		channel.Fix(hrd.Spacecrafts[e.scid])
 
-		w, h := e.viirs.Channel(apid).GetDimensions()
+		w, h := channel.GetDimensions()
 		buf := make([]byte, w*h*2)
 
-		reconChannel := e.viirs.Channel(apid).GetReconstructionBand()
+		reconChannel := channel.GetReconstructionBand()
 		if reconChannel == 000 {
-			e.viirs.Channel(apid).ComposeUncoded(&buf)
+			channel.ComposeUncoded(&buf)
 		} else {
 			if e.viirs.Channel(reconChannel) == nil {
 				continue
 			}
-			e.viirs.Channel(apid).ComposeCoded(&buf, e.viirs.Channel(reconChannel))
+			channel.ComposeCoded(&buf, e.viirs.Channel(reconChannel))
 		}
 
-		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, e.viirs.Channel(apid).GetFileName()))
-
-		i := img.NewGray16(&buf, w, h)
-
-		if delegate.Equalize {
-			i.Equalize()
-		}
-
-		if delegate.Flip {
-			i.Flop()
-		}
-
-		if delegate.ExportPNG {
-			i.ExportPNG(outputName)
-		}
-
-		if delegate.QualityJPEG > 0 {
-			i.ExportJPEG(outputName, delegate.QualityJPEG)
-		}
+		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, channel.GetFileName()))
+		wf.Target(img.NewGray16(&buf, w, h)).Process().Export(outputName, 100)
 	}
+
 	fmt.Println("[PRC] Done! Products saved.")
 }
 

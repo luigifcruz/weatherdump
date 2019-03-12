@@ -11,7 +11,7 @@ var qTable = [64]float64{
 	72, 92, 95, 98, 112, 100, 103, 99,
 }
 
-var zigzag = [64]int{
+var zigzag = [64]int64{
 	0, 1, 5, 6, 14, 15, 27, 28,
 	2, 4, 7, 13, 16, 26, 29, 42,
 	3, 8, 12, 17, 25, 30, 41, 43,
@@ -22,8 +22,8 @@ var zigzag = [64]int{
 	35, 36, 48, 49, 57, 58, 62, 63,
 }
 
-func getQuantizationTable(qf float64) []int {
-	var table [64]int
+func getQuantizationTable(qf float64) []int64 {
+	var table [64]int64
 
 	if (qf > 20) && (qf < 50) {
 		qf = 5000 / qf
@@ -32,7 +32,7 @@ func getQuantizationTable(qf float64) []int {
 	}
 
 	for x := 0; x < 64; x++ {
-		table[x] = int((qf / 100 * qTable[x]) + 0.5)
+		table[x] = int64((qf / 100 * qTable[x]) + 0.5)
 		if table[x] < 1 {
 			table[x] = 1
 		}

@@ -113,7 +113,7 @@ func (e *Gray) Invert() Img {
 	return e
 }
 
-func (e *Gray) ExportPNG(outputFile string) {
+func (e *Gray) ExportPNG(outputFile string, quality int) Img {
 	o, _ := os.Create(outputFile + ".png")
 	defer o.Close()
 
@@ -121,12 +121,13 @@ func (e *Gray) ExportPNG(outputFile string) {
 	img.Pix = *e.buf
 
 	enc := &png.Encoder{
-		CompressionLevel: png.NoCompression,
+		CompressionLevel: png.DefaultCompression,
 	}
 	enc.Encode(o, img)
+	return e
 }
 
-func (e *Gray) ExportJPEG(outputFile string, quality int) {
+func (e *Gray) ExportJPEG(outputFile string, quality int) Img {
 	o, _ := os.Create(outputFile + ".jpeg")
 	defer o.Close()
 
@@ -136,4 +137,5 @@ func (e *Gray) ExportJPEG(outputFile string, quality int) {
 	var opt jpeg.Options
 	opt.Quality = quality
 	jpeg.Encode(o, img, &opt)
+	return e
 }
