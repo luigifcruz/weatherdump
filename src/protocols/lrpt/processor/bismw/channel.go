@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"sync"
 	"weather-dump/src/protocols/lrpt"
+	"weather-dump/src/tools/parallel"
 )
 
 // Channel struct.
@@ -30,7 +31,7 @@ func NewChannel(apid uint16) *Channel {
 	}
 }
 
-// Export the image of the respective channel.
+// Compose the image of the respective channel.
 func (e *Channel) Compose() *[]byte {
 	buf := make([]byte, e.count*8*e.width)
 
@@ -38,19 +39,13 @@ func (e *Channel) Compose() *[]byte {
 	var wg sync.WaitGroup
 	wg.Add(threads)
 
-	for t := 0; t < threads; t++ {
-		end := int(e.count) / threads * (t + 1)
-
-		if t == threads-1 {
-			end = int(e.count)
-		}
-
+	for s, f := range parallel.SerialRange(0, int(e.count)/14, threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
 			for i := start; i < finish; i++ {
 				e.lines[uint32(i)].RenderLine(&buf, int(i)*8*int(e.width))
 			}
-		}(&wg, int(e.count)/threads*t, end)
+		}(&wg, s, f)
 	}
 
 	wg.Wait()

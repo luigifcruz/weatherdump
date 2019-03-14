@@ -20,13 +20,13 @@ func NewPipeline() Pipeline {
 	}
 }
 
-func (e *Pipeline) Marshal(method string, enabled bool) {
+func (e *Pipeline) AddException(method string, enabled bool) {
 	if !enabled {
 		e.exceptions[method] = -1
 	}
 }
 
-func (e *Pipeline) Unmarshal() {
+func (e *Pipeline) ResetExceptions() {
 	e.exceptions = make(map[string]int)
 }
 
@@ -62,6 +62,10 @@ func (e *Pipeline) Export(args ...interface{}) *Pipeline {
 			reflect.ValueOf(*e.target).MethodByName(task).Call(inputs)
 		}
 	}
+	return e
+}
+
+func (e *Pipeline) ExportBuf(buf *[]byte) *Pipeline {
 	return e
 }
 

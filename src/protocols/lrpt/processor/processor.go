@@ -78,9 +78,9 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 		w, h := channel.GetDimensions()
 
 		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, channel.GetFileName()))
-		wf.Marshal("Invert", bismw.ChannelsParameters[apid].Inversion)
+		wf.AddException("Invert", bismw.ChannelsParameters[apid].Invert)
 		wf.Target(img.NewGray(buf, w, h)).Process().Export(outputName, 100)
-		wf.Unmarshal()
+		wf.ResetExceptions()
 	}
 
 	fmt.Println("[PRC] Done! Products saved.")

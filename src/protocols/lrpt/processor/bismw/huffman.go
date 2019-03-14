@@ -79,9 +79,9 @@ func findAC(dat *[]bool) []int64 {
 	return cfc
 }
 
-func convertToArray(buf []byte) *[]bool {
-	var soft = make([]bool, len(buf)*8)
-	for i := 0; i < len(buf); i++ {
+func convertToArray(buf []byte, len int) *[]bool {
+	var soft = make([]bool, len*8)
+	for i := 0; i < len; i++ {
 		soft[0+8*i] = buf[i]>>7&0x01 == 0x01
 		soft[1+8*i] = buf[i]>>6&0x01 == 0x01
 		soft[2+8*i] = buf[i]>>5&0x01 == 0x01

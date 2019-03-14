@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"weather-dump/src/tools/parallel"
 )
 
 type Gray16 struct {
@@ -26,8 +27,7 @@ func (e *Gray16) Flop() Img {
 	var wg sync.WaitGroup
 	wg.Add(e.threads)
 
-	lines := len(*e.buf) / (e.width * 2)
-	for t := 0; t < e.threads; t++ {
+	for s, f := range parallel.SerialRange(0, len(*e.buf)/(e.width*2), e.threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
 
@@ -48,7 +48,7 @@ func (e *Gray16) Flop() Img {
 					(*e.buf)[lp] = l2
 				}
 			}
-		}(&wg, lines/e.threads*t, lines/e.threads*(t+1))
+		}(&wg, s, f)
 	}
 
 	wg.Wait()
@@ -56,7 +56,9 @@ func (e *Gray16) Flop() Img {
 }
 
 func (e *Gray16) Equalize() Img {
-	var hist, nlvl [65536]int
+	var hist [65536]int
+	var nlvl [65536]uint16
+
 	totalPixels := len(*e.buf)
 
 	for p := 0; p < totalPixels; p += 2 {
@@ -81,19 +83,19 @@ func (e *Gray16) Equalize() Img {
 	frequencyCount := 0
 	for ; firstNonZero < len(hist); firstNonZero++ {
 		frequencyCount += hist[firstNonZero]
-		nlvl[firstNonZero] = int(math.Max(0, math.Min(float64(frequencyCount)*pixelScale, 65535)))
+		nlvl[firstNonZero] = uint16(math.Max(0, math.Min(float64(frequencyCount)*pixelScale, 65535)))
 	}
 
 	var wg sync.WaitGroup
 	wg.Add(e.threads)
 
-	for t := 0; t < e.threads; t++ {
+	for s, f := range parallel.SerialRange(0, totalPixels, e.threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
 			for p := start; p < finish; p += 2 {
-				binary.BigEndian.PutUint16((*e.buf)[p:], uint16(nlvl[binary.BigEndian.Uint16((*e.buf)[p:])]))
+				binary.BigEndian.PutUint16((*e.buf)[p:], nlvl[binary.BigEndian.Uint16((*e.buf)[p:])])
 			}
-		}(&wg, totalPixels/e.threads*t, totalPixels/e.threads*(t+1))
+		}(&wg, s, f)
 	}
 
 	wg.Wait()
@@ -104,15 +106,13 @@ func (e *Gray16) Invert() Img {
 	var wg sync.WaitGroup
 	wg.Add(e.threads)
 
-	pixels := len(*e.buf)
-	for t := 0; t < e.threads; t++ {
+	for s, f := range parallel.SerialRange(0, len(*e.buf), e.threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
-
 			for p := start; p < finish; p++ {
 				(*e.buf)[p] = 255 - (*e.buf)[p]
 			}
-		}(&wg, pixels/e.threads*t, pixels/e.threads*(t+1))
+		}(&wg, s, f)
 	}
 
 	wg.Wait()

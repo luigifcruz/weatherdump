@@ -36,6 +36,8 @@ func (e Line) RenderLine(canvas *[]byte, offset int) {
 }
 
 func (e Line) GetDate() lrpt.Time {
+	for _, segment := range e.segments {
+		return segment.GetDate()
+	}
 	return lrpt.Time{}
-	//return e.segments[0].GetDate()
 }

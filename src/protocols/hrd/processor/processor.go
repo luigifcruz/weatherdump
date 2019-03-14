@@ -5,23 +5,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
 	"weather-dump/src/protocols/hrd"
-	"weather-dump/src/protocols/hrd/processor/viirs"
+	"weather-dump/src/protocols/hrd/processor/composer"
+	"weather-dump/src/protocols/hrd/processor/parser"
 	"weather-dump/src/tools/img"
 
 	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{}
+var channels = parser.Channels
 
 const frameSize = 892
 
 type Worker struct {
 	ccsds     *ccsds.Worker
-	viirs     *viirs.Worker
 	scid      uint8
 	statsSock *websocket.Conn
 }
@@ -29,7 +31,6 @@ type Worker struct {
 func NewProcessor(uuid string) interfaces.Processor {
 	e := Worker{}
 	e.ccsds = ccsds.New()
-	e.viirs = viirs.New()
 
 	http.HandleFunc(fmt.Sprintf("/npoess/%s/statistics", uuid), e.statistics)
 
@@ -54,9 +55,10 @@ func (e *Worker) Work(inputFile string) {
 	}
 
 	fmt.Printf("[PRC] Found %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
+
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
-			e.viirs.Parse(packet)
+			channels[packet.GetAPID()].Parse(packet)
 		}
 	}
 
@@ -66,31 +68,36 @@ func (e *Worker) Work(inputFile string) {
 func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
 
-	for _, apid := range viirs.ChannelsIndex {
-		channel := e.viirs.Channel(apid)
+	for _, apid := range getKeys(channels) {
+		ch := channels[uint16(apid)]
 
-		if channel == nil {
+		if !ch.HasData {
 			continue
 		}
 
-		channel.Fix(hrd.Spacecrafts[e.scid])
+		ch.Fix(hrd.Spacecrafts[e.scid])
 
-		w, h := channel.GetDimensions()
+		w, h := ch.GetDimensions()
 		buf := make([]byte, w*h*2)
 
-		reconChannel := channel.GetReconstructionBand()
+		reconChannel := ch.ReconstructionBand
 		if reconChannel == 000 {
-			channel.ComposeUncoded(&buf)
+			ch.ExportUncoded(&buf)
 		} else {
-			if e.viirs.Channel(reconChannel) == nil {
+			if !channels[reconChannel].HasData {
 				continue
 			}
-			channel.ComposeCoded(&buf, e.viirs.Channel(reconChannel))
+			ch.ExportCoded(&buf, channels[reconChannel])
 		}
 
-		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, channel.GetFileName()))
+		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
+		wf.AddException("Invert", ch.Invert)
 		wf.Target(img.NewGray16(&buf, w, h)).Process().Export(outputName, 100)
+		wf.ResetExceptions()
 	}
+
+	c := composer.Composers["True-Color"]
+	c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
 
 	fmt.Println("[PRC] Done! Products saved.")
 }
@@ -98,4 +105,13 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
+}
+
+func getKeys(tasks parser.ChannelList) []int {
+	keys := make([]int, 0, len(tasks))
+	for k := range tasks {
+		keys = append(keys, int(k))
+	}
+	sort.Ints(keys)
+	return keys
 }

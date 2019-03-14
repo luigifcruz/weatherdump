@@ -1,4 +1,4 @@
-package frames
+package segment
 
 import (
 	"encoding/binary"
@@ -6,9 +6,9 @@ import (
 	"weather-dump/src/protocols/hrd"
 )
 
-const frameBodyMinimum = 88
+const bodyMinimum = 88
 
-type FrameBody struct {
+type Body struct {
 	sequenceCount    uint32
 	packetTime       hrd.Time
 	formatVersion    uint8
@@ -18,24 +18,24 @@ type FrameBody struct {
 	band             uint8
 	detector         uint8
 	syncWordPattern  uint32
-	detectorData     [6]DetectorData
+	detectorData     [6]Detector
 	fillFrame        bool
 }
 
-func NewFillFrameBody() *FrameBody {
-	return &FrameBody{
+func NewFillBody() *Body {
+	return &Body{
 		fillFrame: true,
 	}
 }
 
-func NewFrameBody(buf []byte) *FrameBody {
-	e := FrameBody{}
+func NewBody(buf []byte) *Body {
+	e := Body{}
 	e.FromBinary(buf)
 	return &e
 }
 
-func (e *FrameBody) FromBinary(dat []byte) {
-	if len(dat) < frameBodyMinimum {
+func (e *Body) FromBinary(dat []byte) {
+	if len(dat) < bodyMinimum {
 		return
 	}
 
@@ -58,7 +58,7 @@ func (e *FrameBody) FromBinary(dat []byte) {
 	e.fillFrame = false
 }
 
-func (e FrameBody) Print() {
+func (e Body) Print() {
 	fmt.Println("### VIIRS Science Body")
 	fmt.Printf("Sequence Count: %032b\n", e.sequenceCount)
 	fmt.Printf("Packet Time: %s\n", e.packetTime.GetZulu())
@@ -84,37 +84,37 @@ func (e FrameBody) Print() {
 	fmt.Println()
 }
 
-func (e FrameBody) IsFillerFrame() bool {
+func (e Body) IsFillerFrame() bool {
 	return e.fillFrame
 }
 
-func (e FrameBody) IsFillData(aggregationZone int) bool {
+func (e Body) IsFillData(aggregationZone int) bool {
 	return e.detectorData[aggregationZone].GetChecksum() == 0x0008
 }
 
-func (e FrameBody) GetAggrLen() int {
+func (e Body) GetAggrLen() int {
 	return len(e.detectorData)
 }
 
-func (e FrameBody) GetData(zone int, width int, oversample int, getBuf bool) []byte {
+func (e Body) GetData(zone int, width int, oversample int) []byte {
 	if e.IsFillerFrame() {
 		return make([]byte, width*2)
 	}
-	return e.detectorData[zone].GetData(e.syncWordPattern, width, oversample, getBuf)
+	return e.detectorData[zone].GetData(e.syncWordPattern, width, oversample)
 }
 
-func (e FrameBody) GetDetectorNumber() uint8 {
+func (e Body) GetDetectorNumber() uint8 {
 	return e.detector
 }
 
-func (e FrameBody) GetSequenceCount() uint32 {
+func (e Body) GetSequenceCount() uint32 {
 	return e.sequenceCount
 }
 
-func (e FrameBody) GetID() uint32 {
+func (e Body) GetID() uint32 {
 	return e.sequenceCount
 }
 
-func (e *FrameBody) SetData(zone int, dat []byte) {
+func (e *Body) SetData(zone int, dat []byte) {
 	e.detectorData[zone].SetData(dat)
 }

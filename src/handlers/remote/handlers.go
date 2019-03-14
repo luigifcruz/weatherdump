@@ -1,11 +1,13 @@
 package remote
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 	"weather-dump/src/handlers"
+	"weather-dump/src/tools/img"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -38,10 +40,19 @@ func (s *Remote) processorStart(w http.ResponseWriter, r *http.Request, vars map
 		return
 	}
 
+	wf := img.NewPipeline()
+
+	var pipeline map[string]bool
+	json.Unmarshal([]byte(r.FormValue("pipeline")), &pipeline)
+
+	for task, enabled := range pipeline {
+		wf.AddPipe(task, enabled)
+	}
+
 	go func() {
 		processor := handlers.AvailableProcessors[vars["datalink"]](id.String())
 		processor.Work(inputFile)
-		//processor.ExportAll(workingPath)
+		processor.Export(workingPath, wf)
 		s.terminate(id)
 	}()
 

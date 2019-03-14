@@ -1,4 +1,4 @@
-package frames
+package segment
 
 import (
 	"encoding/binary"
@@ -6,26 +6,27 @@ import (
 	"math"
 )
 
-const detectorDataMinimum = 88
+const detectorMinimum = 88
 
-// DetectorData is the final data structure from the VIIRS pictures products.
-type DetectorData struct {
+// Detector is the final data structure from the VIIRS pictures products.
+type Detector struct {
 	fillData       uint8
 	checksumOffset uint16
-	aggregator     []byte
 	checksum       uint32
 	syncWord       uint32
-	diffBuf        []byte
+	data           []byte
+
+	Recon bool
 }
 
-// NewDetectorData returns a pointer of a new DetectorData.
-func NewDetectorData() *DetectorData {
-	return &DetectorData{}
+// NewDetector returns a pointer of a new Detector.
+func NewDetector() *Detector {
+	return &Detector{}
 }
 
 // FromBinary parses the binary data into the dectector struct.
-func (e *DetectorData) FromBinary(buf *[]byte) {
-	if len(*buf) < detectorDataMinimum {
+func (e *Detector) FromBinary(buf *[]byte) {
+	if len(*buf) < detectorMinimum {
 		return
 	}
 
@@ -39,8 +40,8 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 		return
 	}
 
-	e.aggregator = dat[4:cso]
-	bitSlicer(&e.aggregator, int(e.fillData))
+	e.data = dat[4:cso]
+	bitSlicer(&e.data, int(e.fillData))
 
 	if (len(dat) - int(cso)) > 8 {
 		e.checksum = binary.BigEndian.Uint32(dat[cso:])
@@ -52,33 +53,33 @@ func (e *DetectorData) FromBinary(buf *[]byte) {
 }
 
 // Print the values contained inside the detector struct into stdout.
-func (e DetectorData) Print() {
+func (e Detector) Print() {
 	fmt.Println("### VIIRS Aggregator")
 	fmt.Printf("Fill Data: %08b\n", e.fillData)
 	fmt.Printf("Checksum Offset: %016b\n", e.checksumOffset)
-	fmt.Printf("Data Size: %d\n", len(e.aggregator))
+	fmt.Printf("Data Size: %d\n", len(e.data))
 	fmt.Printf("Checksum: %032b\n", e.checksum)
 	fmt.Printf("Sync Word: %032b\n", e.syncWord)
 	fmt.Println()
 }
 
 // GetChecksum value from the detector struct.
-func (e DetectorData) GetChecksum() uint16 {
+func (e Detector) GetChecksum() uint16 {
 	return e.checksumOffset
 }
 
 // GetData from the current detector.
-func (e DetectorData) GetData(syncWord uint32, width int, oversample int, getBuf bool) []byte {
-	if len(e.diffBuf) > 0 && getBuf {
-		return e.diffBuf
+func (e Detector) GetData(syncWord uint32, width int, oversample int) []byte {
+	if e.Recon {
+		return e.data
 	}
 
-	if len(e.aggregator) < 8 && (syncWord != e.syncWord || e.syncWord != 0xC000FFEE) {
+	if len(e.data) < 8 && (syncWord != e.syncWord || e.syncWord != 0xC000FFEE) {
 		return make([]byte, width*2)
 	}
 
 	size := width * 2 * oversample
-	dat, _ := Decompress(e.aggregator, len(e.aggregator), size)
+	dat, _ := Decompress(e.data, len(e.data), size)
 
 	if oversample == 1 {
 		return dat
@@ -106,9 +107,10 @@ func (e DetectorData) GetData(syncWord uint32, width int, oversample int, getBuf
 }
 
 // SetData updates the data inside the detector.
-func (e *DetectorData) SetData(dat []byte) {
-	e.diffBuf = make([]byte, len(dat))
-	copy(e.diffBuf, dat)
+func (e *Detector) SetData(dat []byte) {
+	e.data = make([]byte, len(dat))
+	copy(e.data, dat)
+	e.Recon = true
 }
 
 func bitSlicer(dat *[]byte, size int) {

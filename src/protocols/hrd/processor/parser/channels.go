@@ -1,19 +1,8 @@
-package viirs
+package parser
 
-type ChannelParameters struct {
-	APID                  uint16
-	ChannelName           string
-	AggregationZoneWidth  [6]int
-	AggregationZoneHeight int
-	BowTieHeight          [6]int
-	OversampleZone        [6]int
-	FinalProductWidth     uint32
-	ReconstructionBand    uint16
-}
+type ChannelList map[uint16]*Channel
 
-var ChannelsIndex = [24]uint16{800, 801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812, 813, 814, 815, 816, 817, 818, 819, 820, 821, 822, 823}
-
-var ChannelsParameters = map[uint16]ChannelParameters{
+var Channels = ChannelList{
 	800: {
 		APID:                  800,
 		ChannelName:           "M04",
@@ -21,8 +10,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 2, 3, 3, 2, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	801: {
 		APID:                  801,
@@ -31,8 +21,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 2, 3, 3, 2, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    800,
+		Invert:                false,
 	},
 	802: {
 		APID:                  802,
@@ -41,8 +32,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 2, 3, 3, 2, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    800,
+		Invert:                false,
 	},
 	803: {
 		APID:                  803,
@@ -51,8 +43,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 2, 3, 3, 2, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    802,
+		Invert:                false,
 	},
 	804: {
 		APID:                  804,
@@ -61,8 +54,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 2, 3, 3, 2, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    803,
+		Invert:                false,
 	},
 	805: {
 		APID:                  805,
@@ -71,8 +65,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                true,
 	},
 	806: {
 		APID:                  806,
@@ -81,8 +76,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 2, 3, 3, 2, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	807: {
 		APID:                  807,
@@ -91,8 +87,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	808: {
 		APID:                  808,
@@ -101,8 +98,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	809: {
 		APID:                  809,
@@ -111,8 +109,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    808,
+		Invert:                false,
 	},
 	810: {
 		APID:                  810,
@@ -121,8 +120,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    808,
+		Invert:                false,
 	},
 	811: {
 		APID:                  811,
@@ -131,8 +131,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 2, 3, 3, 2, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                true,
 	},
 	812: {
 		APID:                  812,
@@ -141,8 +142,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	813: {
 		APID:                  813,
@@ -151,8 +153,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 31,
 		BowTieHeight:          [6]int{6, 2, 0, 0, 2, 6},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     6400,
+		Width:                 6400,
 		ReconstructionBand:    812,
+		Invert:                true,
 	},
 	814: {
 		APID:                  814,
@@ -161,8 +164,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                true,
 	},
 	815: {
 		APID:                  815,
@@ -171,8 +175,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    000,
+		Invert:                true,
 	},
 	816: {
 		APID:                  816,
@@ -181,8 +186,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     3200,
+		Width:                 3200,
 		ReconstructionBand:    815,
+		Invert:                true,
 	},
 	817: {
 		APID:                  817,
@@ -191,8 +197,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 31,
 		BowTieHeight:          [6]int{6, 2, 0, 0, 2, 6},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     6400,
+		Width:                 6400,
 		ReconstructionBand:    815,
+		Invert:                true,
 	},
 	818: {
 		APID:                  818,
@@ -201,8 +208,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 31,
 		BowTieHeight:          [6]int{6, 2, 0, 0, 2, 6},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     6400,
+		Width:                 6400,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	819: {
 		APID:                  819,
@@ -211,8 +219,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 31,
 		BowTieHeight:          [6]int{6, 2, 0, 0, 2, 6},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     6400,
+		Width:                 6400,
 		ReconstructionBand:    818,
+		Invert:                false,
 	},
 	820: {
 		APID:                  820,
@@ -221,8 +230,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 31,
 		BowTieHeight:          [6]int{6, 2, 0, 0, 2, 6},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     6400,
+		Width:                 6400,
 		ReconstructionBand:    819,
+		Invert:                false,
 	},
 	821: {
 		APID:                  821,
@@ -231,8 +241,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     4064,
+		Width:                 4064,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	822: {
 		APID:                  822,
@@ -241,8 +252,9 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     4064,
+		Width:                 4064,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 	823: {
 		APID:                  823,
@@ -251,7 +263,8 @@ var ChannelsParameters = map[uint16]ChannelParameters{
 		AggregationZoneHeight: 15,
 		BowTieHeight:          [6]int{3, 1, 0, 0, 1, 3},
 		OversampleZone:        [6]int{1, 1, 1, 1, 1, 1},
-		FinalProductWidth:     4064,
+		Width:                 4064,
 		ReconstructionBand:    000,
+		Invert:                false,
 	},
 }

@@ -64,7 +64,7 @@ func (e Segment) Print() {
 }
 
 func (e *Segment) huffmanDecode(data []byte) {
-	buf := convertToArray(data)
+	buf := convertToArray(data, len(data))
 	lastDC := int64(0)
 
 	for i := 0; i < 14; i++ {
@@ -72,6 +72,7 @@ func (e *Segment) huffmanDecode(data []byte) {
 		if val == cfc[0] {
 			e.valid = false
 		}
+
 		e.mcus[i] = []int64{val + lastDC}
 		lastDC = e.mcus[i][0]
 

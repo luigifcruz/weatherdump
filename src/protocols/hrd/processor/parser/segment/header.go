@@ -1,4 +1,4 @@
-package frames
+package segment
 
 import (
 	"encoding/binary"
@@ -6,9 +6,9 @@ import (
 	"weather-dump/src/protocols/hrd"
 )
 
-const frameHeaderMinimum = 52
+const headerMinimum = 52
 
-type FrameHeader struct {
+type Header struct {
 	time             hrd.Time
 	numberOfSegments uint8
 	sequenceCount    uint32
@@ -30,21 +30,21 @@ type FrameHeader struct {
 	fillFrame        bool
 }
 
-func NewFillFrameHeader(scanNumber uint32) *FrameHeader {
-	return &FrameHeader{
+func NewFillHeader(scanNumber uint32) *Header {
+	return &Header{
 		scanNumber: scanNumber,
 		fillFrame:  true,
 	}
 }
 
-func NewFrameHeader(buf []byte) *FrameHeader {
-	e := FrameHeader{}
+func NewFrameHeader(buf []byte) *Header {
+	e := Header{}
 	e.FromBinary(buf)
 	return &e
 }
 
-func (e *FrameHeader) FromBinary(dat []byte) {
-	if len(dat) < frameHeaderMinimum {
+func (e *Header) FromBinary(dat []byte) {
+	if len(dat) < headerMinimum {
 		return
 	}
 
@@ -72,7 +72,7 @@ func (e *FrameHeader) FromBinary(dat []byte) {
 	e.fillFrame = false
 }
 
-func (e FrameHeader) Print() {
+func (e Header) Print() {
 	fmt.Println("### VIIRS Science Header")
 	fmt.Printf("Day Time: %s\n", e.time.GetZulu())
 	fmt.Printf("Number of Segments %08b\n", e.numberOfSegments)
@@ -97,26 +97,26 @@ func (e FrameHeader) Print() {
 	fmt.Println()
 }
 
-func (e FrameHeader) IsValid() bool {
+func (e Header) IsValid() bool {
 	return !e.fillFrame
 }
 
-func (e FrameHeader) GetDateString() string {
+func (e Header) GetDateString() string {
 	return e.time.GetZuluSafe()
 }
 
-func (e FrameHeader) GetDate() hrd.Time {
+func (e Header) GetDate() hrd.Time {
 	return e.time
 }
 
-func (e FrameHeader) GetNumberOfSegments() uint8 {
+func (e Header) GetNumberOfSegments() uint8 {
 	return e.numberOfSegments
 }
 
-func (e FrameHeader) GetSequenceCount() uint32 {
+func (e Header) GetSequenceCount() uint32 {
 	return e.sequenceCount
 }
 
-func (e FrameHeader) GetScanNumber() uint32 {
+func (e Header) GetScanNumber() uint32 {
 	return e.scanNumber
 }

@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"weather-dump/src/tools/parallel"
 )
 
 type Gray struct {
@@ -25,8 +26,7 @@ func (e *Gray) Flop() Img {
 	var wg sync.WaitGroup
 	wg.Add(e.threads)
 
-	lines := len(*e.buf) / (e.width * 2)
-	for t := 0; t < e.threads; t++ {
+	for s, f := range parallel.SerialRange(0, len(*e.buf)/(e.width*2), e.threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
 
@@ -42,7 +42,7 @@ func (e *Gray) Flop() Img {
 					(*e.buf)[lp] = l
 				}
 			}
-		}(&wg, lines/e.threads*t, lines/e.threads*(t+1))
+		}(&wg, s, f)
 	}
 
 	wg.Wait()
@@ -50,7 +50,9 @@ func (e *Gray) Flop() Img {
 }
 
 func (e *Gray) Equalize() Img {
-	var hist, nlvl [256]int
+	var hist [256]int
+	var nlvl [256]uint8
+
 	totalPixels := len(*e.buf)
 
 	for p := 0; p < totalPixels; p++ {
@@ -75,19 +77,19 @@ func (e *Gray) Equalize() Img {
 	frequencyCount := 0
 	for ; firstNonZero < len(hist); firstNonZero++ {
 		frequencyCount += hist[firstNonZero]
-		nlvl[firstNonZero] = int(math.Max(0, math.Min(float64(frequencyCount)*pixelScale, 255)))
+		nlvl[firstNonZero] = uint8(math.Max(0, math.Min(float64(frequencyCount)*pixelScale, 255)))
 	}
 
 	var wg sync.WaitGroup
 	wg.Add(e.threads)
 
-	for t := 0; t < e.threads; t++ {
+	for s, f := range parallel.SerialRange(0, totalPixels, e.threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
 			for p := start; p < finish; p++ {
-				(*e.buf)[p] = uint8(nlvl[(*e.buf)[p]])
+				(*e.buf)[p] = nlvl[(*e.buf)[p]]
 			}
-		}(&wg, totalPixels/e.threads*t, totalPixels/e.threads*(t+1))
+		}(&wg, s, f)
 	}
 
 	wg.Wait()
@@ -98,15 +100,14 @@ func (e *Gray) Invert() Img {
 	var wg sync.WaitGroup
 	wg.Add(e.threads)
 
-	pixels := len(*e.buf)
-	for t := 0; t < e.threads; t++ {
+	for s, f := range parallel.SerialRange(0, len(*e.buf), e.threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
 
 			for p := start; p < finish; p++ {
 				(*e.buf)[p] = 255 - (*e.buf)[p]
 			}
-		}(&wg, pixels/e.threads*t, pixels/e.threads*(t+1))
+		}(&wg, s, f)
 	}
 
 	wg.Wait()
