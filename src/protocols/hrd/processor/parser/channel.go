@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"sync"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/protocols/hrd"
 	"weather-dump/src/protocols/hrd/processor/parser/segment"
@@ -27,8 +28,8 @@ type Channel struct {
 	HasData               bool
 	StartTime             hrd.Time
 	EndTime               hrd.Time
+	Processed             bool
 
-	decoded    bool
 	segments   map[uint32]*segment.Data
 	scanCount  uint32
 	exctdCount uint32
@@ -56,7 +57,7 @@ func (e *Channel) SetBounds(first, last int) {
 	e.LastSegment = uint32(last)
 }
 
-func (e *Channel) Fix(scft hrd.SpacecraftParameters) {
+func (e *Channel) Process(scft hrd.SpacecraftParameters) {
 	if e.LastSegment-e.FirstSegment > maxFrameCount {
 		fmt.Printf("[SEN] Potentially invalid channel %s was found.\n", e.ChannelName)
 		fmt.Println("	It's too long for the round earth, trying to correct...")
@@ -77,10 +78,26 @@ func (e *Channel) Fix(scft hrd.SpacecraftParameters) {
 		fmt.Println("	Found a valid number. Channel can still be damaged.")
 	}
 
-	for i := e.LastSegment; i >= e.FirstSegment; i-- {
-		if e.segments[i] == nil {
-			e.segments[i] = segment.NewFillSegment(i)
+	if !e.Processed && e.HasData {
+		for i := e.FirstSegment; i <= e.LastSegment; i++ {
+			if e.segments[i] == nil {
+				e.segments[i] = segment.NewFillSegment(i)
+			}
+
+			var wg sync.WaitGroup
+			wg.Add(32)
+
+			for j := range e.segments[i].Body {
+				go func(wg *sync.WaitGroup, j int) {
+					defer wg.Done()
+					e.segments[i].Body[j].Process(e.AggregationZoneWidth, e.OversampleZone)
+				}(&wg, j)
+			}
+
+			wg.Wait()
 		}
+
+		e.Processed = true
 	}
 
 	e.StartTime = e.segments[e.FirstSegment].Header.GetDate()

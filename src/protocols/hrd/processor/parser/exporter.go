@@ -1,40 +1,46 @@
 package parser
 
 import (
-	"encoding/binary"
 	"fmt"
 	"runtime"
 	"sync"
+	"weather-dump/src/protocols/hrd"
 )
 
-func (e Channel) Export(nuf *[]byte, ch ChannelList) {
+func (e *Channel) Export(buf *[]byte, ch ChannelList, scft hrd.SpacecraftParameters) bool {
+	fmt.Printf("[SEN] Rendering Channel %s.\n", e.ChannelName)
 
-}
+	if !e.HasData {
+		return false
+	}
 
-func (e Channel) ExportUncoded(buf *[]byte) {
-	fmt.Printf("[SEN] Rendering Uncoded Channel %s\n", e.ChannelName)
+	e.Process(scft)
+	*buf = make([]byte, e.Width*e.Height*2)
 
-	index := 0
-	for x := e.LastSegment; x >= e.FirstSegment; x-- {
-		for i := 0; i < e.AggregationZoneHeight; i++ {
-			for j, segment := range e.AggregationZoneWidth {
-				data := e.segments[x].Body[i].GetData(j, segment, e.OversampleZone[j])
-				copy((*buf)[index:], data)
-				index += len(data)
+	decimation := 1
+	var codedChannel *Channel
+
+	if e.ReconstructionBand != 000 {
+		codedChannel = ch[e.ReconstructionBand]
+
+		if !codedChannel.HasData {
+			return false
+		}
+
+		if e.ChannelName[0] != codedChannel.ChannelName[0] {
+			decimation = 2
+		}
+
+		codedChannel.Process(scft)
+		if codedChannel.ReconstructionBand != 000 {
+			if !codedChannel.Export(&[]byte{}, ch, scft) {
+				return false
 			}
 		}
 	}
-}
-
-func (e *Channel) ExportCoded(buf *[]byte, r *Channel) {
-	decFactor := map[bool]int{false: 2, true: 1}
-	bandComp := []rune(e.ChannelName)[0] == []rune(Channels[e.ReconstructionBand].ChannelName)[0]
-
-	fmt.Printf("[SEN] Rendering Coded Channel %s with reconstruction channel %s\n",
-		e.ChannelName, Channels[e.ReconstructionBand].ChannelName)
 
 	offset := 0
-	threads := runtime.NumCPU()
+	threads := runtime.NumCPU() * 2
 	segments := e.LastSegment - e.FirstSegment
 
 	var wg sync.WaitGroup
@@ -55,25 +61,24 @@ func (e *Channel) ExportCoded(buf *[]byte, r *Channel) {
 		go func(wg *sync.WaitGroup, start, finish, index int) {
 			defer wg.Done()
 			for x := uint32(finish); x > uint32(start); x-- {
-				packet := e.segments[x]
 				for i := 0; i < e.AggregationZoneHeight; i++ {
-					for j, segment := range e.AggregationZoneWidth {
-						if r.segments[x] == nil {
-							continue
+					for j := range e.AggregationZoneWidth {
+
+						if e.ReconstructionBand != 000 {
+							if codedChannel.segments[x] == nil {
+								continue
+							}
+
+							differentialData := codedChannel.segments[x].Body[i/decimation].Detector[j].GetData()
+							e.segments[x].Body[i].Detector[j].Integrate(differentialData, decimation)
 						}
 
-						baseData := packet.Body[i].GetData(j, segment, e.OversampleZone[j])
-						reconData := r.segments[x].Body[i/decFactor[bandComp]].GetData(j, segment, e.OversampleZone[j])
+						if len(*buf) > 0 {
 
-						for b := 0; b < len(baseData); b += 2 {
-							newPixel := binary.BigEndian.Uint16(baseData[b:]) + binary.BigEndian.Uint16(reconData[b/decFactor[bandComp]/2*2:]) - 16383
-							binary.BigEndian.PutUint16((*buf)[index+b:], newPixel)
+							data := e.segments[x].Body[i].Detector[j].GetData()
+							copy((*buf)[index:], *data)
+							index += len(*data)
 						}
-
-						if !e.decoded {
-							e.segments[x].Body[i].SetData(j, (*buf)[index:index+len(baseData)])
-						}
-						index += len(baseData)
 					}
 				}
 			}
@@ -83,5 +88,6 @@ func (e *Channel) ExportCoded(buf *[]byte, r *Channel) {
 	}
 
 	wg.Wait()
-	e.decoded = true
+	e.ReconstructionBand = 000
+	return true
 }

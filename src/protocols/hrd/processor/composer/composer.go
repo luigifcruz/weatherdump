@@ -49,9 +49,9 @@ func (e Composer) Render(ch parser.ChannelList, outputFolder string) {
 	ch02.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
 	ch03.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
 
-	ch01.Fix(e.scft)
-	ch02.Fix(e.scft)
-	ch03.Fix(e.scft)
+	ch01.Process(e.scft)
+	ch02.Process(e.scft)
+	ch03.Process(e.scft)
 
 	// Create output image struct.
 	w, h := ch01.GetDimensions()
@@ -69,7 +69,7 @@ func (e Composer) Render(ch parser.ChannelList, outputFolder string) {
 
 	e.pipeline.AddException("Invert", false)
 
-	ch01.ExportUncoded(&buf)
+	ch01.Export(&buf, ch, e.scft)
 	e.pipeline.Target(img.NewGray16(&buf, w, h)).Process()
 
 	for p := 2; p < bufferSize; p += 8 {
@@ -77,7 +77,7 @@ func (e Composer) Render(ch parser.ChannelList, outputFolder string) {
 		finalImage[p+1] = buf[(p/4)+1]
 	}
 
-	ch02.ExportUncoded(&buf)
+	ch02.Export(&buf, ch, e.scft)
 	e.pipeline.Target(img.NewGray16(&buf, w, h)).Process()
 
 	for p := 0; p < bufferSize; p += 8 {
@@ -85,7 +85,7 @@ func (e Composer) Render(ch parser.ChannelList, outputFolder string) {
 		finalImage[p+1] = buf[(p/4)+1]
 	}
 
-	ch03.ExportUncoded(&buf)
+	ch03.Export(&buf, ch, e.scft)
 	e.pipeline.Target(img.NewGray16(&buf, w, h)).Process()
 
 	for p := 4; p < bufferSize; p += 8 {

@@ -15,8 +15,6 @@ type Detector struct {
 	checksum       uint32
 	syncWord       uint32
 	data           []byte
-
-	Recon bool
 }
 
 // NewDetector returns a pointer of a new Detector.
@@ -68,49 +66,58 @@ func (e Detector) GetChecksum() uint16 {
 	return e.checksumOffset
 }
 
+func (e Detector) IsValid(syncWord uint32) bool {
+	return len(e.data) > 8 && (syncWord == e.syncWord || e.syncWord == 0xC000FFEE)
+}
+
 // GetData from the current detector.
-func (e Detector) GetData(syncWord uint32, width int, oversample int) []byte {
-	if e.Recon {
-		return e.data
-	}
+func (e Detector) GetData() *[]byte {
+	return &e.data
+}
 
-	if len(e.data) < 8 && (syncWord != e.syncWord || e.syncWord != 0xC000FFEE) {
-		return make([]byte, width*2)
-	}
+func (e *Detector) Pad(width int) {
+	e.data = make([]byte, width*2)
+}
 
-	size := width * 2 * oversample
-	dat, _ := Decompress(e.data, len(e.data), size)
+func (e *Detector) Decompress(width, oversample int) {
+	e.data, _ = Decompress(e.data, len(e.data), width*2*oversample)
+}
 
+func (e *Detector) Decimate(width, oversample int) {
 	if oversample == 1 {
-		return dat
+		return
 	}
 
-	buf := make([]byte, width*2)
-	for x := 0; x < size; x += oversample * 2 {
+	for x := 0; x < len(e.data); x += oversample * 2 {
 		var val uint16
 
 		switch oversample {
 		case 2:
-			val += binary.BigEndian.Uint16(dat[x:])
-			val += binary.BigEndian.Uint16(dat[x+2:])
+			val += binary.BigEndian.Uint16(e.data[x:])
+			val += binary.BigEndian.Uint16(e.data[x+2:])
 		case 3:
-			val += binary.BigEndian.Uint16(dat[x:])
-			val += binary.BigEndian.Uint16(dat[x+2:])
-			val += binary.BigEndian.Uint16(dat[x+4:])
+			val += binary.BigEndian.Uint16(e.data[x:])
+			val += binary.BigEndian.Uint16(e.data[x+2:])
+			val += binary.BigEndian.Uint16(e.data[x+4:])
 		}
 
 		val /= uint16(oversample)
-		binary.BigEndian.PutUint16(buf[x/oversample:], val)
+		binary.BigEndian.PutUint16(e.data[x/oversample:], val)
 	}
 
-	return buf
+	e.data = append([]byte(nil), e.data[:width*2]...)
 }
 
 // SetData updates the data inside the detector.
-func (e *Detector) SetData(dat []byte) {
-	e.data = make([]byte, len(dat))
-	copy(e.data, dat)
-	e.Recon = true
+func (e *Detector) Integrate(diff *[]byte, decimation int) {
+	for i := 0; i < len(e.data); i += 2 {
+		var base, differential uint16
+		base = binary.BigEndian.Uint16(e.data[i:])
+		if (i/decimation/2*2)+1 < len(*diff) {
+			differential = binary.BigEndian.Uint16((*diff)[i/decimation/2*2:])
+		}
+		binary.BigEndian.PutUint16(e.data[i:], base+differential-16383)
+	}
 }
 
 func bitSlicer(dat *[]byte, size int) {

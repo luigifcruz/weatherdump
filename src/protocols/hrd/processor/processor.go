@@ -71,29 +71,15 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	for _, apid := range getKeys(channels) {
 		ch := channels[uint16(apid)]
 
-		if !ch.HasData {
-			continue
+		var buf []byte
+		if ch.Export(&buf, channels, hrd.Spacecrafts[e.scid]) {
+			w, h := ch.GetDimensions()
+			outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
+
+			wf.AddException("Invert", ch.Invert)
+			wf.Target(img.NewGray16(&buf, w, h)).Process().Export(outputName, 100)
+			wf.ResetExceptions()
 		}
-
-		ch.Fix(hrd.Spacecrafts[e.scid])
-
-		w, h := ch.GetDimensions()
-		buf := make([]byte, w*h*2)
-
-		reconChannel := ch.ReconstructionBand
-		if reconChannel == 000 {
-			ch.ExportUncoded(&buf)
-		} else {
-			if !channels[reconChannel].HasData {
-				continue
-			}
-			ch.ExportCoded(&buf, channels[reconChannel])
-		}
-
-		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
-		wf.AddException("Invert", ch.Invert)
-		wf.Target(img.NewGray16(&buf, w, h)).Process().Export(outputName, 100)
-		wf.ResetExceptions()
 	}
 
 	c := composer.Composers["True-Color"]

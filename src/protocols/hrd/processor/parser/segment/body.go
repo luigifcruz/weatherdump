@@ -18,7 +18,7 @@ type Body struct {
 	band             uint8
 	detector         uint8
 	syncWordPattern  uint32
-	detectorData     [6]Detector
+	Detector         [6]Detector
 	fillFrame        bool
 }
 
@@ -52,8 +52,8 @@ func (e *Body) FromBinary(dat []byte) {
 	e.syncWordPattern = binary.BigEndian.Uint32(dat[20:])
 	// Reserved 512 bits
 	buf := dat[88:]
-	for i := range e.detectorData {
-		e.detectorData[i].FromBinary(&buf)
+	for i := range e.Detector {
+		e.Detector[i].FromBinary(&buf)
 	}
 	e.fillFrame = false
 }
@@ -72,35 +72,22 @@ func (e Body) Print() {
 	fmt.Printf("Sync Word Pattern: %032b\n", e.syncWordPattern)
 	fmt.Println()
 
-	for i := range e.detectorData {
-		e.detectorData[i].Print()
+	for i := range e.Detector {
+		e.Detector[i].Print()
 	}
 
-	if e.IsFillerFrame() {
-		fmt.Println("FILLER FRAME")
-	} else {
-		fmt.Println("NORMAL FRAME")
-	}
 	fmt.Println()
 }
 
-func (e Body) IsFillerFrame() bool {
-	return e.fillFrame
-}
-
-func (e Body) IsFillData(aggregationZone int) bool {
-	return e.detectorData[aggregationZone].GetChecksum() == 0x0008
-}
-
-func (e Body) GetAggrLen() int {
-	return len(e.detectorData)
-}
-
-func (e Body) GetData(zone int, width int, oversample int) []byte {
-	if e.IsFillerFrame() {
-		return make([]byte, width*2)
+func (e *Body) Process(width, oversample [6]int) {
+	for i := range e.Detector {
+		if e.Detector[i].IsValid(e.syncWordPattern) {
+			e.Detector[i].Decompress(width[i], oversample[i])
+			e.Detector[i].Decimate(width[i], oversample[i])
+		} else {
+			e.Detector[i].Pad(width[i])
+		}
 	}
-	return e.detectorData[zone].GetData(e.syncWordPattern, width, oversample)
 }
 
 func (e Body) GetDetectorNumber() uint8 {
@@ -109,12 +96,4 @@ func (e Body) GetDetectorNumber() uint8 {
 
 func (e Body) GetSequenceCount() uint32 {
 	return e.sequenceCount
-}
-
-func (e Body) GetID() uint32 {
-	return e.sequenceCount
-}
-
-func (e *Body) SetData(zone int, dat []byte) {
-	e.detectorData[zone].SetData(dat)
 }
