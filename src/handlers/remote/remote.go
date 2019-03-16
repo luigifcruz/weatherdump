@@ -85,6 +85,9 @@ func (s *Remote) router(w http.ResponseWriter, r *http.Request) {
 
 		s.terminate(id)
 		ResSuccess(w, "PROCESS_TERMINATED", "")
+	case "manifest":
+		processor := handlers.AvailableProcessors[vars["datalink"]]("")
+		ResSuccess(w, "MANIFEST", processor.GetProductsManifest().GetString())
 	case "start":
 		s.startHandlers[vars["handler"]](w, r, vars, s.register())
 	default:

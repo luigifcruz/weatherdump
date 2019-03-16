@@ -65,10 +65,6 @@ func (e *Pipeline) Export(args ...interface{}) *Pipeline {
 	return e
 }
 
-func (e *Pipeline) ExportBuf(buf *[]byte) *Pipeline {
-	return e
-}
-
 func getKeys(tasks map[string]int) []string {
 	keys := make([]string, 0, len(tasks))
 	for k := range tasks {

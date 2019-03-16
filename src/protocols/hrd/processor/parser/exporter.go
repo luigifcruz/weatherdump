@@ -7,7 +7,7 @@ import (
 	"weather-dump/src/protocols/hrd"
 )
 
-func (e *Channel) Export(buf *[]byte, ch ChannelList, scft hrd.SpacecraftParameters) bool {
+func (e *Channel) Export(buf *[]byte, ch List, scft hrd.SpacecraftParameters) bool {
 	fmt.Printf("[SEN] Rendering Channel %s.\n", e.ChannelName)
 
 	if !e.HasData {
@@ -74,7 +74,6 @@ func (e *Channel) Export(buf *[]byte, ch ChannelList, scft hrd.SpacecraftParamet
 						}
 
 						if len(*buf) > 0 {
-
 							data := e.segments[x].Body[i].Detector[j].GetData()
 							copy((*buf)[index:], *data)
 							index += len(*data)

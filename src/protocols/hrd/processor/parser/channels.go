@@ -1,8 +1,10 @@
 package parser
 
-type ChannelList map[uint16]*Channel
+import "weather-dump/src/assets"
 
-var Channels = ChannelList{
+type List map[uint16]*Channel
+
+var Channels = List{
 	800: {
 		APID:                  800,
 		ChannelName:           "M04",
@@ -266,5 +268,104 @@ var Channels = ChannelList{
 		Width:                 4064,
 		ReconstructionBand:    000,
 		Invert:                false,
+	},
+}
+
+var Manifest = assets.Manifest{
+	800: {
+		Name:        "M04",
+		Description: "Moderate Resolution Channel 04",
+	},
+	801: {
+		Name:        "M05",
+		Description: "Moderate Resolution Channel 05",
+	},
+	802: {
+		Name:        "M03",
+		Description: "Moderate Resolution Channel 03",
+	},
+	803: {
+		Name:        "M02",
+		Description: "Moderate Resolution Channel 02",
+	},
+	804: {
+		Name:        "M01",
+		Description: "Moderate Resolution Channel 01",
+	},
+	805: {
+		Name:        "M06",
+		Description: "Moderate Resolution Channel 06",
+	},
+	806: {
+		Name:        "M07",
+		Description: "Moderate Resolution Channel 07",
+	},
+	807: {
+		Name:        "M09",
+		Description: "Moderate Resolution Channel 09",
+	},
+	808: {
+		Name:        "M10",
+		Description: "Moderate Resolution Channel 10",
+	},
+	809: {
+		Name:        "M08",
+		Description: "Moderate Resolution Channel 08",
+	},
+	810: {
+		Name:        "M11",
+		Description: "Moderate Resolution Channel 11",
+	},
+	811: {
+		Name:        "M13",
+		Description: "Moderate Resolution Channel 13",
+	},
+	812: {
+		Name:        "M12",
+		Description: "Moderate Resolution Channel 12",
+	},
+	813: {
+		Name:        "I04",
+		Description: "Imagery Channel 04",
+	},
+	814: {
+		Name:        "M16",
+		Description: "Moderate Resolution Channel 16",
+	},
+	815: {
+		Name:        "M15",
+		Description: "Moderate Resolution Channel 15",
+	},
+	816: {
+		Name:        "M14",
+		Description: "Moderate Resolution Channel 14",
+	},
+	817: {
+		Name:        "I05",
+		Description: "Imagery Channel 05",
+	},
+	818: {
+		Name:        "I01",
+		Description: "Imagery Channel 01",
+	},
+	819: {
+		Name:        "I02",
+		Description: "Imagery Channel 02",
+	},
+	820: {
+		Name:        "I03",
+		Description: "Imagery Channel 03",
+	},
+	821: {
+		Name:        "DNB",
+		Description: "Day and Night Band",
+	},
+	822: {
+		Name:        "DNBMGS",
+		Description: "Day and Night Band",
+	},
+	823: {
+		Name:        "DNBLGS",
+		Description: "Day and Night Band",
 	},
 }

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
-	"sort"
+	"weather-dump/src/assets"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
@@ -32,7 +32,9 @@ func NewProcessor(uuid string) interfaces.Processor {
 	e := Worker{}
 	e.ccsds = ccsds.New()
 
-	http.HandleFunc(fmt.Sprintf("/npoess/%s/statistics", uuid), e.statistics)
+	if uuid != "" {
+		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
+	}
 
 	return &e
 }
@@ -65,10 +67,10 @@ func (e *Worker) Work(inputFile string) {
 	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
-func (e *Worker) Export(outputPath string, wf img.Pipeline) {
+func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.ProcessingManifest) {
 	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
 
-	for _, apid := range getKeys(channels) {
+	for _, apid := range manifest.Parser.Ordered() {
 		ch := channels[uint16(apid)]
 
 		var buf []byte
@@ -80,10 +82,15 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 			wf.Target(img.NewGray16(&buf, w, h)).Process().Export(outputName, 100)
 			wf.ResetExceptions()
 		}
+
+		manifest.Parser.Completed(apid, e.statsSock)
 	}
 
-	c := composer.Composers["True-Color"]
-	c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
+	for code := range manifest.Composer {
+		c := composer.Composers[uint16(code)]
+		c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
+		manifest.Composer.Completed(code, e.statsSock)
+	}
 
 	fmt.Println("[PRC] Done! Products saved.")
 }
@@ -93,11 +100,9 @@ func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {
 	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
 }
 
-func getKeys(tasks parser.ChannelList) []int {
-	keys := make([]int, 0, len(tasks))
-	for k := range tasks {
-		keys = append(keys, int(k))
+func (e Worker) GetProductsManifest() assets.ProcessingManifest {
+	return assets.ProcessingManifest{
+		Parser:   parser.Manifest,
+		Composer: composer.Manifest,
 	}
-	sort.Ints(keys)
-	return keys
 }

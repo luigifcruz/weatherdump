@@ -1,11 +1,15 @@
 package interfaces
 
-import "weather-dump/src/tools/img"
+import (
+	"weather-dump/src/assets"
+	"weather-dump/src/tools/img"
+)
 
 type ProcessorMakers map[string]func(string) Processor
 type Processor interface {
 	Work(string)
-	Export(string, img.Pipeline)
+	Export(string, img.Pipeline, assets.ProcessingManifest)
+	GetProductsManifest() assets.ProcessingManifest
 }
 
 type DecoderMakers map[string]func(string) Decoder

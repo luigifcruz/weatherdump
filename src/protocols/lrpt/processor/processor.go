@@ -5,9 +5,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+	"weather-dump/src/assets"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
+	"weather-dump/src/protocols/hrd/processor/composer"
+	"weather-dump/src/protocols/hrd/processor/parser"
 	"weather-dump/src/protocols/lrpt"
 	"weather-dump/src/protocols/lrpt/processor/bismw"
 	"weather-dump/src/tools/img"
@@ -63,7 +66,7 @@ func (e *Worker) Work(inputFile string) {
 	fmt.Println("[PRC] Finished decoding all packets...")
 }
 
-func (e *Worker) Export(outputPath string, wf img.Pipeline) {
+func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.ProcessingManifest) {
 	fmt.Printf("[PRC] Exporting BISMW science products to %s...\n", outputPath)
 
 	for _, apid := range bismw.ChannelsIndex {
@@ -84,6 +87,13 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	}
 
 	fmt.Println("[PRC] Done! Products saved.")
+}
+
+func (e Worker) GetProductsManifest() assets.ProcessingManifest {
+	return assets.ProcessingManifest{
+		Parser:   parser.Manifest,
+		Composer: composer.Manifest,
+	}
 }
 
 func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {

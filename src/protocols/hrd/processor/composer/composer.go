@@ -2,9 +2,6 @@ package composer
 
 import (
 	"fmt"
-	"image"
-	"image/png"
-	"os"
 	"path/filepath"
 	"sort"
 	"weather-dump/src/protocols/hrd"
@@ -15,6 +12,8 @@ import (
 type Composer struct {
 	pipeline         img.Pipeline
 	scft             hrd.SpacecraftParameters
+	ShortName        string
+	FileName         string
 	RequiredChannels []uint16
 }
 
@@ -24,8 +23,8 @@ func (e *Composer) Register(pipeline img.Pipeline, scft hrd.SpacecraftParameters
 	return e
 }
 
-func (e Composer) Render(ch parser.ChannelList, outputFolder string) {
-	fmt.Println("[COM] Exporting true color channel.")
+func (e Composer) Render(ch parser.List, outputFolder string) {
+	fmt.Println("[COM] Exporting component channel.")
 
 	ch01 := ch[e.RequiredChannels[0]]
 	ch02 := ch[e.RequiredChannels[1]]
@@ -33,7 +32,7 @@ func (e Composer) Render(ch parser.ChannelList, outputFolder string) {
 
 	// Check if required channels exist.
 	if !ch01.HasData || !ch02.HasData || !ch03.HasData {
-		fmt.Println("[COM] Can't export true color channel. Not all required channels are available.")
+		fmt.Println("[COM] Can't export component channel. Not all required channels are available.")
 		return
 	}
 
@@ -55,55 +54,44 @@ func (e Composer) Render(ch parser.ChannelList, outputFolder string) {
 
 	// Create output image struct.
 	w, h := ch01.GetDimensions()
-	tmp := image.NewRGBA64(image.Rect(0, 0, w, h))
-	bufferSize := w * h * 8
-	finalImage := make([]byte, bufferSize)
+	buf := make([]byte, w*h*2)
+	finalBuf := make([]byte, w*h*8)
 
-	for p := 6; p < bufferSize; p += 8 {
-		finalImage[p+0] = 0xFF
-		finalImage[p+1] = 0xFF
+	for p := 6; p < len(finalBuf); p += 8 {
+		finalBuf[p+0] = 0xFF
+		finalBuf[p+1] = 0xFF
 	}
 
 	// Compose images and fill buffer.
-	buf := make([]byte, w*h*2)
-
+	e.pipeline.Target(img.NewGray16(&buf, w, h))
 	e.pipeline.AddException("Invert", false)
+	defer e.pipeline.ResetExceptions()
 
 	ch01.Export(&buf, ch, e.scft)
-	e.pipeline.Target(img.NewGray16(&buf, w, h)).Process()
-
-	for p := 2; p < bufferSize; p += 8 {
-		finalImage[p+0] = buf[(p/4)+0]
-		finalImage[p+1] = buf[(p/4)+1]
+	e.pipeline.Process()
+	for p := 2; p < len(finalBuf); p += 8 {
+		finalBuf[p+0] = buf[(p/4)+0]
+		finalBuf[p+1] = buf[(p/4)+1]
 	}
 
 	ch02.Export(&buf, ch, e.scft)
-	e.pipeline.Target(img.NewGray16(&buf, w, h)).Process()
-
-	for p := 0; p < bufferSize; p += 8 {
-		finalImage[p+0] = buf[(p/4)+0]
-		finalImage[p+1] = buf[(p/4)+1]
+	e.pipeline.Process()
+	for p := 0; p < len(finalBuf); p += 8 {
+		finalBuf[p+0] = buf[(p/4)+0]
+		finalBuf[p+1] = buf[(p/4)+1]
 	}
 
 	ch03.Export(&buf, ch, e.scft)
-	e.pipeline.Target(img.NewGray16(&buf, w, h)).Process()
-
-	for p := 4; p < bufferSize; p += 8 {
-		finalImage[p+0] = buf[(p/4)-1]
-		finalImage[p+1] = buf[(p/4)+0]
+	e.pipeline.Process()
+	for p := 4; p < len(finalBuf); p += 8 {
+		finalBuf[p+0] = buf[(p/4)-1]
+		finalBuf[p+1] = buf[(p/4)+0]
 	}
-
-	e.pipeline.ResetExceptions()
 
 	// Render and save the true-color image.
-	tmp.Pix = finalImage
-	outputName, _ := filepath.Abs(fmt.Sprintf("%s/TRUECOLOR_VIIRS_%s.png", outputFolder, ch01.StartTime.GetZuluSafe()))
-	outputFile, err := os.Create(outputName)
-	if err != nil {
-		fmt.Println("[EXPORT] Error saving final image...")
-	}
-	png.Encode(outputFile, tmp)
-	outputFile.Close()
+	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_COMP_%s_VIIRS_%s",
+		outputFolder, e.scft.Filename, e.scft.SignalName, e.FileName, ch01.StartTime.GetZuluSafe()))
+	e.pipeline.Target(img.NewRGBA64(&finalBuf, w, h)).Export(outputName, 100)
 }
 
 func MinIntSlice(v []int) int {

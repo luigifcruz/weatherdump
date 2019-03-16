@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"weather-dump/src/assets"
 	"weather-dump/src/handlers"
 	"weather-dump/src/tools/img"
 
@@ -40,6 +41,11 @@ func (s *Remote) processorStart(w http.ResponseWriter, r *http.Request, vars map
 		return
 	}
 
+	if r.FormValue("manifest") == "" {
+		ResError(w, "INVALID_MANIFEST", "")
+		return
+	}
+
 	wf := img.NewPipeline()
 
 	var pipeline map[string]bool
@@ -50,11 +56,15 @@ func (s *Remote) processorStart(w http.ResponseWriter, r *http.Request, vars map
 	}
 
 	go func() {
+		defer s.terminate(id)
+
 		processor := handlers.AvailableProcessors[vars["datalink"]](id.String())
 		processor.Work(inputFile)
-		processor.Export(workingPath, wf)
-		s.terminate(id)
+
+		var manifest assets.ProcessingManifest
+		json.Unmarshal([]byte(r.FormValue("manifest")), &manifest)
+		processor.Export(workingPath, wf, manifest)
 	}()
 
-	ResSuccess(w, "PROCESSOR_STARTED", workingPath)
+	ResSuccess(w, id.String(), workingPath)
 }

@@ -27,5 +27,7 @@ func HandleInput(datalink, inputFile, outputPath string, inputDecoded bool, wf i
 
 	processor := handlers.AvailableProcessors[datalink]("")
 	processor.Work(inputFile)
-	processor.Export(workingPath, wf)
+
+	manifest := processor.GetProductsManifest()
+	processor.Export(workingPath, wf, manifest)
 }
