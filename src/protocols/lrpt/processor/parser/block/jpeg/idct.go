@@ -1,4 +1,4 @@
-package bismw
+package jpeg
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -56,7 +56,7 @@ const (
 	r2 = 181 // 256/sqrt(2)
 )
 
-// idct performs a 2-D Inverse Discrete Cosine Transformation.
+// Idct performs a 2-D Inverse Discrete Cosine Transformation.
 //
 // The input coefficients should already have been multiplied by the
 // appropriate quantization table. We use fixed-point computation, with the
@@ -66,7 +66,7 @@ const (
 // For more on the actual algorithm, see Z. Wang, "Fast algorithms for the
 // discrete W transform and for the discrete Fourier transform", IEEE Trans. on
 // ASSP, Vol. ASSP- 32, pp. 803-816, Aug. 1984.
-func idct(src *[blockSize]int64) {
+func Idct(src *[blockSize]int64) {
 	// Horizontal 1-D IDCT.
 	for y := 0; y < 8; y++ {
 		y8 := y * 8

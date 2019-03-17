@@ -26,7 +26,7 @@ func (e *Gray) Flop() Img {
 	var wg sync.WaitGroup
 	wg.Add(e.threads)
 
-	for s, f := range parallel.SerialRange(0, len(*e.buf)/(e.width*2), e.threads) {
+	for s, f := range parallel.SerialRange(0, len(*e.buf)/(e.width), e.threads) {
 		go func(wg *sync.WaitGroup, start, finish int) {
 			defer wg.Done()
 

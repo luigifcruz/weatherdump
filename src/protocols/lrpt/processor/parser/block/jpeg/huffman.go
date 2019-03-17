@@ -1,31 +1,27 @@
-package bismw
+package jpeg
 
-var eob = []int64{-99999}
-var cfc = []int64{-99998}
+var EOB = []int64{-99999}
+var CFC = []int64{-99998}
 
-func getValue(dat []bool) int64 {
-	var result int64
-	for i := 0; i < len(dat); i++ {
-		if dat[i] {
-			result = result | 0x01<<uint(len(dat)-1-i)
+func GetQuantizationTable(qf float64) []int64 {
+	var table [64]int64
+
+	if (qf > 20) && (qf < 50) {
+		qf = 5000 / qf
+	} else {
+		qf = 200 - (2 * qf)
+	}
+
+	for x := 0; x < 64; x++ {
+		table[x] = int64((qf / 100 * qTable[x]) + 0.5)
+		if table[x] < 1 {
+			table[x] = 1
 		}
 	}
-	if !dat[0] {
-		result -= (1 << uint(len(dat))) - 1
-	}
-	return result
+	return table[:]
 }
 
-func fastEqual(a, b []bool) bool {
-	for i := 0; i < len(b); i++ {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func findDC(dat *[]bool) int64 {
+func FindDC(dat *[]bool) int64 {
 	buf := *dat
 	bufl := len(*dat)
 	for _, m := range dcCategories {
@@ -47,10 +43,10 @@ func findDC(dat *[]bool) int64 {
 	}
 
 	*dat = nil
-	return cfc[0]
+	return CFC[0]
 }
 
-func findAC(dat *[]bool) []int64 {
+func FindAC(dat *[]bool) []int64 {
 	bufl := len(*dat)
 	for _, m := range acCategories {
 		klen := len(m.code)
@@ -61,7 +57,7 @@ func findAC(dat *[]bool) []int64 {
 		if fastEqual((*dat)[:klen], m.code) {
 			if m.clen == 0 && m.zlen == 0 {
 				*dat = (*dat)[klen:]
-				return eob
+				return EOB
 			}
 			vals := make([]int64, m.zlen+1)
 			if !(m.zlen == 15 && m.clen == 0) {
@@ -76,10 +72,10 @@ func findAC(dat *[]bool) []int64 {
 	}
 
 	*dat = nil
-	return cfc
+	return CFC
 }
 
-func convertToArray(buf []byte, len int) *[]bool {
+func ConvertToArray(buf []byte, len int) *[]bool {
 	var soft = make([]bool, len*8)
 	for i := 0; i < len; i++ {
 		soft[0+8*i] = buf[i]>>7&0x01 == 0x01
@@ -92,4 +88,26 @@ func convertToArray(buf []byte, len int) *[]bool {
 		soft[7+8*i] = buf[i]>>0&0x01 == 0x01
 	}
 	return &soft
+}
+
+func getValue(dat []bool) int64 {
+	var result int64
+	for i := 0; i < len(dat); i++ {
+		if dat[i] {
+			result = result | 0x01<<uint(len(dat)-1-i)
+		}
+	}
+	if !dat[0] {
+		result -= (1 << uint(len(dat))) - 1
+	}
+	return result
+}
+
+func fastEqual(a, b []bool) bool {
+	for i := 0; i < len(b); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }

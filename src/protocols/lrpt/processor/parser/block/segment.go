@@ -1,9 +1,10 @@
-package bismw
+package block
 
 import (
 	"encoding/binary"
 	"fmt"
 	"weather-dump/src/protocols/lrpt"
+	"weather-dump/src/protocols/lrpt/processor/parser/block/jpeg"
 )
 
 const segmentDataMinimum = 13
@@ -17,7 +18,7 @@ type Segment struct {
 	QFM   uint16
 	QF    uint8
 	valid bool
-	mcus  [14][]int64
+	Lines [8][14 * 8]uint8
 }
 
 func NewSegment(buf []byte) *Segment {
@@ -40,7 +41,7 @@ func (e *Segment) FromBinary(dat []byte) {
 	e.QF = uint8(dat[13])
 	e.valid = true
 
-	e.huffmanDecode(dat[14:])
+	e.Decode(dat[14:])
 }
 
 func (e Segment) GetMCUNumber() uint8 {
@@ -63,59 +64,48 @@ func (e Segment) Print() {
 	e.time.Print()
 }
 
-func (e *Segment) huffmanDecode(data []byte) {
-	buf := convertToArray(data, len(data))
+func (e *Segment) Decode(data []byte) {
+	buf := jpeg.ConvertToArray(data, len(data))
+	qTable := jpeg.GetQuantizationTable(float64(e.QF))
 	lastDC := int64(0)
 
 	for i := 0; i < 14; i++ {
-		val := findDC(buf)
-		if val == cfc[0] {
+		var block [64]int64
+		index := 1
+
+		val := jpeg.FindDC(buf)
+		if val == jpeg.CFC[0] {
 			e.valid = false
+			return
 		}
 
-		e.mcus[i] = []int64{val + lastDC}
-		lastDC = e.mcus[i][0]
+		lastDC += val
+		block[0] = lastDC
 
 		for j := 0; j < 63; {
-			vals := findAC(buf)
+			vals := jpeg.FindAC(buf)
 			j += len(vals)
 
-			if vals[0] == cfc[0] {
+			if vals[0] == jpeg.CFC[0] {
 				e.valid = false
 			}
-			if vals[0] != eob[0] {
-				e.mcus[i] = append(e.mcus[i], vals...)
+			if vals[0] != jpeg.EOB[0] && index+len(vals) < len(block) {
+				copy(block[index:], vals)
+				index += len(vals)
 			} else {
 				break
 			}
 		}
 
-		if len(e.mcus[i]) > 64 {
-			e.mcus[i] = e.mcus[i][:64]
+		var idctBlock [64]int64
+		for x := 0; x < 64; x++ {
+			idctBlock[x] = block[jpeg.Zigzag[x]] * qTable[x]
 		}
 
-		e.mcus[i] = append(e.mcus[i], make([]int64, 64-len(e.mcus[i]))...)
-	}
-}
-
-func (e Segment) RenderSegment(buf *[64 * 14]byte) {
-	if !e.valid {
-		return
-	}
-
-	quantizationTable := getQuantizationTable(float64(e.QF))
-	output := [14][64]uint8{}
-
-	for y := 0; y < 14; y++ {
-		var buf [64]int64
-		for x := 0; x < 64; x++ {
-			buf[x] = e.mcus[y][zigzag[x]] * quantizationTable[x]
-		}
-
-		idct(&buf)
+		jpeg.Idct(&idctBlock)
 
 		for x := 0; x < 64; x++ {
-			normalizedPixel := buf[x] + 128
+			normalizedPixel := idctBlock[x] + 128
 
 			if normalizedPixel > 255 {
 				normalizedPixel = 255
@@ -124,15 +114,7 @@ func (e Segment) RenderSegment(buf *[64 * 14]byte) {
 				normalizedPixel = 0
 			}
 
-			output[y][x] = uint8(normalizedPixel)
-		}
-	}
-
-	o := 0
-	for y := 0; y < 8; y++ {
-		for x := 0; x < 112; x++ {
-			(*buf)[o] = output[x/8][(y*8)+(x%8)]
-			o++
+			e.Lines[x/8][(i*8)+(x%8)] = uint8(normalizedPixel)
 		}
 	}
 }

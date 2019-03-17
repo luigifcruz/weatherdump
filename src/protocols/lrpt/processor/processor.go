@@ -9,22 +9,20 @@ import (
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
-	"weather-dump/src/protocols/hrd/processor/composer"
-	"weather-dump/src/protocols/hrd/processor/parser"
 	"weather-dump/src/protocols/lrpt"
-	"weather-dump/src/protocols/lrpt/processor/bismw"
+	"weather-dump/src/protocols/lrpt/processor/parser"
 	"weather-dump/src/tools/img"
 
 	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{}
+var channels = parser.Channels
 
 const frameSize = 892
 
 type Worker struct {
 	ccsds     *ccsds.Worker
-	bismw     *bismw.Worker
 	scid      uint8
 	statsSock *websocket.Conn
 }
@@ -32,10 +30,12 @@ type Worker struct {
 func NewProcessor(uuid string) interfaces.Processor {
 	e := Worker{
 		ccsds: ccsds.New(),
-		bismw: bismw.New(),
 	}
 
-	http.HandleFunc(fmt.Sprintf("/meteor/%s/statistics", uuid), e.statistics)
+	if uuid != "" {
+		http.HandleFunc(fmt.Sprintf("/lrpt/%s/statistics", uuid), e.statistics)
+	}
+
 	return &e
 }
 
@@ -59,7 +59,7 @@ func (e *Worker) Work(inputFile string) {
 	fmt.Printf("[PRC] Found %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
-			e.bismw.Parse(packet)
+			channels[packet.GetAPID()].Parse(packet)
 		}
 	}
 
@@ -69,21 +69,20 @@ func (e *Worker) Work(inputFile string) {
 func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.ProcessingManifest) {
 	fmt.Printf("[PRC] Exporting BISMW science products to %s...\n", outputPath)
 
-	for _, apid := range bismw.ChannelsIndex {
-		channel := e.bismw.Channel(apid)
+	for _, apid := range manifest.Parser.Ordered() {
+		ch := channels[apid]
 
-		if channel == nil {
-			continue
+		var buf []byte
+		if ch.Export(&buf, lrpt.Spacecrafts[e.scid]) {
+			w, h := ch.GetDimensions()
+			outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
+
+			wf.AddException("Invert", ch.Invert)
+			wf.Target(img.NewGray(&buf, w, h)).Process().Export(outputName, 100)
+			wf.ResetExceptions()
 		}
 
-		channel.Fix(lrpt.Spacecrafts[e.scid])
-		buf := channel.Compose()
-		w, h := channel.GetDimensions()
-
-		outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, channel.GetFileName()))
-		wf.AddException("Invert", bismw.ChannelsParameters[apid].Invert)
-		wf.Target(img.NewGray(buf, w, h)).Process().Export(outputName, 100)
-		wf.ResetExceptions()
+		manifest.Parser.Completed(apid, e.statsSock)
 	}
 
 	fmt.Println("[PRC] Done! Products saved.")
@@ -92,7 +91,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 func (e Worker) GetProductsManifest() assets.ProcessingManifest {
 	return assets.ProcessingManifest{
 		Parser:   parser.Manifest,
-		Composer: composer.Manifest,
+		Composer: nil,
 	}
 }
 

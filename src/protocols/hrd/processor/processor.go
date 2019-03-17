@@ -71,7 +71,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
 
 	for _, apid := range manifest.Parser.Ordered() {
-		ch := channels[uint16(apid)]
+		ch := channels[apid]
 
 		var buf []byte
 		if ch.Export(&buf, channels, hrd.Spacecrafts[e.scid]) {
