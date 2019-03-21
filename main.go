@@ -7,48 +7,47 @@ import (
 	terminalHandler "weather-dump/src/handlers/terminal"
 	"weather-dump/src/tools/img"
 
+	"github.com/fatih/color"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-const startMessage = `
-======================= Open Satellite Project =======================
-__          __        _   _               _____                        
+const VER_NAME = "Alpha 2 - Nightly (Pre-Release)"
+const startMessage = `__          __        _   _               _____                        
 \ \        / /       | | | |             |  __ \                       
  \ \  /\  / /__  __ _| |_| |__   ___ _ __| |  | |_   _ _ __ ___  _ __  
   \ \/  \/ / _ \/ _' | __| '_ \ / _ \ '__| |  | | | | | '_ ' _ \| '_ \ 
    \  /\  /  __/ (_| | |_| | | |  __/ |  | |__| | |_| | | | | | | |_) |
     \/  \/ \___|\__,_|\__|_| |_|\___|_|  |_____/ \__,_|_| |_| |_| .__/ 
                                                                 | |    
-								|_|
-========================= CLI Version Beta 1 =========================    
-`
+								|_|`
 
 var (
 	output = kingpin.Flag("output", "Custom output folder. Default is the current input file folder.").Default("").String()
 
-	inputFormat = kingpin.Flag("decoded", "input file format").Short('d').Default("false").Bool()
-
 	exportPNG  = kingpin.Flag("png", "export pictures as PNG").Default("false").Bool()
-	exportJPEG = kingpin.Flag("jpeg", "export pictures as JPEG").Default("false").Bool()
-	equalize   = kingpin.Flag("equalize", "histogram equalize output pictures (--no-equalize turn-off)").Short('e').Default("true").Bool()
-	invert     = kingpin.Flag("invert", "invert infrared output pictures (--no-invert turn-off)").Short('i').Default("true").Bool()
-	flop       = kingpin.Flag("flop", "flop output pictures (--no-flop turn-off)").Short('f').Default("true").Bool()
+	exportJPEG = kingpin.Flag("jpeg", "export pictures as JPEG (disable: --no-jpeg)").Default("true").Bool()
+	equalize   = kingpin.Flag("equalize", "apply histogram equalization to output (disable: --no-equalize)").Short('e').Default("true").Bool()
+	invert     = kingpin.Flag("invert", "invert infrared pixels of output (disable: --no-invert)").Short('i').Default("true").Bool()
+	flop       = kingpin.Flag("flop", "apply horizonal flip to output").Short('f').Default("false").Bool()
 
-	hrd          = kingpin.Command("hrd", "Activate workflow for the HRD protocol (NPOESS & NPP).")
-	hrdInputFile = hrd.Arg("file", "input file path").Required().ExistingFile()
+	hrd            = kingpin.Command("hrd", "Activate workflow for the HRD protocol (NOAA-20 & Suomi).")
+	hrdDecoderType = hrd.Arg("decoder", "choose the decoder (Options: cadu, soft or none to bypass decoder)").Required().String()
+	hrdInputFile   = hrd.Arg("file", "input file path").Required().ExistingFile()
 
-	lrpt          = kingpin.Command("lrpt", "Activate workflow for the LRPT protocol (Meteor-MN2).")
-	lrptInputFile = lrpt.Arg("file", "input file path").Required().ExistingFile()
+	lrpt            = kingpin.Command("lrpt", "Activate workflow for the LRPT protocol (Meteor-MN2).")
+	lrptDecoderType = lrpt.Arg("decoder", "choose the decoder (Options: soft or none to bypass decoder)").Required().String()
+	lrptInputFile   = lrpt.Arg("file", "input file path").Required().ExistingFile()
 
-	remote     = kingpin.Command("remote", "Activate the remote API for the GUI.")
+	remote     = kingpin.Command("remote", "Activate the remote controll API.")
 	remotePort = remote.Arg("port", "server listen port").Default("3000").String()
 )
 
 func main() {
-	fmt.Println(startMessage)
+	color.Cyan(startMessage)
+	fmt.Println()
 
 	kingpin.CommandLine.HelpFlag.Short('h')
-	kingpin.Version("Beta 1")
+	kingpin.Version(VER_NAME)
 
 	datalink := kingpin.Parse()
 
@@ -65,6 +64,7 @@ func main() {
 	wf.AddPipe("ExportJPEG", *exportJPEG)
 
 	start := time.Now()
-	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *inputFormat, wf)
+	color.Cyan("[CLI] Version %s", VER_NAME)
+	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *hrdDecoderType+*lrptDecoderType, wf)
 	fmt.Printf("Tasks finished in %s\n", time.Since(start))
 }

@@ -6,17 +6,24 @@ import (
 	"strings"
 	"weather-dump/src/handlers"
 	"weather-dump/src/tools/img"
+
+	"github.com/fatih/color"
 )
 
-func HandleInput(datalink, inputFile, outputPath string, inputDecoded bool, wf img.Pipeline) {
-	fmt.Printf("[CLI] Activating %s workflow...\n", strings.ToUpper(datalink))
+func HandleInput(datalink, inputFile, outputPath, decoderType string, wf img.Pipeline) {
+	color.Green("[CLI] Activating %s workflow.\n", strings.ToUpper(datalink))
 
 	heartbeat := true
 	workingPath, fileName := handlers.GenerateDirectories(inputFile, outputPath)
 
-	if !inputDecoded {
+	if decoderType != "none" {
+		if handlers.AvailableDecoders[datalink][decoderType] == nil {
+			color.Yellow("[CLI] Invalid decoder input. Try 'weatherdump %s -h' for more information.", datalink)
+			return
+		}
+
 		decodedFile := fmt.Sprintf("%s/decoded_%s.bin", workingPath, strings.ToLower(fileName))
-		handlers.AvailableDecoders[datalink]("").Work(inputFile, decodedFile, &heartbeat)
+		handlers.AvailableDecoders[datalink][decoderType]("").Work(inputFile, decodedFile, &heartbeat)
 		inputFile = decodedFile
 	}
 

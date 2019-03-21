@@ -24,7 +24,7 @@ const id = "HRD"
 
 var upgrader = websocket.Upgrader{}
 
-type Worker struct {
+type SoftSymbolDecoder struct {
 	viterbiData     []byte
 	decodedData     []byte
 	lastFrameEnd    []byte
@@ -41,8 +41,8 @@ type Worker struct {
 	statsSock       *websocket.Conn
 }
 
-func NewDecoder(uuid string) interfaces.Decoder {
-	e := Worker{}
+func NewSoftSymbolDecoder(uuid string) interfaces.Decoder {
+	e := SoftSymbolDecoder{}
 
 	if uuid != "" {
 		http.HandleFunc(fmt.Sprintf("/hrd/%s/constellation", uuid), e.constellation)
@@ -91,7 +91,7 @@ func NewDecoder(uuid string) interfaces.Decoder {
 	return &e
 }
 
-func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
+func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, g *bool) {
 	var isCorrupted bool
 	lastFrameOk := false
 
@@ -353,25 +353,19 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 	fmt.Printf("[DEC] Decoding finished! File saved as %s\n", outputPath)
 }
 
-func (e *Worker) updateStatistics(s assets.Statistics) {
+func (e *SoftSymbolDecoder) updateStatistics(s assets.Statistics) {
 	json, err := json.Marshal(s)
 	if err == nil {
 		e.statsSock.WriteMessage(1, []byte(json))
 	}
 }
 
-func (e *Worker) constellation(w http.ResponseWriter, r *http.Request) {
+func (e *SoftSymbolDecoder) constellation(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	e.constSock, _ = upgrader.Upgrade(w, r, nil)
 }
 
-func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {
+func (e *SoftSymbolDecoder) statistics(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
-}
-
-func shiftWithConstantSize(arr *[]byte, pos int, length int) {
-	for i := 0; i < length-pos; i++ {
-		(*arr)[i] = (*arr)[pos+i]
-	}
 }

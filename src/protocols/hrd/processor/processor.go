@@ -14,6 +14,7 @@ import (
 	"weather-dump/src/protocols/hrd/processor/parser"
 	"weather-dump/src/tools/img"
 
+	"github.com/fatih/color"
 	"github.com/gorilla/websocket"
 )
 
@@ -40,7 +41,7 @@ func NewProcessor(uuid string) interfaces.Processor {
 }
 
 func (e *Worker) Work(inputFile string) {
-	fmt.Println("[PRC] WARNING! This processor is currently in BETA development state.")
+	color.Yellow("[PRC] WARNING! This processor is currently in BETA development state.")
 
 	file, _ := ioutil.ReadFile(inputFile)
 	for i := len(file); i > 0; i -= frameSize {

@@ -12,7 +12,7 @@ type Processor interface {
 	GetProductsManifest() assets.ProcessingManifest
 }
 
-type DecoderMakers map[string]func(string) Decoder
+type DecoderMakers map[string]map[string]func(string) Decoder
 type Decoder interface {
 	Work(string, string, *bool)
 }

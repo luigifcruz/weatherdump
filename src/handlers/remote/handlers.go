@@ -25,7 +25,7 @@ func (s *Remote) decoderStart(w http.ResponseWriter, r *http.Request, vars map[s
 	decodedFile := fmt.Sprintf("%s/decoded_%s.bin", workingPath, strings.ToLower(fileName))
 
 	go func() {
-		handlers.AvailableDecoders[vars["datalink"]](id.String()).Work(inputFile, decodedFile, &s.processes[id].heartbeart)
+		handlers.AvailableDecoders[vars["datalink"]]["softsymbol"](id.String()).Work(inputFile, decodedFile, &s.processes[id].heartbeart)
 		s.terminate(id)
 	}()
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"weather-dump/src/handlers"
 
 	httpHandlers "github.com/gorilla/handlers"
@@ -90,6 +91,8 @@ func (s *Remote) router(w http.ResponseWriter, r *http.Request) {
 		ResSuccess(w, "MANIFEST", processor.GetProductsManifest().GetString())
 	case "start":
 		s.startHandlers[vars["handler"]](w, r, vars, s.register())
+	case "exit":
+		os.Exit(0)
 	default:
 		ResError(w, "INVALID_COMMAND", "Invalid command.")
 	}

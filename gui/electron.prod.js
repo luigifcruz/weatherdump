@@ -1,9 +1,9 @@
-const { app, BrowserWindow, protocol, shell } = require('electron');
+const { app, BrowserWindow, protocol, shell, dialog } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const url = require('url')
 
-let win, cli
+let win, cli = null
 
 function createWindow() {
     let height = 500;
@@ -43,8 +43,10 @@ function createWindow() {
 
     win.on('closed', () => {
         win = null
-        cli.stdin.pause();
-        cli.kill();
+        if (cli) {
+            cli.stdin.pause();
+            cli.kill();
+        }
     })
 }
 
@@ -88,4 +90,13 @@ function getBinaryPath() {
 
 function startEngine() {
     cli = spawn(getBinaryPath(), ['remote']);
+    //cli = spawn("../dist/weatherdump-cli-linux-x64/weatherdump", ['remote']);
+
+    cli.on('exit', (code) => { 
+        cli = null;
+        dialog.showErrorBox(
+            "Unexpected Engine Crash",
+            "Something has gone terribly wrong with the WeatherDump engine. Please, report this error to @luigifcruz, @lucasteske or @OpenSatProject at Twitter.");
+        app.quit()
+    });
 }

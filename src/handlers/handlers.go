@@ -14,8 +14,13 @@ import (
 
 // AvailableDecoders shows the currently available decoders for this build.
 var AvailableDecoders = interfaces.DecoderMakers{
-	"lrpt": meteorDecoder.NewDecoder,
-	"hrd":  npoessDecoder.NewDecoder,
+	"lrpt": {
+		"soft": meteorDecoder.NewDecoder,
+	},
+	"hrd": {
+		"soft": npoessDecoder.NewSoftSymbolDecoder,
+		"cadu": npoessDecoder.NewCaduDecoder,
+	},
 }
 
 // AvailableProcessors shows the currently available processors for this build.
