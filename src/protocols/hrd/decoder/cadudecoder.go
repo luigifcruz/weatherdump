@@ -1,9 +1,11 @@
 package decoder
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"weather-dump/src/assets"
@@ -16,15 +18,14 @@ import (
 )
 
 type CaduDecoder struct {
-	hardData        []byte
-	softData        []byte
-	rsWorkBuffer    []byte
-	rsCorrectedData []byte
-	correlator      SatHelper.Correlator
-	reedSolomon     SatHelper.ReedSolomon
-	Statistics      assets.Statistics
-	constSock       *websocket.Conn
-	statsSock       *websocket.Conn
+	hardData     []byte
+	softData     []byte
+	rsWorkBuffer []byte
+	correlator   SatHelper.Correlator
+	reedSolomon  SatHelper.ReedSolomon
+	Statistics   assets.Statistics
+	constSock    *websocket.Conn
+	statsSock    *websocket.Conn
 }
 
 func NewCaduDecoder(uuid string) interfaces.Decoder {
@@ -34,10 +35,9 @@ func NewCaduDecoder(uuid string) interfaces.Decoder {
 		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
 	}
 
-	e.softData = make([]byte, Datalink[id].FrameBits)
-	e.hardData = make([]byte, Datalink[id].FrameSize)
+	e.softData = make([]byte, datalink[id].FrameBits)
+	e.hardData = make([]byte, datalink[id].FrameSize)
 	e.rsWorkBuffer = make([]byte, 255)
-	e.rsCorrectedData = make([]byte, Datalink[id].FrameSize)
 	e.correlator = SatHelper.NewCorrelator()
 	e.reedSolomon = SatHelper.NewReedSolomon()
 	e.reedSolomon.SetCopyParityToOutput(true)
@@ -52,21 +52,14 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 	color.Red("[DEC] WARNING! This decoder is currently in ALPHA development state.")
 
 	flywheelCount := 0
-	isCorrupted := true
 
+	fi, err := os.Stat(inputPath)
 	input, err := os.Open(inputPath)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	outputBuf, err := os.Create(outputPath + ".buf")
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 
-	fi, _ := os.Stat(inputPath)
 	bar := progressbar.NewOptions(int(fi.Size()))
 
 	fmt.Println("[DEC] Converting CADU file:")
@@ -84,7 +77,7 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 			outputBuf.Write(e.softData)
 		} else {
 			if err != io.EOF {
-				fmt.Println(err)
+				log.Fatal(err)
 			}
 			break
 		}
@@ -93,22 +86,18 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 	input.Close()
 	outputBuf.Close()
 
+	fi, err := os.Stat(outputPath + ".buf")
 	output, err := os.Create(outputPath)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	inputBuf, err := os.Open(outputPath + ".buf")
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 
-	fi, _ = os.Stat(outputPath + ".buf")
-	bar = progressbar.NewOptions(int(fi.Size()))
+	e.Statistics.TotalBytes = uint64(fi.Size())
+	e.Statistics.Task = "decoding"
 
-	fmt.Println("\n[DEC] Decoding soft-symbol buffer file:")
+	bar = progressbar.NewOptions(int(fi.Size()))
+	fmt.Println("\n[DEC] Decoding soft-symbol file:")
 	bar.RenderBlank()
 
 	for *g {
@@ -121,12 +110,16 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 			bar.Add(n)
 			e.Statistics.TotalBytesRead += uint64(n)
 
+			if e.Statistics.TotalPackets%averageLastNSamples == 0 {
+				e.Statistics.AverageRSCorrections = [4]int32{}
+			}
+
 			if flywheelCount == defaultFlywheelRecheck*8 {
-				isCorrupted = true
+				e.Statistics.FrameLock = false
 				flywheelCount = 0
 			}
 
-			if isCorrupted {
+			if !e.Statistics.FrameLock {
 				e.correlator.Correlate(&e.softData[0], uint(Datalink[id].FrameBits))
 			} else {
 				e.correlator.Correlate(&e.softData[0], uint(Datalink[id].FrameBits)/128)
@@ -138,9 +131,8 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 			flywheelCount++
 
 			pos := e.correlator.GetHighestCorrelationPosition()
-			corr := e.correlator.GetHighestCorrelation()
 
-			if corr < Datalink[id].MinCorrelationBits/2 {
+			if e.correlator.GetHighestCorrelation() < Datalink[id].MinCorrelationBits/2 {
 				//fmt.Printf("[DEC] Not enough correlations %d/%d. Skipping...\n", corr, Datalink[id].MinCorrelationBits)
 				continue
 			}
@@ -180,41 +172,36 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 			SatHelper.DeRandomizerDeRandomize(&e.hardData[0], Datalink[id].FrameSize-Datalink[id].SyncWordSize)
 			e.Statistics.TotalPackets++
 
-			derrors := make([]int32, Datalink[id].RsBlocks)
-
+			var derrors [4]int32
 			for i := 0; i < Datalink[id].RsBlocks; i++ {
 				e.reedSolomon.Deinterleave(&e.hardData[0], &e.rsWorkBuffer[0], byte(i), byte(Datalink[id].RsBlocks))
 				derrors[i] = int32(int8(e.reedSolomon.Decode_ccsds(&e.rsWorkBuffer[0])))
-				e.reedSolomon.Interleave(&e.rsWorkBuffer[0], &e.rsCorrectedData[0], byte(i), byte(Datalink[id].RsBlocks))
-				e.Statistics.RsErrors[i] = derrors[i]
+				e.reedSolomon.Interleave(&e.rsWorkBuffer[0], &e.hardData[0], byte(i), byte(Datalink[id].RsBlocks))
+				e.Statistics.AverageRSCorrections[i] += derrors[i]
+				e.Statistics.AverageRSCorrections[i] /= 2
 			}
 
 			if derrors[0] == -1 && derrors[1] == -1 && derrors[2] == -1 && derrors[3] == -1 {
-				isCorrupted = true
+				e.Statistics.FrameLock = false
 				e.Statistics.DroppedPackets++
 			} else {
-				isCorrupted = false
+				e.Statistics.FrameLock = true
 			}
 
-			scid := ((e.rsCorrectedData[0] & 0x3F) << 2) | (e.rsCorrectedData[1]&0xC0)>>6
-			vcid := e.rsCorrectedData[1] & 0x3F
-			counter := uint(e.rsCorrectedData[2])
+			e.Statistics.Task = "decoding"
+			e.Statistics.VCID = e.hardData[1] & 0x3F
+			e.Statistics.FrameBits = uint16(datalink[id].FrameBits)
+			e.Statistics.PacketNumber = binary.BigEndian.Uint32(e.hardData[2:]) >> 8
+			counter := uint(e.hardData[2])
 			counter = SatHelper.ToolsSwapEndianess(counter)
 			counter &= 0xFFFFFF00
 			counter >>= 8
+			fmt.Println(counter, e.Statistics.PacketNumber)
 
-			e.Statistics.SCID = scid
-			e.Statistics.VCID = vcid
-
-			e.Statistics.PacketNumber = uint64(counter)
-			e.Statistics.FrameBits = uint16(Datalink[id].FrameBits)
-			e.Statistics.TotalBytes = uint64(fi.Size())
-
-			if !isCorrupted {
-				dat := e.rsCorrectedData[:Datalink[id].FrameSize-Datalink[id].RsParityBlockSize-Datalink[id].SyncWordSize]
+			if e.Statistics.FrameLock {
+				e.Statistics.ReceivedPacketsPerChannel[e.Statistics.VCID]++
+				dat := e.hardData[:Datalink[id].FrameSize-Datalink[id].RsParityBlockSize-Datalink[id].SyncWordSize]
 				output.Write(dat)
-			} else {
-				e.Statistics.FrameLock = 0
 			}
 
 			if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
@@ -222,7 +209,7 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 			}
 		} else {
 			if err != io.EOF {
-				fmt.Println(err)
+				log.Fatal(err)
 			}
 			break
 		}
@@ -237,10 +224,10 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 		e.updateStatistics(e.Statistics)
 	}
 
-	fmt.Printf("\n[DEC] Decoding finished! File saved as %s\n", outputPath)
+	color.Green("\n[DEC] Decoding finished! File saved as %s\n", outputPath)
 }
 
-func ConvertToArray(hard []byte, soft *[]byte, len int) {
+func convertToArray(hard []byte, soft *[]byte, len int) {
 	var buf = make([]bool, len*8)
 	for i := 0; i < len; i++ {
 		buf[0+8*i] = hard[i]>>7&0x01 == 0x01

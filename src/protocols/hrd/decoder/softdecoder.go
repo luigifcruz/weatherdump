@@ -15,15 +15,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const defaultFlywheelRecheck = 1024
-const averageLastNSamples = 8192
-const lastFrameDataBits = 64
-const lastFrameData = lastFrameDataBits / 8
-const uselastFrameData = true
-const id = "HRD"
-
-var upgrader = websocket.Upgrader{}
-
 type SoftSymbolDecoder struct {
 	viterbiData     []byte
 	decodedData     []byte
@@ -97,11 +88,6 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, g *bool) {
 
 	fmt.Printf("[DEC] Initializing decoding process...\n")
 
-	var averageRSCorrections float32
-	var averageVitCorrections float32
-	var lostPacketsPerChannel [256]int64
-	var lastPacketCount [256]int64
-	var receivedPacketsPerChannel [256]int64
 	var phaseShift SatHelper.SatHelperPhaseShift
 	var flywheelCount = 0
 

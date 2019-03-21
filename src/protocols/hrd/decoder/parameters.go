@@ -1,5 +1,18 @@
 package decoder
 
+import "github.com/gorilla/websocket"
+
+var upgrader = websocket.Upgrader{}
+
+const (
+	defaultFlywheelRecheck = 1024
+	averageLastNSamples    = 8192
+	lastFrameDataBits      = 64
+	lastFrameData          = lastFrameDataBits / 8
+	uselastFrameData       = true
+	id                     = "HRD"
+)
+
 type parameters struct {
 	FrameSize          int
 	FrameBits          int
@@ -11,7 +24,7 @@ type parameters struct {
 	SyncWords          [8]uint64
 }
 
-var Datalink = map[string]parameters{
+var datalink = map[string]parameters{
 	"HRD": {
 		FrameSize:          1024,
 		FrameBits:          (1024 * 8),
