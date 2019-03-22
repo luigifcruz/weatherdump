@@ -24,15 +24,13 @@ func (e *Composer) Register(pipeline img.Pipeline, scft hrd.SpacecraftParameters
 }
 
 func (e Composer) Render(ch parser.List, outputFolder string) {
-	fmt.Println("[COM] Exporting component channel.")
-
 	ch01 := ch[e.RequiredChannels[0]]
 	ch02 := ch[e.RequiredChannels[1]]
 	ch03 := ch[e.RequiredChannels[2]]
 
 	// Check if required channels exist.
 	if !ch01.HasData || !ch02.HasData || !ch03.HasData {
-		fmt.Println("[COM] Can't export component channel. Not all required channels are available.")
+		//fmt.Println("[COM] Can't export component channel. Not all required channels are available.")
 		return
 	}
 

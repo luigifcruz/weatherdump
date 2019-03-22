@@ -7,7 +7,6 @@ import (
 	terminalHandler "weather-dump/src/handlers/terminal"
 	"weather-dump/src/tools/img"
 
-	"github.com/fatih/color"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -43,7 +42,7 @@ var (
 )
 
 func main() {
-	color.Cyan(startMessage)
+	fmt.Println(startMessage)
 	fmt.Println()
 
 	kingpin.CommandLine.HelpFlag.Short('h')
@@ -64,7 +63,7 @@ func main() {
 	wf.AddPipe("ExportJPEG", *exportJPEG)
 
 	start := time.Now()
-	color.Cyan("[CLI] Version %s", VER_NAME)
+	fmt.Printf("[CLI] Version %s\n", VER_NAME)
 	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *hrdDecoderType+*lrptDecoderType, wf)
-	fmt.Printf("Tasks finished in %s\n", time.Since(start))
+	fmt.Printf("[CLI] Tasks finished in %s\n", time.Since(start))
 }

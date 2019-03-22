@@ -1,15 +1,12 @@
 package parser
 
 import (
-	"fmt"
 	"runtime"
 	"sync"
 	"weather-dump/src/protocols/hrd"
 )
 
 func (e *Channel) Export(buf *[]byte, ch List, scft hrd.SpacecraftParameters) bool {
-	fmt.Printf("[SEN] Rendering Channel %s.\n", e.ChannelName)
-
 	if !e.HasData {
 		return false
 	}

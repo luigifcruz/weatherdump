@@ -5,7 +5,7 @@ import "github.com/gorilla/websocket"
 var upgrader = websocket.Upgrader{}
 
 const (
-	defaultFlywheelRecheck = 1024
+	defaultFlywheelRecheck = 8192
 	averageLastNSamples    = 8192
 	lastFrameDataBits      = 64
 	lastFrameData          = lastFrameDataBits / 8

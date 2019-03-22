@@ -12,7 +12,7 @@ type parameters struct {
 }
 
 // Datalink parameters
-var Datalink = map[string]parameters{
+var datalink = map[string]parameters{
 	"LRPT": {
 		FrameSize:          1024,
 		FrameBits:          (1024 * 8),

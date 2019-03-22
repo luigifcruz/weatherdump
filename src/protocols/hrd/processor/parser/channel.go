@@ -59,8 +59,8 @@ func (e *Channel) SetBounds(first, last int) {
 
 func (e *Channel) Process(scft hrd.SpacecraftParameters) {
 	if e.LastSegment-e.FirstSegment > maxFrameCount {
-		fmt.Printf("[SEN] Potentially invalid channel %s was found.\n", e.ChannelName)
-		fmt.Println("	It's too long for the round earth, trying to correct...")
+		//color.Magenta("[SEN] Potentially invalid channel %s was found.\n", e.ChannelName)
+		//color.Magenta("      It's too long for the round earth, trying to correct...")
 
 		if (e.LastSegment - e.LastSegment - e.SegmentCount) < maxFrameCount {
 			e.FirstSegment = e.LastSegment - e.SegmentCount
@@ -71,11 +71,11 @@ func (e *Channel) Process(scft hrd.SpacecraftParameters) {
 		}
 
 		if e.LastSegment-e.FirstSegment > maxFrameCount {
-			fmt.Println("	Cannot find any valid number, skipping channel.")
+			//color.Red("      Cannot find any valid number, skipping channel.")
 			return
 		}
 
-		fmt.Println("	Found a valid number. Channel can still be damaged.")
+		//color.Cyan("      Found a valid number. Channel can still be damaged.")
 	}
 
 	if !e.Processed && e.HasData {

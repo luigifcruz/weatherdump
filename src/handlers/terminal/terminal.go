@@ -11,7 +11,7 @@ import (
 )
 
 func HandleInput(datalink, inputFile, outputPath, decoderType string, wf img.Pipeline) {
-	color.Green("[CLI] Activating %s workflow.\n", strings.ToUpper(datalink))
+	fmt.Printf("[CLI] Activating %s workflow.\n", strings.ToUpper(datalink))
 
 	heartbeat := true
 	workingPath, fileName := handlers.GenerateDirectories(inputFile, outputPath)

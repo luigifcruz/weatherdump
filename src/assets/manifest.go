@@ -23,6 +23,14 @@ func (e ProcessingManifest) GetString() string {
 	return string(data)
 }
 
+func (e ProcessingManifest) ParserCount() int {
+	return len(e.Parser)
+}
+
+func (e ProcessingManifest) ComposerCount() int {
+	return len(e.Composer)
+}
+
 func (e *Manifest) Completed(i uint16, socket *websocket.Conn) {
 	(*e)[i].Finished = true
 

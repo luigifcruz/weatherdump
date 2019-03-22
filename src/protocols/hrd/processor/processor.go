@@ -16,6 +16,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gorilla/websocket"
+	"github.com/gosuri/uiprogress"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -57,21 +58,49 @@ func (e *Worker) Work(inputFile string) {
 		}
 	}
 
-	fmt.Printf("[PRC] Found %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
-
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
 			channels[packet.GetAPID()].Parse(packet)
 		}
 	}
 
-	fmt.Println("[PRC] Finished decoding all packets...")
+	fmt.Printf("[PRC] Decoded %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 }
 
 func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.ProcessingManifest) {
-	fmt.Printf("[PRC] Exporting VIIRS science products to %s...\n", outputPath)
+	fmt.Printf("[PRC] Exporting VIIRS science products.\n")
+	var currentComposer, currentParser uint16
+
+	progress := uiprogress.New()
+	progress.Start()
+
+	bar1 := progress.AddBar(manifest.ParserCount()).AppendCompleted()
+	bar2 := progress.AddBar(manifest.ComposerCount()).AppendCompleted()
+
+	bar1.PrependFunc(func(b *uiprogress.Bar) string {
+		switch currentParser {
+		case 0:
+			return fmt.Sprintf("[DEC] Starting decoder		")
+		case 9999:
+			return fmt.Sprintf("[DEC] Processing completed 	")
+		default:
+			return fmt.Sprintf("[DEC] Rendering channel %s	", manifest.Parser[currentParser].Name)
+		}
+	})
+
+	bar2.PrependFunc(func(b *uiprogress.Bar) string {
+		switch currentComposer {
+		case 0:
+			return fmt.Sprintf("[DEC] Waiting for decoder	")
+		case 9999:
+			return fmt.Sprintf("[DEC] Components completed	")
+		default:
+			return fmt.Sprintf("[DEC] Rendering %s	", manifest.Composer[currentComposer].Name)
+		}
+	})
 
 	for _, apid := range manifest.Parser.Ordered() {
+		currentParser = apid
 		ch := channels[apid]
 
 		var buf []byte
@@ -85,15 +114,22 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 		}
 
 		manifest.Parser.Completed(apid, e.statsSock)
+		bar1.Incr()
 	}
 
+	currentParser = 9999
+
 	for code := range manifest.Composer {
+		currentComposer = code
 		c := composer.Composers[uint16(code)]
 		c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
 		manifest.Composer.Completed(code, e.statsSock)
+		bar2.Incr()
 	}
 
-	fmt.Println("[PRC] Done! Products saved.")
+	currentComposer = 9999
+	progress.Stop()
+	color.Green("[PRC] Done! All products and components were saved.")
 }
 
 func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {

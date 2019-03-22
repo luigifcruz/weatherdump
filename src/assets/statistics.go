@@ -1,5 +1,7 @@
 package assets
 
+const averageLastNSamples = 8192
+
 // Statistics struct for the decoder.
 type Statistics struct {
 	VCID                      uint8
@@ -8,8 +10,8 @@ type Statistics struct {
 	SignalQuality             uint8
 	SyncCorrelation           uint8
 	LostPackets               uint64
-	AverageVitCorrections     uint16
-	AverageRSCorrections      [4]uint8
+	AverageVitCorrections     int
+	AverageRSCorrections      [4]int
 	DroppedPackets            uint64
 	ReceivedPacketsPerChannel [256]int64
 	LostPacketsPerChannel     [256]int64
