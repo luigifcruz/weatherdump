@@ -94,14 +94,14 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, g *bool) {
 	defer output.Close()
 
 	e.Statistics.TotalBytes = uint64(fi.Size())
-	e.Statistics.TaskName = "Decode soft-symbol file"
+	e.Statistics.TaskName = "Decoding soft-symbol file"
 
 	progress := uiprogress.New()
 	progress.Start()
 
 	bar := progress.AddBar(int(fi.Size())).AppendCompleted()
 	bar.PrependFunc(func(b *uiprogress.Bar) string {
-		return "[DEC] Decode soft-symbol file	"
+		return "[DEC] Decoding soft-symbol file	"
 	})
 	bar.AppendFunc(func(b *uiprogress.Bar) string {
 		s := e.Statistics

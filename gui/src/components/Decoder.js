@@ -77,10 +77,12 @@ class Decoder extends Component {
             stats: {
                 TotalBytesRead: 0.0,
                 TotalBytes: 0.0,
-                RsErrors: [-1, -1, -1, -1],
+                AverageRSCorrections: [-1, -1, -1, -1],
+                AverageVitCorrections: 0,
                 SignalQuality: 0,
                 ReceivedPacketsPerChannel: [],
-                Finished: false
+                Finished: false,
+                TaskName: "Starting decoder"
             },
             n: 0
         };
@@ -102,11 +104,31 @@ class Decoder extends Component {
         console.log("[STREAM] Connected to decoder via WebSocket.");
     }
 
-    handleFinish() {
-        new Notification('Decoder Finished', {
-            body: 'WeatherDump finished decoding your file.'
-        })
+    componentDidMount() {
+        const { match: { params } } = this.props;
+        request
+            .post(`http://localhost:3000/${params.datalink}/${this.props.processDescriptor}/start/decoder`)
+            .field("inputFile", this.props.demodulatedFile)
+            .then((res) => {
+                this.props.dispatch(rxa.updateProcessId(res.body.Code))
+                this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
+                this.props.dispatch(rxa.updateDecodedFile(res.body.Description))
+                
+            })
+            .catch((err, res) => {
+                console.log(err.response.body)
+                alert(err.response.body.Code);
+                this.props.history.goBack()
+            })
+    }
 
+    handleFinish() {
+        if (!document.hasFocus()) {
+            new Notification('Decoder Finished', {
+                body: 'WeatherDump finished decoding your file.'
+            })
+        }
+        
         this.props.dispatch(rxa.updateProcessId(null))
         this.props.dispatch(rxa.updateProcessDatalink(null))
     }
@@ -115,7 +137,7 @@ class Decoder extends Component {
         this.props.history.goBack()
         if (this.props.processId != null) {
             request
-            .post(`http://localhost:3000/${this.props.processDatalink}/abort/decoder`)
+            .post(`http://localhost:3000/${this.props.processDatalink}/${this.props.processDescriptor}/abort/decoder`)
             .field("id", this.props.processId)
             .then((res) => {
                 this.handleFinish()
@@ -174,7 +196,7 @@ class Decoder extends Component {
                                     <div style={{ width: percentage + "%" }} className="Progress"></div>
                                 </div>
                                 <div className="Text">
-                                    <div className="Description">Decoding Progress</div>
+                                    <div className="Description">{stats.TaskName}</div>
                                     <div className="Percentage">{percentage.toFixed(2)}%</div>
                                 </div>
                             </div>
@@ -184,19 +206,19 @@ class Decoder extends Component {
                         <div className="ReedSolomon">
                             <div className="Indicator">
                                 <div className="Block">
-                                    <div className="Corrections">{stats.RsErrors[0]}</div>
+                                    <div className="Corrections">{stats.AverageRSCorrections[0]}</div>
                                     <div className="Label">B01</div>
                                 </div>
                                 <div className="Block">
-                                    <div className="Corrections">{stats.RsErrors[1]}</div>
+                                    <div className="Corrections">{stats.AverageRSCorrections[1]}</div>
                                     <div className="Label">B02</div>
                                 </div>
                                 <div className="Block">
-                                    <div className="Corrections">{stats.RsErrors[2]}</div>
+                                    <div className="Corrections">{stats.AverageRSCorrections[2]}</div>
                                     <div className="Label">B03</div>
                                 </div>
                                 <div className="Block">
-                                    <div className="Corrections">{stats.RsErrors[3]}</div>
+                                    <div className="Corrections">{stats.AverageRSCorrections[3]}</div>
                                     <div className="Label">B04</div>
                                 </div>
                             </div>
@@ -215,7 +237,7 @@ class Decoder extends Component {
                             <div className="Name">VCID</div>
                         </div>
                         <div className="DroppedPackets">
-                            <div className="Number">{stats.VitErrors}/{stats.FrameBits}</div>
+                            <div className="Number">{stats.AverageVitCorrections}/{stats.FrameBits}</div>
                             <div className="Name">Viterbi Errors</div>
                         </div>
                         <div className="LockIndicator" style={{ background: stats.FrameLock ? "#00BA8C" : "#282A37" }}>

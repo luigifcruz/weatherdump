@@ -14,7 +14,7 @@ class App extends Component {
                 {this.props.children}
                 <div className="Footer">
                     <div className="Left">
-                        Beta Version 1 • <Link to="/about">About</Link>
+                        Alpha Version 2 • <Link to="/about">About</Link>
                     </div>
                     <div className="Center">
                         WeatherDump

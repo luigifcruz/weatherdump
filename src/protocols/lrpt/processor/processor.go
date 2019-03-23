@@ -112,7 +112,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 func (e Worker) GetProductsManifest() assets.ProcessingManifest {
 	return assets.ProcessingManifest{
 		Parser:   parser.Manifest,
-		Composer: nil,
+		Composer: assets.Manifest{},
 	}
 }
 

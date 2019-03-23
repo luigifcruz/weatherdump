@@ -16,6 +16,11 @@ import (
 func (s *Remote) decoderStart(w http.ResponseWriter, r *http.Request, vars map[string]string, id uuid.UUID) {
 	inputFile := r.FormValue("inputFile")
 
+	if handlers.AvailableDecoders[vars["datalink"]][vars["decoder"]] == nil {
+		ResError(w, "INVALID_DECODER_FILE_DESCRIPTOR", "")
+		return
+	}
+
 	if _, err := os.Stat(inputFile); os.IsNotExist(err) || inputFile == "" {
 		ResError(w, "INPUT_FILE_NOT_FOUND", "")
 		return
@@ -25,7 +30,7 @@ func (s *Remote) decoderStart(w http.ResponseWriter, r *http.Request, vars map[s
 	decodedFile := fmt.Sprintf("%s/decoded_%s.bin", workingPath, strings.ToLower(fileName))
 
 	go func() {
-		handlers.AvailableDecoders[vars["datalink"]]["softsymbol"](id.String()).Work(inputFile, decodedFile, &s.processes[id].heartbeart)
+		handlers.AvailableDecoders[vars["datalink"]][vars["decoder"]](id.String()).Work(inputFile, decodedFile, &s.processes[id].heartbeart)
 		s.terminate(id)
 	}()
 

@@ -15,8 +15,13 @@ const options = [
     [],
     [
         {
+            descriptor: "soft",
             title: "Soft-Symbol File",
             description: "Demodulator output with interleaved 8-bit soft-symbols."
+        },{
+            descriptor: "cadu",
+            title: "CADU Frames File",
+            description: "Randomized and unsynchronized sequential CADU frames."
         }
     ],
     [
@@ -56,39 +61,24 @@ class StepPicker extends Component {
             this.handleProcessing(inputFile)
             break;
         }
+
+        e.target.value = null;
     }
 
     handleDecoding(inputFile) {
         const { match: { params } } = this.props;
-
-        request
-            .post(`http://localhost:3000/${params.datalink}/start/decoder`)
-            .field("inputFile", inputFile)
-            .then((res) => {
-                this.props.dispatch(rxa.updateProcessId(res.body.Code))
-                this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
-                this.props.dispatch(rxa.updateDecodedFile(res.body.Description))
-                this.props.history.push(`/decoder/${params.datalink}`)
-            })
-            .catch(err => console.log(err))
+        this.props.dispatch(rxa.updateDemodulatedFile(inputFile))
+        this.props.history.push(`/decoder/${params.datalink}`)
     }
 
     handleProcessing(inputFile) {
         const { match: { params } } = this.props;
-
-        request
-            .post(`http://localhost:3000/${params.datalink}/start/processor`)
-            .field("inputFile", inputFile)
-            .then((res) => {
-                this.props.dispatch(rxa.updateProcessId(res.body.Code))
-                this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
-                this.props.dispatch(rxa.updateProcessedFolder(res.body.Description))
-                this.props.history.push(`/processor/${params.datalink}`)
-            })
-            .catch(err => console.log(err))
+        this.props.dispatch(rxa.updateDecodedFile(inputFile))
+        this.props.history.push(`/processor/${params.datalink}`)
     }
 
-    selectInput() {
+    selectInput(descriptor) {
+        this.props.dispatch(rxa.updateProcessDescriptor(descriptor))
         this.fileUpload.current.click();
     }
 
@@ -137,13 +127,13 @@ class StepPicker extends Component {
                         ) : (
                         options[currentTab].map((o, i) =>
                             <div key={i} className="Option">
-                                <h3 onClick={this.selectInput.bind(this)}>{o.title}</h3>
+                                <h3 onClick={this.selectInput.bind(this, o.descriptor)}>{o.title}</h3>
                                 <h4>{o.description}</h4>
                             </div>
                         ))}
                     </div>
                 </div>
-                <input type="file" ref={this.fileUpload} onChange={this.getUploadedFileName.bind(this)} />
+                <input type="file" ref={this.fileUpload} onInput={this.getUploadedFileName.bind(this)} />
             </div>
         )
     }

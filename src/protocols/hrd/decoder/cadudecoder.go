@@ -32,6 +32,7 @@ func NewCaduDecoder(uuid string) interfaces.Decoder {
 	e := CaduDecoder{}
 
 	if uuid != "" {
+		http.HandleFunc(fmt.Sprintf("/hrd/%s/constellation", uuid), e.constellation)
 		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
 	}
 
@@ -62,7 +63,7 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 	}
 
 	e.Statistics.TotalBytes = uint64(fi.Size())
-	e.Statistics.TaskName = "Convert CADU file"
+	e.Statistics.TaskName = "Converting CADU file"
 
 	progress := uiprogress.New()
 	progress.Start()
@@ -71,11 +72,11 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 	bar2 := progress.AddBar(int(fi.Size()) * 8).AppendCompleted()
 
 	bar1.PrependFunc(func(b *uiprogress.Bar) string {
-		return "[DEC] Convert CADU file		"
+		return "[DEC] Converting CADU file	"
 	})
 
 	bar2.PrependFunc(func(b *uiprogress.Bar) string {
-		return "[DEC] Decode soft-symbol file	"
+		return "[DEC] Decoding soft-symbol file	"
 	})
 
 	bar2.AppendFunc(func(b *uiprogress.Bar) string {
@@ -99,7 +100,7 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 			convertToArray(e.hardData, &e.softData, datalink[id].FrameSize)
 			outputBuf.Write(e.softData)
 
-			if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
+			if e.Statistics.TotalBytesRead%1e4 == 0 && e.statsSock != nil {
 				e.updateStatistics(e.Statistics)
 			}
 		} else {
@@ -120,8 +121,9 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, g *bool) {
 		log.Fatal(err)
 	}
 
+	e.Statistics.TotalBytesRead = 0
 	e.Statistics.TotalBytes = uint64(fi.Size())
-	e.Statistics.TaskName = "Decode soft-symbol file"
+	e.Statistics.TaskName = "Decoding soft-symbol file"
 
 	for *g {
 		n, err := inputBuf.Read(e.softData)
@@ -275,6 +277,11 @@ func (e *CaduDecoder) updateStatistics(s assets.Statistics) {
 	if err == nil {
 		e.statsSock.WriteMessage(1, []byte(json))
 	}
+}
+
+func (e *CaduDecoder) constellation(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	e.constSock, _ = upgrader.Upgrade(w, r, nil)
 }
 
 func (e *CaduDecoder) statistics(w http.ResponseWriter, r *http.Request) {

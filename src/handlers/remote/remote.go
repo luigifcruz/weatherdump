@@ -38,7 +38,7 @@ func (s *Remote) Listen(port string) {
 	headers := httpHandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 
 	r := mux.NewRouter()
-	r.HandleFunc("/{datalink}/{cmd}/{handler}", s.router)
+	r.HandleFunc("/{datalink}/{decoder}/{cmd}/{handler}", s.router)
 	http.Handle("/", httpHandlers.CORS(origins, headers)(r))
 
 	fmt.Println("[RMT] Starting to listen requests from port " + port + "...")

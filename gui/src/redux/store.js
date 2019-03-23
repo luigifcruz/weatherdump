@@ -5,8 +5,12 @@ import { createLogger } from 'redux-logger'
 let defaultState = {
     'processId': null,
     'processDatalink': null,
+    'processDescriptor': null,
+    'manifestParser': {},
+    'manifestComposer': {},
     'decodedFile': null,
-    'processedFile': null,
+    'demodulatedFile': null,
+    'workingFolder': null,
 }
 
 let middleware = new Array()

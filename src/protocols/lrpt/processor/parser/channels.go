@@ -18,18 +18,18 @@ var Manifest = assets.Manifest{
 		Name: "64",
 	},
 	65: {
-		Name: "64",
+		Name: "65",
 	},
 	66: {
-		Name: "64",
+		Name: "66",
 	},
 	67: {
-		Name: "64",
+		Name: "67",
 	},
 	68: {
-		Name: "64",
+		Name: "68",
 	},
 	69: {
-		Name: "64",
+		Name: "69",
 	},
 }

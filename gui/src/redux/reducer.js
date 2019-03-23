@@ -2,7 +2,10 @@ import {
     UPDATE_PROCESS_ID,
     UPDATE_PROCESS_DATALINK,
     UPDATE_DECODED_FILE,
-    UPDATE_PROCESSED_FOLDER
+    UPDATE_WORKING_FOLDER,
+    UPDATE_PROCESS_DESCRIPTOR,
+    UPDATE_MANIFEST,
+    UPDATE_DEMOD_FILE
 } from "./actions"
 
 export default function reducer(state, action) {
@@ -19,9 +22,22 @@ export default function reducer(state, action) {
         return Object.assign({}, state, {
             decodedFile: action.path
         })
-        case UPDATE_PROCESSED_FOLDER:
+        case UPDATE_WORKING_FOLDER:
         return Object.assign({}, state, {
-            processedFolder: action.path
+            workingFolder: action.path
+        })
+        case UPDATE_PROCESS_DESCRIPTOR:
+        return Object.assign({}, state, {
+            processDescriptor: action.descriptor
+        })
+        case UPDATE_MANIFEST:
+        return Object.assign({}, state, {
+            manifestParser: action.parser,
+            manifestComposer: action.composer
+        })
+        case UPDATE_DEMOD_FILE:
+        return Object.assign({}, state, {
+            demodulatedFile: action.file
         })
         default:
         return state;
