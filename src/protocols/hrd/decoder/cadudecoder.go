@@ -17,6 +17,9 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
+// Decoder CADU
+// Unsynchronized + Post-Viterbi + Non RS Corrected + Scrambled
+
 type CaduDecoder struct {
 	hardData     []byte
 	softData     []byte
@@ -287,10 +290,4 @@ func (e *CaduDecoder) constellation(w http.ResponseWriter, r *http.Request) {
 func (e *CaduDecoder) statistics(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
-}
-
-func shiftWithConstantSize(arr *[]byte, pos int, length int) {
-	for i := 0; i < length-pos; i++ {
-		(*arr)[i] = (*arr)[pos+i]
-	}
 }

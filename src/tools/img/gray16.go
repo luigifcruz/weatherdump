@@ -61,7 +61,7 @@ func (e *Gray16) Equalize() Img {
 
 	if hist[firstNonZero] == totalPixels/2 {
 		for p := 0; p < totalPixels; p += 2 {
-			binary.BigEndian.PutUint16((*e.buf)[p:], uint16(totalPixels/2))
+			binary.BigEndian.PutUint16((*e.buf)[p:], uint16(firstNonZero))
 		}
 		return e
 	}

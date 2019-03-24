@@ -43,14 +43,15 @@ func NewProcessor(uuid string) interfaces.Processor {
 
 func (e *Worker) Work(inputFile string) {
 	color.Yellow("[PRC] WARNING! This processor is currently in BETA development state.")
+	scidStat := [256]int{}
 
 	file, _ := ioutil.ReadFile(inputFile)
 	for i := len(file); i > 0; i -= frameSize {
 		f := frames.NewTransferFrame(file[(len(file) - i):])
-		e.scid = f.GetSCID()
+		p := frames.NewMultiplexingFrame(ccsds.Version["HRD"], f.GetMPDU())
 
-		if f.IsReplay() {
-			p := frames.NewMultiplexingFrame(ccsds.Version["HRD"], f.GetMPDU())
+		if f.IsReplay() && p.IsValid() {
+			scidStat[f.GetSCID()]++
 			switch f.GetVCID() {
 			case 16:
 				e.ccsds.ParseMPDU(*p) // VCID 16 Parser (VIIRS)
@@ -64,6 +65,7 @@ func (e *Worker) Work(inputFile string) {
 		}
 	}
 
+	e.scid = uint8(MaxIntSlice(scidStat[:]))
 	fmt.Printf("[PRC] Decoded %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 }
 
@@ -142,4 +144,16 @@ func (e Worker) GetProductsManifest() assets.ProcessingManifest {
 		Parser:   parser.Manifest,
 		Composer: composer.Manifest,
 	}
+}
+
+func MaxIntSlice(v []int) int {
+	index := 0
+	max := 0
+	for i, e := range v {
+		if e > max {
+			index = i
+			max = e
+		}
+	}
+	return index
 }

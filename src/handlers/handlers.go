@@ -18,8 +18,9 @@ var AvailableDecoders = interfaces.DecoderMakers{
 		"soft": meteorDecoder.NewDecoder,
 	},
 	"hrd": {
-		"soft": npoessDecoder.NewSoftSymbolDecoder,
-		"cadu": npoessDecoder.NewCaduDecoder,
+		"soft":  npoessDecoder.NewSoftSymbolDecoder,
+		"cadu":  npoessDecoder.NewCaduDecoder,
+		"cadu2": npoessDecoder.NewCadu2Decoder,
 	},
 }
 

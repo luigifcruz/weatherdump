@@ -54,7 +54,7 @@ func (e *Gray) Equalize() Img {
 
 	if hist[firstNonZero] == totalPixels {
 		for p := 0; p < totalPixels; p++ {
-			(*e.buf)[p] = uint8(totalPixels)
+			(*e.buf)[p] = uint8(firstNonZero)
 		}
 		return e
 	}
