@@ -5,7 +5,10 @@ import {
     UPDATE_WORKING_FOLDER,
     UPDATE_PROCESS_DESCRIPTOR,
     UPDATE_MANIFEST,
-    UPDATE_DEMOD_FILE
+    UPDATE_DEMOD_FILE,
+    TOGGLE_PARSER,
+    TOGGLE_COMPOSER,
+    TOGGLE_ENHANCEMENT
 } from "./actions"
 
 export default function reducer(state, action) {
@@ -13,10 +16,6 @@ export default function reducer(state, action) {
         case UPDATE_PROCESS_ID:
         return Object.assign({}, state, {
             processId: action.id
-        })
-        case UPDATE_PROCESS_DATALINK:
-        return Object.assign({}, state, {
-            processDatalink: action.datalink
         })
         case UPDATE_DECODED_FILE:
         return Object.assign({}, state, {
@@ -38,6 +37,36 @@ export default function reducer(state, action) {
         case UPDATE_DEMOD_FILE:
         return Object.assign({}, state, {
             demodulatedFile: action.file
+        })
+        case TOGGLE_PARSER:
+        return Object.assign({}, state, {
+            manifestParser: {
+                ...state.manifestParser,
+                [action.apid]: {
+                    ...state.manifestParser[action.apid],
+                    Activated: !state.manifestParser[action.apid].Activated
+                }
+            }
+        })
+        case TOGGLE_COMPOSER:
+        return Object.assign({}, state, {
+            manifestComposer: {
+                ...state.manifestComposer,
+                [action.apid]: {
+                    ...state.manifestComposer[action.apid],
+                    Activated: !state.manifestComposer[action.apid].Activated
+                }
+            }
+        })
+        case TOGGLE_ENHANCEMENT:
+        return Object.assign({}, state, {
+            processorEnhancements: {
+                ...state.processorEnhancements,
+                [action.key]: {
+                    ...state.processorEnhancements[action.key],
+                    Activated: !state.processorEnhancements[action.key].Activated
+                }
+            }
         })
         default:
         return state;

@@ -80,7 +80,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	bar1.PrependFunc(func(b *uiprogress.Bar) string {
 		switch currentParser {
 		case 0:
-			return fmt.Sprintf("[DEC] Starting decoder		")
+			return fmt.Sprintf("[DEC] Starting render		")
 		case 9999:
 			return fmt.Sprintf("[DEC] Processing completed 	")
 		default:
@@ -91,7 +91,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	bar2.PrependFunc(func(b *uiprogress.Bar) string {
 		switch currentComposer {
 		case 0:
-			return fmt.Sprintf("[DEC] Waiting for decoder	")
+			return fmt.Sprintf("[DEC] Waiting for render	")
 		case 9999:
 			return fmt.Sprintf("[DEC] Components completed	")
 		default:

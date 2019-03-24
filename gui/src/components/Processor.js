@@ -6,15 +6,11 @@ import request from 'superagent'
 import '../styles/Processor.scss'
 
 class Processor extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
     componentDidMount() {
-        const { match: { params } } = this.props;
+        const { datalink } = this.props.match.params
+        const { processDescriptor } = this.props
         request
-            .get(`http://localhost:3000/${params.datalink}/${this.props.processDescriptor}/manifest/processor`)
+            .get(`http://localhost:3000/${datalink}/${processDescriptor}/manifest/processor`)
             .then((res) => {
                 let { Code, Description } = res.body;
                 if (Code == "MANIFEST") {
@@ -29,11 +25,14 @@ class Processor extends Component {
     }
 
     handleAbort() {
-        this.props.history.goBack()
-        if (this.props.processId != null) {
+        const { datalink } = this.props.match.params
+        const { history, processId, processDescriptor } = this.props
+        history.push(`/steps/${datalink}/processor`)
+
+        if (processId != null && processDescriptor != null) {
             request
-            .post(`http://localhost:3000/${this.props.processDatalink}/${this.props.processDescriptor}/abort/decoder`)
-            .field("id", this.props.processId)
+            .post(`http://localhost:3000/${datalink}/${processDescriptor}/abort/decoder`)
+            .field("id", processId)
             .then((res) => {
                 this.handleFinish()
                 console.log("Process aborted.")
@@ -50,19 +49,23 @@ class Processor extends Component {
         }
         
         this.props.dispatch(rxa.updateProcessId(null))
-        this.props.dispatch(rxa.updateProcessDatalink(null))
     }
 
     start() {
-        const { match: { params } } = this.props;
+        const { datalink } = this.props.match.params
         request
-            .post(`http://localhost:3000/${params.datalink}/${this.props.processDescriptor}/start/processor`)
-            .field("inputFile", inputFile)
+            .post(`http://localhost:3000/${datalink}/${this.props.processDescriptor}/start/processor`)
+            .field("inputFile", this.props.decodedFile)
+            .field("pipeline", JSON.stringify(this.props.processorEnhancements))
+            .field("manifest", JSON.stringify({
+                Parser: this.props.manifestParser,
+                Composer: this.props.manifestComposer
+            }))
             .then((res) => {
-                this.props.dispatch(rxa.updateProcessId(res.body.Code))
-                this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
-                this.props.dispatch(rxa.updateWorkingFolder(res.body.Description))
-                this.props.history.push(`/processor/${params.datalink}`)
+                let { Code, Description } = res.body;
+                this.props.dispatch(rxa.updateProcessId(Code))
+                this.props.dispatch(rxa.updateWorkingFolder(Description))
+                this.props.history.push(`/processor/${datalink}`)
             })
             .catch((err, res) => {
                 console.log(err.response.body)
@@ -89,17 +92,30 @@ class Processor extends Component {
                         <div className="Channel">
                             <div className="Name">Individual Bands</div>
                             <div className="List">
-                            {Object.entries(this.props.manifestParser).map((parser, i) => {
-                                console.log(parser, i)
-                                return (<div key={i} className="Item">{parser[1].Name}</div>)
+                            {Object.entries(this.props.manifestParser).map((p, i) => {
+                                return (
+                                    <div
+                                        key={i}
+                                        onClick={this.props.dispatch.bind(this, rxa.toggleParserActivation(p[0]))}
+                                        className={(p[1].Activated) ? "Item Active" : "Item"}>
+                                        {p[1].Name}
+                                    </div>
+                                )
                             })}
                             </div>
                         </div>
                         <div className="Channel Last">
                             <div className="Name">Multispectral Composites</div>
                             <div className="List">
-                            {Object.entries(this.props.manifestComposer).map((parser, i) => {
-                                return (<div key={i} className="Item">{parser[1].Name}</div>)
+                            {Object.entries(this.props.manifestComposer).map((p, i) => {
+                                return (
+                                    <div
+                                        key={i}
+                                        onClick={this.props.dispatch.bind(this, rxa.toggleComposerActivation(p[0]))}
+                                        className={(p[1].Activated) ? "Item Active" : "Item"}>
+                                        {p[1].Name}
+                                    </div>
+                                )
                             })}
                             </div>
                         </div>
@@ -108,18 +124,19 @@ class Processor extends Component {
                         <div className="Option">
                             <div className="Name">Image Enhancement</div>
                             <div className="List">
-                                <div className="Item">
-                                    <div className="Label">Histogram Equalization</div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
-                                <div className="Item">
-                                    <div className="Label">Invert Infrared Pixels</div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
-                                <div className="Item Active">
-                                    <div className="Label">Horizontally Flip Image</div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
+                                {Object.entries(this.props.processorEnhancements).map((p, i) => {
+                                    if (!p[0].includes("Export")) {
+                                        return (
+                                            <div
+                                                key={i}
+                                                onClick={this.props.dispatch.bind(this, rxa.toggleEnhancement(p[0]))}
+                                                className={(p[1].Activated) ? "Item Active" : "Item"}>
+                                                <div className="Label">{p[1].Name}</div>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            </div>
+                                        )
+                                    }
+                                })}
                             </div>
                         </div>
                         <div className="Option">
@@ -128,17 +145,22 @@ class Processor extends Component {
                         <div className="Option">
                             <div className="Name">Export Format</div>
                             <div className="List">
-                                <div className="Item">
-                                    <div className="Label">Lossless PNG</div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
-                                <div className="Item">
-                                    <div className="Label">Lossless JPEG</div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
+                                {Object.entries(this.props.processorEnhancements).map((p, i) => {
+                                    if (p[0].includes("Export")) {
+                                        return (
+                                            <div
+                                                key={i}
+                                                onClick={this.props.dispatch.bind(this, rxa.toggleEnhancement(p[0]))}
+                                                className={(p[1].Activated) ? "Item Active" : "Item"}>
+                                                <div className="Label">{p[1].Name}</div>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            </div>
+                                        )
+                                    }
+                                })}
                             </div>
                         </div>
-                        <div className="StartButton">
+                        <div onClick={this.start.bind(this)} className="StartButton">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-play"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         </div>
                     </div>

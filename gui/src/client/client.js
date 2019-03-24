@@ -5,7 +5,7 @@ import { configureStore } from '../redux/store'
 import App from '../components/App'
 import Dashboard from '../components/Dashboard'
 import Decoder from '../components/Decoder'
-import About from '../components/About'
+import Meta from '../components/meta/Meta'
 import Processor from '../components/Processor'
 import StepPicker from '../components/StepPicker'
 
@@ -19,8 +19,8 @@ export default class Client extends Component {
                     <App>
                         <Switch>
                             <Route exact path="/index.html" component={Dashboard}/>
-                            <Route exact path="/about" component={About}/>
-                            <Route exact path="/steps/:datalink" component={StepPicker}/>
+                            <Route exact path="/meta/:tab" component={Meta}/>
+                            <Route exact path="/steps/:datalink/:tab" component={StepPicker}/>
                             <Route exact path="/decoder/:datalink" component={Decoder}/>
                             <Route exact path="/processor/:datalink" component={Processor}/>
                         </Switch>

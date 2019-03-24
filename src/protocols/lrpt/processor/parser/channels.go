@@ -15,21 +15,27 @@ var Channels = List{
 
 var Manifest = assets.Manifest{
 	64: {
-		Name: "64",
+		Name:      "Ch. 64",
+		Activated: true,
 	},
 	65: {
-		Name: "65",
+		Name:      "Ch. 65",
+		Activated: true,
 	},
 	66: {
-		Name: "66",
+		Name:      "Ch. 66",
+		Activated: true,
 	},
 	67: {
-		Name: "67",
+		Name:      "Ch. 67",
+		Activated: true,
 	},
 	68: {
-		Name: "68",
+		Name:      "Ch. 68",
+		Activated: true,
 	},
 	69: {
-		Name: "69",
+		Name:      "Ch. 69",
+		Activated: true,
 	},
 }

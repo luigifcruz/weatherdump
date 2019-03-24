@@ -275,97 +275,121 @@ var Manifest = assets.Manifest{
 	800: {
 		Name:        "M04",
 		Description: "Moderate Resolution Channel 04",
+		Activated:   true,
 	},
 	801: {
 		Name:        "M05",
 		Description: "Moderate Resolution Channel 05",
+		Activated:   true,
 	},
 	802: {
 		Name:        "M03",
 		Description: "Moderate Resolution Channel 03",
+		Activated:   true,
 	},
 	803: {
 		Name:        "M02",
 		Description: "Moderate Resolution Channel 02",
+		Activated:   true,
 	},
 	804: {
 		Name:        "M01",
 		Description: "Moderate Resolution Channel 01",
+		Activated:   true,
 	},
 	805: {
 		Name:        "M06",
 		Description: "Moderate Resolution Channel 06",
+		Activated:   true,
 	},
 	806: {
 		Name:        "M07",
 		Description: "Moderate Resolution Channel 07",
+		Activated:   true,
 	},
 	807: {
 		Name:        "M09",
 		Description: "Moderate Resolution Channel 09",
+		Activated:   true,
 	},
 	808: {
 		Name:        "M10",
 		Description: "Moderate Resolution Channel 10",
+		Activated:   true,
 	},
 	809: {
 		Name:        "M08",
 		Description: "Moderate Resolution Channel 08",
+		Activated:   true,
 	},
 	810: {
 		Name:        "M11",
 		Description: "Moderate Resolution Channel 11",
+		Activated:   true,
 	},
 	811: {
 		Name:        "M13",
 		Description: "Moderate Resolution Channel 13",
+		Activated:   true,
 	},
 	812: {
 		Name:        "M12",
 		Description: "Moderate Resolution Channel 12",
+		Activated:   true,
 	},
 	813: {
 		Name:        "I04",
 		Description: "Imagery Channel 04",
+		Activated:   true,
 	},
 	814: {
 		Name:        "M16",
 		Description: "Moderate Resolution Channel 16",
+		Activated:   true,
 	},
 	815: {
 		Name:        "M15",
 		Description: "Moderate Resolution Channel 15",
+		Activated:   true,
 	},
 	816: {
 		Name:        "M14",
 		Description: "Moderate Resolution Channel 14",
+		Activated:   true,
 	},
 	817: {
 		Name:        "I05",
 		Description: "Imagery Channel 05",
+		Activated:   true,
 	},
 	818: {
 		Name:        "I01",
 		Description: "Imagery Channel 01",
+		Activated:   true,
 	},
 	819: {
 		Name:        "I02",
 		Description: "Imagery Channel 02",
+		Activated:   true,
 	},
 	820: {
 		Name:        "I03",
 		Description: "Imagery Channel 03",
+		Activated:   true,
 	},
 	821: {
 		Name:        "DNB",
 		Description: "Day and Night Band",
+		Activated:   true,
 	},
 	822: {
 		Name:        "DNBMGS",
 		Description: "Day and Night Band",
+		Activated:   true,
 	},
 	823: {
 		Name:        "DNBLGS",
 		Description: "Day and Night Band",
+		Activated:   true,
 	},
 }

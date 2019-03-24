@@ -100,19 +100,17 @@ class Decoder extends Component {
         this.setState({ stats })
     }
 
-    handleEvent(data) {
-        console.log("[STREAM] Connected to decoder via WebSocket.");
-    }
-
     componentDidMount() {
-        const { match: { params } } = this.props;
+        const { datalink } = this.props.match.params
+        const { processDescriptor } = this.props
+
         request
-            .post(`http://localhost:3000/${params.datalink}/${this.props.processDescriptor}/start/decoder`)
+            .post(`http://localhost:3000/${datalink}/${processDescriptor}/start/decoder`)
             .field("inputFile", this.props.demodulatedFile)
             .then((res) => {
-                this.props.dispatch(rxa.updateProcessId(res.body.Code))
-                this.props.dispatch(rxa.updateProcessDatalink(params.datalink))
-                this.props.dispatch(rxa.updateDecodedFile(res.body.Description))
+                let { Code, Description } = res.body;
+                this.props.dispatch(rxa.updateProcessId(Code))
+                this.props.dispatch(rxa.updateDecodedFile(Description))
                 
             })
             .catch((err, res) => {
@@ -130,15 +128,17 @@ class Decoder extends Component {
         }
         
         this.props.dispatch(rxa.updateProcessId(null))
-        this.props.dispatch(rxa.updateProcessDatalink(null))
     }
 
     handleAbort() {
-        this.props.history.goBack()
-        if (this.props.processId != null) {
+        const { datalink } = this.props.match.params
+        const { history, processId, processDescriptor } = this.props
+        history.push(`/steps/${datalink}/decoder`)
+
+        if (processId != null && processDescriptor != null) {
             request
-            .post(`http://localhost:3000/${this.props.processDatalink}/${this.props.processDescriptor}/abort/decoder`)
-            .field("id", this.props.processId)
+            .post(`http://localhost:3000/${datalink}/${processDescriptor}/abort/decoder`)
+            .field("id", processId)
             .then((res) => {
                 this.handleFinish()
                 console.log("Process aborted.")
@@ -153,8 +153,13 @@ class Decoder extends Component {
         window.open(filePath.join('/'), '_blank');
     }
 
+    goProcessor() {
+        const { datalink } = this.props.match.params
+        this.props.history.push(`/processor/${datalink}`)
+    }
+
     render() {
-        const { match: { params } } = this.props;
+        const { datalink } = this.props.match.params
         const { complex, n, stats } = this.state;
 
         let percentage = (stats.TotalBytesRead / stats.TotalBytes) * 100
@@ -167,10 +172,10 @@ class Decoder extends Component {
             <div className="View">
                 {(this.props.processId != null) ? (
                     <div>
-                        <Websocket url={`ws://localhost:3000/${params.datalink}/${this.props.processId}/constellation`}
-                            onOpen={this.handleEvent.bind(this)} onMessage={this.handleConstellation.bind(this)} />
-                        <Websocket url={`ws://localhost:3000/${params.datalink}/${this.props.processId}/statistics`}
-                            onOpen={this.handleEvent.bind(this)} onMessage={this.handleStatistics.bind(this)} />
+                        <Websocket reconnect={true} url={`ws://localhost:3000/${datalink}/${this.props.processId}/constellation`}
+                            onMessage={this.handleConstellation.bind(this)} />
+                        <Websocket reconnect={true} debug={true} url={`ws://localhost:3000/${datalink}/${this.props.processId}/statistics`}
+                            onMessage={this.handleStatistics.bind(this)} />
                     </div>        
                 ) :  null}
                 <div className="Header">
@@ -266,7 +271,7 @@ class Decoder extends Component {
                         ) : (
                             <div>
                                 <div onClick={this.handleOpenDecodedFolder.bind(this)} className="Button Small Open">Open Folder</div>
-                                <div onClick={this.handleAbort.bind(this)} className="Button Small Next">Next Step</div>
+                                <div onClick={this.goProcessor.bind(this)} className="Button Small Next">Next Step</div>
                             </div>
                         )}
                         </div>

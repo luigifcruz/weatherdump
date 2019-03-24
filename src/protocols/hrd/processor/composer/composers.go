@@ -25,13 +25,16 @@ var Manifest = assets.Manifest{
 	000: {
 		Name:        "True-Color",
 		Description: "Moderate Resolution Channels True-Color Component",
+		Activated:   true,
 	},
 	001: {
 		Name:        "Ima. Nat-Color",
 		Description: "Imagery Channels Natural-Color Component",
+		Activated:   true,
 	},
 	002: {
 		Name:        "Mod. Nat-Color",
 		Description: "Moderate Resolution Natural-Color Component",
+		Activated:   true,
 	},
 }

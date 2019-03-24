@@ -1,4 +1,5 @@
 .TabViewHeader {
+    user-select: none;
     margin-top: 0.15em;
     display: flex;
 
@@ -9,6 +10,8 @@
         display: flex;
         cursor: pointer;
         margin-right: 0.5em;
+        color: white;
+        text-decoration: none;
 
         svg {
             margin-top: 0.35em;

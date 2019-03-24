@@ -10,6 +10,7 @@ import (
 type Manifest map[uint16]*struct {
 	Name        string
 	Description string
+	Activated   bool
 	Finished    bool
 }
 

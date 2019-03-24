@@ -1,6 +1,7 @@
 .Processor {
     .List {
         margin-top: 0.25em;
+        user-select: none;
         position: absolute;
 
         .Item {
@@ -43,13 +44,15 @@
             .List {
                 width: 45%;
                 margin: 0.25em;
+                margin-top: 0.5em;
                 display: absolute;
 
                 .Item {
                     margin-right: 0em;
                     display: inline-block;
                     margin: 0.25em;
-                    padding: 0.25em;
+                    padding: 0.25em 0.25em 0.2em 0.3em;
+                    font-family: 'Roboto Mono', monospace;
                 }
             }
         }

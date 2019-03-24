@@ -4,11 +4,32 @@ import { createLogger } from 'redux-logger'
 
 let defaultState = {
     'processId': null,
-    'processDatalink': null,
     'processDescriptor': null,
     'manifestParser': {},
     'manifestComposer': {},
     'decodedFile': null,
+    'processorEnhancements': {
+        "Invert": {
+            "Name": "Invert Infrared Pixels",
+            "Activated": true
+        },
+        "Flop": {
+            "Name": "Horizontally Flip Image",
+            "Activated": false
+        },
+        "Equalize": {
+            "Name": "Histogram Equalization",
+            "Activated": true
+        },
+        "ExportPNG": {
+            "Name": "Lossless PNG",
+            "Activated": false
+        },
+        "ExportJPEG": {
+            "Name": "Lossless JPEG",
+            "Activated": true
+        }
+    },
     'demodulatedFile': null,
     'workingFolder': null,
 }

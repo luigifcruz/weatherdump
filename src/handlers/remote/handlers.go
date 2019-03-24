@@ -53,11 +53,14 @@ func (s *Remote) processorStart(w http.ResponseWriter, r *http.Request, vars map
 
 	wf := img.NewPipeline()
 
-	var pipeline map[string]bool
+	var pipeline map[string]struct {
+		Name      string
+		Activated bool
+	}
 	json.Unmarshal([]byte(r.FormValue("pipeline")), &pipeline)
 
-	for task, enabled := range pipeline {
-		wf.AddPipe(task, enabled)
+	for key, task := range pipeline {
+		wf.AddPipe(key, task.Activated)
 	}
 
 	go func() {

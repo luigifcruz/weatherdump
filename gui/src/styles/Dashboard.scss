@@ -2,11 +2,11 @@
     .Satellite {
         width: 16em;
         height: 95px;
-        border: 2px solid #3F4247;
         border-radius: 0.75em;
         margin-right: 1em;
         padding: 0.5em 0.5em 1.25em 0.75em;
         position: relative;
+        background: $background-hightlight-color;
     
         label {
             position: absolute;
