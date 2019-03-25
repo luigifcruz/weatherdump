@@ -23,3 +23,7 @@ func (e Data) GetDate() lrpt.Time {
 	}
 	return lrpt.Time{}
 }
+
+func (e Data) GetID() uint32 {
+	return e.GetDate().GetMilliseconds()
+}

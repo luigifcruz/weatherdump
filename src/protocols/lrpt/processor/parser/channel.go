@@ -7,6 +7,8 @@ import (
 	"weather-dump/src/protocols/lrpt/processor/parser/block"
 )
 
+const maxFrameCount = 8192 * 3
+
 // Channel struct.
 type Channel struct {
 	APID         uint16
@@ -21,15 +23,22 @@ type Channel struct {
 	EndTime      lrpt.Time
 	HasData      bool
 	SegmentCount uint32
-	LastFrame    uint32
 
-	blocks map[uint32]*block.Data
+	FirstSegment uint32
+	LastSegment  uint32
+
+	segments  map[uint32]*block.Segment
+	rollover  uint16
+	lastCount uint16
 }
 
 // NewChannel instance.
 func (e *Channel) init() {
 	e.HasData = true
-	e.blocks = make(map[uint32]*block.Data)
+	e.LastSegment = 0x00000000
+	e.FirstSegment = 0xFFFFFFFF
+
+	e.segments = make(map[uint32]*block.Segment)
 }
 
 func (e Channel) GetDimensions() (int, int) {
@@ -38,10 +47,17 @@ func (e Channel) GetDimensions() (int, int) {
 
 // Fix the channel metadata.
 func (e *Channel) Process(scft lrpt.SpacecraftParameters) {
-	e.StartTime = e.blocks[0].GetDate()
-	e.EndTime = e.blocks[e.SegmentCount/14].GetDate()
+	for i := e.FirstSegment; i <= e.LastSegment; i++ {
+		if e.segments[i] == nil {
+			e.segments[i] = block.NewFillSegment()
+			e.SegmentCount++
+		}
+	}
+
+	e.StartTime = e.segments[e.FirstSegment].GetDate()
+	e.EndTime = e.segments[e.LastSegment].GetDate()
 	e.FileName = fmt.Sprintf("%s_%s_BISMW_%s_%d", scft.Filename, scft.SignalName, e.ChannelName, e.StartTime.GetMilliseconds())
-	e.Height = (e.SegmentCount + 1) * uint32(e.BlockDim) / 14
+	e.Height = (e.SegmentCount + 28) * uint32(e.BlockDim) / 14
 	e.Width = e.FinalWidth
 }
 
@@ -50,28 +66,29 @@ func (e *Channel) Parse(packet frames.SpacePacketFrame) {
 		return
 	}
 
-	frameCount := uint32(packet.GetSequenceCount())
-
 	if !e.HasData {
 		e.init()
-		e.LastFrame = frameCount - 30
 	}
 
-	for {
-		if frameCount-e.LastFrame > 30 && frameCount-e.LastFrame < 16350 {
-			e.blocks[e.SegmentCount] = block.New()
-			e.LastFrame += 14
-			e.SegmentCount++
-		} else {
-			break
-		}
+	if e.lastCount-e.rollover > packet.GetSequenceCount() {
+		fmt.Println("rollover", e.rollover)
+		e.rollover += 16383
+	}
+	e.lastCount = packet.GetSequenceCount() + e.rollover
+
+	new := block.NewSegment(packet.GetData())
+	id := uint32(e.lastCount/43*14) + uint32(new.GetMCUNumber()/14)
+	//fmt.Println(e.lastCount, new.GetID()/88, new.GetMCUNumber()/14, id)
+
+	e.segments[id] = new
+
+	if e.LastSegment < id {
+		e.LastSegment = id
 	}
 
-	if e.blocks[e.SegmentCount] == nil {
-		e.blocks[e.SegmentCount] = block.New()
+	if e.FirstSegment > id {
+		e.FirstSegment = id
 	}
 
-	e.blocks[e.SegmentCount/14].AddMCU(packet.GetData())
-	e.LastFrame = frameCount
 	e.SegmentCount++
 }

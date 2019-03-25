@@ -60,7 +60,7 @@ func (e *Worker) Work(inputFile string) {
 	}
 
 	for _, packet := range e.ccsds.GetSpacePackets() {
-		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
+		if packet.GetAPID() == 64 {
 			channels[packet.GetAPID()].Parse(packet)
 		}
 	}
@@ -96,7 +96,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 		if ch.Export(&buf, lrpt.Spacecrafts[e.scid]) {
 			w, h := ch.GetDimensions()
 			outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
-
+			fmt.Println("exporting")
 			wf.AddException("Invert", ch.Invert)
 			wf.Target(img.NewGray(&buf, w, h)).Process().Export(outputName, 100)
 			wf.ResetExceptions()

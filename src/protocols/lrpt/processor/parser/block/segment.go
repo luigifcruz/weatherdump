@@ -21,6 +21,10 @@ type Segment struct {
 	Lines [8][14 * 8]uint8
 }
 
+func NewFillSegment() *Segment {
+	return &Segment{}
+}
+
 func NewSegment(buf []byte) *Segment {
 	e := Segment{}
 	e.FromBinary(buf)
@@ -50,6 +54,14 @@ func (e Segment) GetMCUNumber() uint8 {
 
 func (e Segment) GetDate() lrpt.Time {
 	return e.time
+}
+
+func (e Segment) GetID() uint32 {
+	return e.GetDate().GetMilliseconds()
+}
+
+func (e Segment) IsValid() bool {
+	return e.valid
 }
 
 func (e Segment) Print() {
