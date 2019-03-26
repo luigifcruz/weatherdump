@@ -1,15 +1,15 @@
-package block
+package segment
 
 import (
 	"encoding/binary"
 	"fmt"
 	"weather-dump/src/protocols/lrpt"
-	"weather-dump/src/protocols/lrpt/processor/parser/block/jpeg"
+	"weather-dump/src/protocols/lrpt/processor/parser/segment/jpeg"
 )
 
 const segmentDataMinimum = 13
 
-type Segment struct {
+type Data struct {
 	time  lrpt.Time
 	MCUN  uint8
 	QT    uint8
@@ -21,17 +21,17 @@ type Segment struct {
 	Lines [8][14 * 8]uint8
 }
 
-func NewFillSegment() *Segment {
-	return &Segment{}
+func NewFiller() *Data {
+	return &Data{}
 }
 
-func NewSegment(buf []byte) *Segment {
-	e := Segment{}
+func New(buf []byte) *Data {
+	e := Data{}
 	e.FromBinary(buf)
 	return &e
 }
 
-func (e *Segment) FromBinary(dat []byte) {
+func (e *Data) FromBinary(dat []byte) {
 	if len(dat) < segmentDataMinimum {
 		return
 	}
@@ -48,23 +48,26 @@ func (e *Segment) FromBinary(dat []byte) {
 	e.Decode(dat[14:])
 }
 
-func (e Segment) GetMCUNumber() uint8 {
+func (e Data) GetMCUNumber() uint8 {
 	return e.MCUN
 }
 
-func (e Segment) GetDate() lrpt.Time {
+func (e Data) GetDate() lrpt.Time {
 	return e.time
 }
 
-func (e Segment) GetID() uint32 {
+func (e Data) GetID() uint32 {
 	return e.GetDate().GetMilliseconds()
 }
 
-func (e Segment) IsValid() bool {
-	return e.valid
+func (e Data) IsValid() bool {
+	if e.valid && e.QT == 0x00 && e.DC == 0x00 && e.AC == 0x00 && e.QFM == 0xFFF0 {
+		return true
+	}
+	return false
 }
 
-func (e Segment) Print() {
+func (e Data) Print() {
 	fmt.Println("### LRPT Segment Frame")
 	fmt.Printf("MCU Number: %d\n", e.MCUN)
 	fmt.Printf("Quantization Table: %08b\n", e.QT)
@@ -76,7 +79,7 @@ func (e Segment) Print() {
 	e.time.Print()
 }
 
-func (e *Segment) Decode(data []byte) {
+func (e *Data) Decode(data []byte) {
 	buf := jpeg.ConvertToArray(data, len(data))
 	qTable := jpeg.GetQuantizationTable(float64(e.QF))
 	lastDC := int64(0)
