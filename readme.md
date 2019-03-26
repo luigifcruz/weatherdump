@@ -38,3 +38,4 @@ weatherdump lrpt soft ./file_path.bin
 - Improved far from perfect documentation.
 - First public release of GUI version.
 - Statistical SCID recover.
+- New LRPT frame stacker with proper synchronization.

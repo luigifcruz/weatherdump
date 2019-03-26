@@ -60,7 +60,7 @@ func (e *Worker) Work(inputFile string) {
 	}
 
 	for _, packet := range e.ccsds.GetSpacePackets() {
-		if packet.GetAPID() == 64 {
+		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
 			channels[packet.GetAPID()].Parse(packet)
 		}
 	}

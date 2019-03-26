@@ -30,6 +30,7 @@ type Channel struct {
 	segments  map[uint32]*block.Segment
 	rollover  uint16
 	lastCount uint16
+	offset    uint16
 }
 
 // NewChannel instance.
@@ -47,6 +48,14 @@ func (e Channel) GetDimensions() (int, int) {
 
 // Fix the channel metadata.
 func (e *Channel) Process(scft lrpt.SpacecraftParameters) {
+
+	f := e.FirstSegment % 14
+	for i := uint32(0); i < f; i++ {
+		e.segments[i] = block.NewFillSegment()
+		e.SegmentCount++
+		e.FirstSegment--
+	}
+
 	for i := e.FirstSegment; i <= e.LastSegment; i++ {
 		if e.segments[i] == nil {
 			e.segments[i] = block.NewFillSegment()
@@ -54,8 +63,6 @@ func (e *Channel) Process(scft lrpt.SpacecraftParameters) {
 		}
 	}
 
-	e.StartTime = e.segments[e.FirstSegment].GetDate()
-	e.EndTime = e.segments[e.LastSegment].GetDate()
 	e.FileName = fmt.Sprintf("%s_%s_BISMW_%s_%d", scft.Filename, scft.SignalName, e.ChannelName, e.StartTime.GetMilliseconds())
 	e.Height = (e.SegmentCount + 28) * uint32(e.BlockDim) / 14
 	e.Width = e.FinalWidth
@@ -66,28 +73,32 @@ func (e *Channel) Parse(packet frames.SpacePacketFrame) {
 		return
 	}
 
-	if !e.HasData {
-		e.init()
-	}
-
 	if e.lastCount-e.rollover > packet.GetSequenceCount() {
 		fmt.Println("rollover", e.rollover)
-		e.rollover += 16383
+		e.rollover += 16384
 	}
 	e.lastCount = packet.GetSequenceCount() + e.rollover
 
 	new := block.NewSegment(packet.GetData())
-	id := uint32(e.lastCount/43*14) + uint32(new.GetMCUNumber()/14)
-	//fmt.Println(e.lastCount, new.GetID()/88, new.GetMCUNumber()/14, id)
+	id := uint32(e.lastCount+e.offset)/43*14 + uint32(new.GetMCUNumber())/14
+
+	if !e.HasData {
+		e.init()
+		e.offset = uint16(id/14) + 1
+	}
+
+	//fmt.Println(packet.GetSequenceCount(), uint32(e.lastCount)/43*14, id, new.GetMCUNumber()/14)
 
 	e.segments[id] = new
 
 	if e.LastSegment < id {
 		e.LastSegment = id
+		e.EndTime = new.GetDate()
 	}
 
 	if e.FirstSegment > id {
 		e.FirstSegment = id
+		e.StartTime = new.GetDate()
 	}
 
 	e.SegmentCount++
