@@ -61,7 +61,7 @@ func (e Data) GetID() uint32 {
 }
 
 func (e Data) IsValid() bool {
-	if e.valid && e.QT == 0x00 && e.DC == 0x00 && e.AC == 0x00 && e.QFM == 0xFFF0 {
+	if e.valid && e.QT == 0x00 && e.DC == 0x00 && e.AC == 0x00 && e.QFM == 0xFFF0 && e.time.IsValid() {
 		return true
 	}
 	return false

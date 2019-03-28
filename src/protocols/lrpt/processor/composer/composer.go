@@ -4,20 +4,21 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
-	"weather-dump/src/protocols/hrd"
-	"weather-dump/src/protocols/hrd/processor/parser"
+	"weather-dump/src/protocols/lrpt"
+	"weather-dump/src/protocols/lrpt/processor/parser"
 	"weather-dump/src/tools/img"
 )
 
 type Composer struct {
 	pipeline         img.Pipeline
-	scft             hrd.SpacecraftParameters
+	scft             lrpt.SpacecraftParameters
+	Equalize         bool
 	ShortName        string
 	FileName         string
 	RequiredChannels []uint16
 }
 
-func (e *Composer) Register(pipeline img.Pipeline, scft hrd.SpacecraftParameters) *Composer {
+func (e *Composer) Register(pipeline img.Pipeline, scft lrpt.SpacecraftParameters) *Composer {
 	e.pipeline = pipeline
 	e.scft = scft
 	return e
@@ -34,8 +35,8 @@ func (e Composer) Render(ch parser.List, outputFolder string) {
 		return
 	}
 
-	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_COMP_%s_VIIRS_%s",
-		outputFolder, e.scft.Filename, e.scft.SignalName, e.FileName, ch01.StartTime.GetZuluSafe()))
+	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_COMP_%s_LRPT",
+		outputFolder, e.scft.Filename, e.scft.SignalName, e.FileName))
 
 	// Synchronize all channels scans.
 	firstScan := make([]int, 3)
@@ -47,49 +48,49 @@ func (e Composer) Render(ch parser.List, outputFolder string) {
 
 	ch01.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
 	ch02.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
-	ch03.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
+	ch03.SetBounds(MaxIntSlice(firstScan)-1, MinIntSlice(lastScan))
 
 	ch01.Process(e.scft)
 	ch02.Process(e.scft)
 	ch03.Process(e.scft)
+	fmt.Println(ch01.GetDimensions())
+	fmt.Println(ch02.GetDimensions())
+	fmt.Println(ch03.GetDimensions())
 
 	// Create output image struct.
 	w, h := ch01.GetDimensions()
-	finalBuf := make([]byte, w*h*8)
+	finalBuf := make([]byte, w*h*4)
 
-	for p := 6; p < len(finalBuf); p += 8 {
-		finalBuf[p+0] = 0xFF
-		finalBuf[p+1] = 0xFF
+	for p := 3; p < len(finalBuf); p += 4 {
+		finalBuf[p] = 0xFF
 	}
 
 	// Compose images and fill buffer.
 	var buf []byte
-	e.pipeline.Target(img.NewGray16(&buf, w, h))
+	e.pipeline.Target(img.NewGray(&buf, w, h))
 	e.pipeline.AddException("Invert", false)
+	e.pipeline.AddException("Equalize", e.Equalize)
 
-	ch01.Export(&buf, ch, e.scft)
+	ch01.Export(&buf, e.scft)
 	e.pipeline.Process()
-	for p := 2; p < len(finalBuf); p += 8 {
-		finalBuf[p+0] = buf[(p/4)+0]
-		finalBuf[p+1] = buf[(p/4)+1]
+	for p := 1; p < len(finalBuf); p += 4 {
+		finalBuf[p] = buf[p/4]
 	}
 
-	ch02.Export(&buf, ch, e.scft)
+	ch02.Export(&buf, e.scft)
 	e.pipeline.Process()
-	for p := 0; p < len(finalBuf); p += 8 {
-		finalBuf[p+0] = buf[(p/4)+0]
-		finalBuf[p+1] = buf[(p/4)+1]
+	for p := 0; p < len(finalBuf); p += 4 {
+		finalBuf[p] = buf[p/4]
 	}
 
-	ch03.Export(&buf, ch, e.scft)
+	ch03.Export(&buf, e.scft)
 	e.pipeline.Process()
-	for p := 4; p < len(finalBuf); p += 8 {
-		finalBuf[p+0] = buf[(p/4)-1]
-		finalBuf[p+1] = buf[(p/4)+0]
+	for p := 2; p < len(finalBuf); p += 4 {
+		finalBuf[p] = buf[p/4]
 	}
 
 	// Render and save the true-color image.
-	e.pipeline.Target(img.NewRGBA64(&finalBuf, w, h)).Export(outputName, 100)
+	e.pipeline.Target(img.NewRGBA(&finalBuf, w, h)).Export(outputName, 100)
 	e.pipeline.ResetExceptions()
 }
 

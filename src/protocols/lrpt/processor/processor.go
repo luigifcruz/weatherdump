@@ -10,6 +10,7 @@ import (
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
 	"weather-dump/src/protocols/lrpt"
+	"weather-dump/src/protocols/lrpt/processor/composer"
 	"weather-dump/src/protocols/lrpt/processor/parser"
 	"weather-dump/src/tools/img"
 
@@ -61,7 +62,10 @@ func (e *Worker) Work(inputFile string) {
 
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 64 && packet.GetAPID() <= 69 {
-			channels[packet.GetAPID()].Parse(packet)
+			if packet.GetAPID() != 265 {
+				channels[packet.GetAPID()].Parse(packet)
+			}
+
 		}
 	}
 
@@ -71,20 +75,33 @@ func (e *Worker) Work(inputFile string) {
 
 func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.ProcessingManifest) {
 	fmt.Printf("[PRC] Exporting BISMW science products.\n")
-	var currentParser uint16
+	var currentParser, currentComposer uint16
 
 	progress := uiprogress.New()
-	progress.Start()
-	bar := progress.AddBar(manifest.ParserCount()).AppendCompleted()
+	//progress.Start()
 
-	bar.PrependFunc(func(b *uiprogress.Bar) string {
+	bar1 := progress.AddBar(manifest.ParserCount()).AppendCompleted()
+	bar2 := progress.AddBar(manifest.ComposerCount()).AppendCompleted()
+
+	bar1.PrependFunc(func(b *uiprogress.Bar) string {
 		switch currentParser {
 		case 0:
-			return fmt.Sprintf("[DEC] Starting decoder		")
+			return fmt.Sprintf("[DEC] Starting render		")
 		case 9999:
 			return fmt.Sprintf("[DEC] Processing completed 	")
 		default:
 			return fmt.Sprintf("[DEC] Rendering channel %s	", manifest.Parser[currentParser].Name)
+		}
+	})
+
+	bar2.PrependFunc(func(b *uiprogress.Bar) string {
+		switch currentComposer {
+		case 0:
+			return fmt.Sprintf("[DEC] Waiting for render	")
+		case 9999:
+			return fmt.Sprintf("[DEC] Components completed	")
+		default:
+			return fmt.Sprintf("[DEC] Rendering %s	", manifest.Composer[currentComposer].Name)
 		}
 	})
 
@@ -96,25 +113,35 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 		if ch.Export(&buf, lrpt.Spacecrafts[e.scid]) {
 			w, h := ch.GetDimensions()
 			outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
-			fmt.Println("exporting")
+
 			wf.AddException("Invert", ch.Invert)
 			wf.Target(img.NewGray(&buf, w, h)).Process().Export(outputName, 100)
 			wf.ResetExceptions()
 		}
 
 		manifest.Parser.Completed(apid, e.statsSock)
-		bar.Incr()
+		bar1.Incr()
 	}
 
 	currentParser = 9999
-	progress.Stop()
+
+	for code := range manifest.Composer {
+		currentComposer = code
+		c := composer.Composers[uint16(code)]
+		c.Register(wf, lrpt.Spacecrafts[e.scid]).Render(channels, outputPath)
+		manifest.Composer.Completed(code, e.statsSock)
+		bar2.Incr()
+	}
+
+	currentComposer = 9999
+	//progress.Stop()
 	color.Green("[PRC] Done! All products and components were saved.")
 }
 
 func (e Worker) GetProductsManifest() assets.ProcessingManifest {
 	return assets.ProcessingManifest{
 		Parser:   parser.Manifest,
-		Composer: assets.Manifest{},
+		Composer: composer.Manifest,
 	}
 }
 

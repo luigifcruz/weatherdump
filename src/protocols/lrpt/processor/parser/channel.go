@@ -42,6 +42,15 @@ func (e *Channel) init() {
 	e.segments = make(map[uint32]*segment.Data)
 }
 
+func (e Channel) GetBounds() (int, int) {
+	return int(e.FirstSegment) / 14, int(e.LastSegment) / 14
+}
+
+func (e *Channel) SetBounds(first, last int) {
+	e.FirstSegment = uint32(first * 14)
+	e.LastSegment = uint32(last * 14)
+}
+
 func (e Channel) GetDimensions() (int, int) {
 	return int(e.Width), int(e.Height)
 }
@@ -51,19 +60,17 @@ func (e *Channel) Process(scft lrpt.SpacecraftParameters) {
 	f := e.FirstSegment % 14
 	for i := uint32(0); i < f; i++ {
 		e.segments[i] = segment.NewFiller()
-		e.SegmentCount++
 		e.FirstSegment--
 	}
 
 	for i := e.FirstSegment; i <= e.LastSegment; i++ {
 		if e.segments[i] == nil {
 			e.segments[i] = segment.NewFiller()
-			e.SegmentCount++
 		}
 	}
 
 	e.FileName = fmt.Sprintf("%s_%s_BISMW_%s_%d", scft.Filename, scft.SignalName, e.ChannelName, e.StartTime.GetMilliseconds())
-	e.Height = (e.SegmentCount + 28) * uint32(e.BlockDim) / 14
+	e.Height = (e.LastSegment - e.FirstSegment + 28) * uint32(e.BlockDim) / 14
 	e.Width = e.FinalWidth
 }
 
@@ -73,22 +80,21 @@ func (e *Channel) Parse(packet frames.SpacePacketFrame) {
 	}
 
 	if new := segment.New(packet.GetData()); new.IsValid() {
-		if e.last > uint32(packet.GetSequenceCount()) && e.last > 16300 {
+		if !e.HasData {
+			e.init()
+		}
+
+		if e.last > uint32(packet.GetSequenceCount()) && e.last > 16000 {
 			e.rollover += 16384
 		}
 		e.last = uint32(packet.GetSequenceCount())
 
-		t := uint32(packet.GetSequenceCount()) + e.rollover + e.offset
-		id := t/43*14 + uint32(new.GetMCUNumber())/14
-
-		if !e.HasData {
-			e.init()
-			e.offset = t / 43
-			//e.offset = (43 - (t % 43)) % 14
-			//fmt.Println(e.ChannelName, t, 43-t%43)
+		if uint32(new.GetMCUNumber())/14 == 0 {
+			e.offset = 43 - (uint32(packet.GetSequenceCount())+e.rollover)%43
 		}
 
-		//fmt.Println(packet.GetSequenceCount(), uint32(e.lastCount)/43*14, id, new.GetMCUNumber()/14)
+		t := uint32(packet.GetSequenceCount()) + e.rollover + e.offset
+		id := t/43*14 + uint32(new.GetMCUNumber())/14
 
 		if e.LastSegment < id {
 			e.LastSegment = id

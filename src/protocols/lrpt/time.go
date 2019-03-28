@@ -25,6 +25,14 @@ func (e Time) Print() {
 	fmt.Println()
 }
 
+func (e Time) IsValid() bool {
+	return e.day == 0 && e.microseconds == 0
+}
+
+func (e Time) GetZuluSafe() string {
+	return string(e.GetMilliseconds())
+}
+
 func (e Time) GetMilliseconds() uint32 {
 	return e.milliseconds
 }

@@ -7,33 +7,33 @@ import (
 	"os"
 )
 
-type RGBA64 struct {
+type RGBA struct {
 	buf    *[]byte
 	width  int
 	height int
 }
 
-func NewRGBA64(buf *[]byte, width, height int) Img {
-	return &RGBA64{buf, width, height}
+func NewRGBA(buf *[]byte, width, height int) Img {
+	return &RGBA{buf, width, height}
 }
 
-func (e *RGBA64) Flop() Img {
+func (e *RGBA) Flop() Img {
 	return e
 }
 
-func (e *RGBA64) Equalize() Img {
+func (e *RGBA) Equalize() Img {
 	return e
 }
 
-func (e *RGBA64) Invert() Img {
+func (e *RGBA) Invert() Img {
 	return e
 }
 
-func (e *RGBA64) ExportPNG(outputFile string, quality int) Img {
+func (e *RGBA) ExportPNG(outputFile string, quality int) Img {
 	o, _ := os.Create(outputFile + ".png")
 	defer o.Close()
 
-	img := image.NewRGBA64(image.Rect(0, 0, e.width, e.height))
+	img := image.NewRGBA(image.Rect(0, 0, e.width, e.height))
 	img.Pix = *e.buf
 
 	enc := &png.Encoder{
@@ -43,11 +43,11 @@ func (e *RGBA64) ExportPNG(outputFile string, quality int) Img {
 	return e
 }
 
-func (e *RGBA64) ExportJPEG(outputFile string, quality int) Img {
+func (e *RGBA) ExportJPEG(outputFile string, quality int) Img {
 	o, _ := os.Create(outputFile + ".jpeg")
 	defer o.Close()
 
-	img := image.NewRGBA64(image.Rect(0, 0, e.width, e.height))
+	img := image.NewRGBA(image.Rect(0, 0, e.width, e.height))
 	img.Pix = *e.buf
 
 	var opt jpeg.Options

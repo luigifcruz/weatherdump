@@ -22,7 +22,7 @@ weatherdump lrpt soft ./file_path.bin
 
 - [ ] Support SatNOGS compatible output.
 - [ ] Add multi-thread support to decoder.
-- [ ] Generate LRPT RGB composite.
+- [x] Generate LRPT RGB composite.
 - [ ] Add NOAA APT support.
 
 ## Changelog
@@ -39,3 +39,4 @@ weatherdump lrpt soft ./file_path.bin
 - First public release of GUI version.
 - Statistical SCID recover.
 - New LRPT frame stacker with proper synchronization.
+- Added RGB multispectral composites for LRPT.

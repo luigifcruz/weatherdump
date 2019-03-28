@@ -24,17 +24,17 @@ var Composers = List{
 var Manifest = assets.Manifest{
 	000: {
 		Name:        "True-Color",
-		Description: "Moderate Resolution Channels True-Color Component",
+		Description: "Moderate Resolution Channels True-Color Composite",
 		Activated:   true,
 	},
 	001: {
 		Name:        "Ima. Nat-Color",
-		Description: "Imagery Channels Natural-Color Component",
+		Description: "Imagery Channels Natural-Color Composite",
 		Activated:   true,
 	},
 	002: {
 		Name:        "Mod. Nat-Color",
-		Description: "Moderate Resolution Natural-Color Component",
+		Description: "Moderate Resolution Natural-Color Composite",
 		Activated:   true,
 	},
 }
