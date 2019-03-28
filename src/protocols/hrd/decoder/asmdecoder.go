@@ -17,10 +17,10 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-// Decoder CADU
+// Decoder ASM
 // Synchronized + Post-Viterbi + RS Corrected + Unscrambled
 
-type Cadu2Decoder struct {
+type AsmDecoder struct {
 	hardData     []byte
 	rsWorkBuffer []byte
 	reedSolomon  SatHelper.ReedSolomon
@@ -29,8 +29,8 @@ type Cadu2Decoder struct {
 	statsSock    *websocket.Conn
 }
 
-func NewCadu2Decoder(uuid string) interfaces.Decoder {
-	e := Cadu2Decoder{}
+func NewAsmDecoder(uuid string) interfaces.Decoder {
+	e := AsmDecoder{}
 
 	if uuid != "" {
 		http.HandleFunc(fmt.Sprintf("/hrd/%s/constellation", uuid), e.constellation)
@@ -47,7 +47,7 @@ func NewCadu2Decoder(uuid string) interfaces.Decoder {
 	return &e
 }
 
-func (e *Cadu2Decoder) Work(inputPath string, outputPath string, g *bool) {
+func (e *AsmDecoder) Work(inputPath string, outputPath string, g *bool) {
 	color.Yellow("[DEC] WARNING! This decoder is currently in BETA development state.")
 
 	fi, err := os.Stat(inputPath)
@@ -128,19 +128,19 @@ func (e *Cadu2Decoder) Work(inputPath string, outputPath string, g *bool) {
 	color.Green("[DEC] Decoding finished! File saved in the same folder.\n")
 }
 
-func (e *Cadu2Decoder) updateStatistics(s assets.Statistics) {
+func (e *AsmDecoder) updateStatistics(s assets.Statistics) {
 	json, err := json.Marshal(s)
 	if err == nil {
 		e.statsSock.WriteMessage(1, []byte(json))
 	}
 }
 
-func (e *Cadu2Decoder) constellation(w http.ResponseWriter, r *http.Request) {
+func (e *AsmDecoder) constellation(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	e.constSock, _ = upgrader.Upgrade(w, r, nil)
 }
 
-func (e *Cadu2Decoder) statistics(w http.ResponseWriter, r *http.Request) {
+func (e *AsmDecoder) statistics(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
 }

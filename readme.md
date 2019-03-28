@@ -30,13 +30,14 @@ weatherdump lrpt soft ./file_path.bin
 ### Alpha 2
 
 - Support for multiple decoders for each protocol.
-- Added support to scrambled unsynchronized CADU files.
-- Added support to synchronized unscrambled CADU files.
+- Added support to scrambled unsynchronized CADU files for HRD.
+- Added support to synchronized unscrambled CADU files for HRD.
 - Fix multi-thread image processing freezing.
 - New decoder and processor progress indicator.
 - New CLI argument for multiple decoders.
 - Improved far from perfect documentation.
 - First public release of GUI version.
 - Statistical SCID recover.
-- New LRPT frame stacker with proper synchronization.
+- New LRPT frame stacker with proper line synchronization.
 - Added RGB multispectral composites for LRPT.
+- Exported functions better documentated. 

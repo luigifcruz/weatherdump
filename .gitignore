@@ -3,6 +3,7 @@
 output/*
 input/*
 .vscode
+.DS_Store
 bin/*
 */node_modules/*
 */package-lock.json
@@ -11,4 +12,5 @@ gui/resources/*.css
 release-builds/*
 dist/*
 gui/dist/*
+gui/build/*
 xcompilation/tarball/*

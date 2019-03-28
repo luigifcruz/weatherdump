@@ -8,6 +8,7 @@ import (
 const frameSize = 892
 const transferFrameMinimum = frameSize
 
+// TransferFrame data structure.
 type TransferFrame struct {
 	versionNumber       uint8
 	SCID                uint8
@@ -17,12 +18,15 @@ type TransferFrame struct {
 	MPDU                []byte
 }
 
+// NewTransferFrame returns a new TransferFrame pointer
+// populated with the binary data passed to it.
 func NewTransferFrame(dat []byte) *TransferFrame {
 	e := TransferFrame{}
 	e.FromBinary(dat)
 	return &e
 }
 
+// FromBinary parses the binary data into the dectector struct.
 func (e *TransferFrame) FromBinary(dat []byte) {
 	if len(dat) < transferFrameMinimum {
 		return
@@ -36,22 +40,27 @@ func (e *TransferFrame) FromBinary(dat []byte) {
 	e.MPDU = dat[6:892]
 }
 
+// IsReplay returns if the current frame is replay.
 func (e TransferFrame) IsReplay() bool {
 	return e.replayFlag == 0x01
 }
 
+// GetMPDU returns the MPDU of the current frame.
 func (e TransferFrame) GetMPDU() []byte {
 	return e.MPDU
 }
 
+// GetVCID returns the VCID of the current frame.
 func (e TransferFrame) GetVCID() uint8 {
 	return e.VCID
 }
 
+// GetSCID returns the SCID of the current frame.
 func (e TransferFrame) GetSCID() uint8 {
 	return e.SCID
 }
 
+// Print all exported variables from the current class into the terminal.
 func (e TransferFrame) Print() {
 	fmt.Println("### Transfer Frame Primary Header")
 	fmt.Printf("Version Number: %02b\n", e.versionNumber)

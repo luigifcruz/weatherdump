@@ -9,6 +9,7 @@ import (
 
 const segmentDataMinimum = 13
 
+// Data struct of each segment containing 14 MCUs.
 type Data struct {
 	time  lrpt.Time
 	MCUN  uint8
@@ -21,16 +22,19 @@ type Data struct {
 	Lines [8][14 * 8]uint8
 }
 
+// NewFiller data struct without any data inside.
 func NewFiller() *Data {
 	return &Data{}
 }
 
+// New segment data struct populated with the binary data.
 func New(buf []byte) *Data {
 	e := Data{}
 	e.FromBinary(buf)
 	return &e
 }
 
+// FromBinary parses the binary data into the dectector struct.
 func (e *Data) FromBinary(dat []byte) {
 	if len(dat) < segmentDataMinimum {
 		return
@@ -48,18 +52,20 @@ func (e *Data) FromBinary(dat []byte) {
 	e.Decode(dat[14:])
 }
 
+// GetMCUNumber returns the sequency number of the current segment.
+// This can be 0-255 in increments of 14 with Meteor-MN2.
 func (e Data) GetMCUNumber() uint8 {
 	return e.MCUN
 }
 
+// GetDate returns the LRPT standard class.
+// For the LRPT signal, just the milliseconds passed from UTC day epoch are transmitted.
 func (e Data) GetDate() lrpt.Time {
 	return e.time
 }
 
-func (e Data) GetID() uint32 {
-	return e.GetDate().GetMilliseconds()
-}
-
+// IsValid check if the current header of the current segment is valid.
+// This is helpful to identify corrupted segments.
 func (e Data) IsValid() bool {
 	if e.valid && e.QT == 0x00 && e.DC == 0x00 && e.AC == 0x00 && e.QFM == 0xFFF0 && e.time.IsValid() {
 		return true
@@ -67,6 +73,7 @@ func (e Data) IsValid() bool {
 	return false
 }
 
+// Print all exported variables from the current class into the terminal.
 func (e Data) Print() {
 	fmt.Println("### LRPT Segment Frame")
 	fmt.Printf("MCU Number: %d\n", e.MCUN)
@@ -75,10 +82,14 @@ func (e Data) Print() {
 	fmt.Printf("Huffman Table AC: %04b\n", e.AC)
 	fmt.Printf("Quality Factor Marker: %16b\n", e.QFM)
 	fmt.Printf("Quality Factor: %08b\n", e.QF)
+	fmt.Printf("Valid: %t\n", e.valid)
 	fmt.Println()
 	e.time.Print()
 }
 
+// Decode process the binary data of each MCU into pixels.
+// It uses the jpeg subclass functions to perform the IDCT,
+// Huffman Decode and Dequantization.
 func (e *Data) Decode(data []byte) {
 	buf := jpeg.ConvertToArray(data, len(data))
 	qTable := jpeg.GetQuantizationTable(float64(e.QF))

@@ -66,6 +66,8 @@ func (e Detector) GetChecksum() uint16 {
 	return e.checksumOffset
 }
 
+// IsValid checks if the current detector data is valid.
+// This is helpful to identify corrupted or filler detectors.
 func (e Detector) IsValid(syncWord uint32) bool {
 	return len(e.data) > 8 && (syncWord == e.syncWord || e.syncWord == 0xC000FFEE)
 }

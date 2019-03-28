@@ -5,22 +5,27 @@ import (
 	"weather-dump/src/ccsds/parameters"
 )
 
+// Version list of all supported CCSDS variants.
 var Version = parameters.Version
 
+// Worker data structure.
 type Worker struct {
 	spacePackets []frames.SpacePacketFrame
 	tmpPacket    *frames.SpacePacketFrame
 	buffer       []byte
 }
 
+// New creates a new worker for the CCSDS class.
 func New() *Worker {
 	return &Worker{}
 }
 
+// GetSpacePackets returns a slice containing all frames.
 func (e Worker) GetSpacePackets() []frames.SpacePacketFrame {
 	return e.spacePackets
 }
 
+// CloseFrame deletes all data of the current frame.
 func (e *Worker) CloseFrame() {
 	if e.tmpPacket != nil {
 		e.spacePackets = append(e.spacePackets, *e.tmpPacket)
@@ -30,6 +35,7 @@ func (e *Worker) CloseFrame() {
 	e.tmpPacket = nil
 }
 
+// CreatePacket inside the current CCSDS worker.
 func (e *Worker) CreatePacket(buf []byte) {
 	if len(buf) == 0 {
 		return
@@ -60,6 +66,7 @@ func (e *Worker) CreatePacket(buf []byte) {
 	}
 }
 
+// ParseMPDU frame into the CCSDS worker.
 func (e *Worker) ParseMPDU(MPDU frames.MultiplexingFrame) {
 	if !MPDU.IsValid() {
 		//fmt.Println("[CCSDS] Not Valid MPDU frame, skipping...")

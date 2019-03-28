@@ -4,6 +4,8 @@ import (
 	"weather-dump/src/protocols/lrpt"
 )
 
+// Export the assets data inside the current LRPT channel.
+// Data allocation with the current bounds occurs inside this function.
 func (e *Channel) Export(buf *[]byte, scft lrpt.SpacecraftParameters) bool {
 	if !e.HasData {
 		return false

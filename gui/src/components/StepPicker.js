@@ -20,7 +20,11 @@ const options = {
         },{
             descriptor: "cadu",
             title: "CADU Frames File",
-            description: "Randomized and unsynchronized sequential CADU frames."
+            description: "Randomized and unsynchronized sequential CADU frames with ASM."
+        },{
+            descriptor: "asm",
+            title: "CADU Frames File",
+            description: "Unrandomized and synchronized sequential CADU frames with ASM."
         }],
         processor: [{
             title: "Transfer Frames File",

@@ -69,7 +69,7 @@ func (e *Worker) Work(inputFile string) {
 		}
 	}
 
-	e.scid = uint8(MaxIntSlice(scidStat[:]))
+	e.scid = uint8(maxIntSlice(scidStat[:]))
 	fmt.Printf("[PRC] Decoded %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 }
 
@@ -90,7 +90,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 		case 9999:
 			return fmt.Sprintf("[DEC] Processing completed 	")
 		default:
-			return fmt.Sprintf("[DEC] Rendering channel %s	", manifest.Parser[currentParser].Name)
+			return fmt.Sprintf("[DEC] Rendering %s	", manifest.Parser[currentParser].Name)
 		}
 	})
 
@@ -150,7 +150,7 @@ func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {
 	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
 }
 
-func MaxIntSlice(v []int) int {
+func maxIntSlice(v []int) int {
 	index := 0
 	max := 0
 	for i, e := range v {

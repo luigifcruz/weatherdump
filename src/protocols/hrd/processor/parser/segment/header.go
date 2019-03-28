@@ -43,6 +43,7 @@ func NewFrameHeader(buf []byte) *Header {
 	return &e
 }
 
+// FromBinary parses the binary data into the dectector struct.
 func (e *Header) FromBinary(dat []byte) {
 	if len(dat) < headerMinimum {
 		return
@@ -72,6 +73,7 @@ func (e *Header) FromBinary(dat []byte) {
 	e.fillFrame = false
 }
 
+// Print all exported variables from the current class into the terminal.
 func (e Header) Print() {
 	fmt.Println("### VIIRS Science Header")
 	fmt.Printf("Day Time: %s\n", e.time.GetZulu())
@@ -97,6 +99,7 @@ func (e Header) Print() {
 	fmt.Println()
 }
 
+// IsValid checks if the current header is valid and isn't a fill frame.
 func (e Header) IsValid() bool {
 	return !e.fillFrame
 }

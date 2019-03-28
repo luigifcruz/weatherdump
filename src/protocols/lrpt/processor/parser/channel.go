@@ -29,7 +29,8 @@ type Channel struct {
 
 	segments map[uint32]*segment.Data
 	rollover uint32
-	last     uint32
+	lastSeq  uint32
+	lastTime uint32
 	offset   uint32
 }
 
@@ -42,26 +43,30 @@ func (e *Channel) init() {
 	e.segments = make(map[uint32]*segment.Data)
 }
 
+// GetBounds returns the number of the first and last segment
+// of the current channel. This should be called after Process().
 func (e Channel) GetBounds() (int, int) {
 	return int(e.FirstSegment) / 14, int(e.LastSegment) / 14
 }
 
+// SetBounds for the passed values.
+// After calling this function the Process() also should be called.
 func (e *Channel) SetBounds(first, last int) {
 	e.FirstSegment = uint32(first * 14)
 	e.LastSegment = uint32(last * 14)
 }
 
+// GetDimensions returns the width and height of the current channel.
+// Should be called after the Process().
 func (e Channel) GetDimensions() (int, int) {
 	return int(e.Width), int(e.Height)
 }
 
-// Fix the channel metadata.
+// Process corrects the current channel metadata.
+// Should be called every time SetBounds() is called.
 func (e *Channel) Process(scft lrpt.SpacecraftParameters) {
-	f := e.FirstSegment % 14
-	for i := uint32(0); i < f; i++ {
-		e.segments[i] = segment.NewFiller()
-		e.FirstSegment--
-	}
+	e.FirstSegment -= e.FirstSegment % 14
+	e.LastSegment += e.LastSegment % 14
 
 	for i := e.FirstSegment; i <= e.LastSegment; i++ {
 		if e.segments[i] == nil {
@@ -70,31 +75,29 @@ func (e *Channel) Process(scft lrpt.SpacecraftParameters) {
 	}
 
 	e.FileName = fmt.Sprintf("%s_%s_BISMW_%s_%d", scft.Filename, scft.SignalName, e.ChannelName, e.StartTime.GetMilliseconds())
-	e.Height = (e.LastSegment - e.FirstSegment + 28) * uint32(e.BlockDim) / 14
+	e.Height = (e.LastSegment - e.FirstSegment + 1) * uint32(e.BlockDim) / 14
 	e.Width = e.FinalWidth
 }
 
+// Parse the current Space Packet Frame into each LRPT protocol channel structure.
 func (e *Channel) Parse(packet frames.SpacePacketFrame) {
-	if !packet.IsValid() {
-		return
-	}
-
-	if new := segment.New(packet.GetData()); new.IsValid() {
+	if new := segment.New(packet.GetData()); new.IsValid() && packet.IsValid() {
 		if !e.HasData {
 			e.init()
 		}
 
-		if e.last > uint32(packet.GetSequenceCount()) && e.last > 16000 {
+		sequence := uint32(packet.GetSequenceCount())
+		mcuNumber := uint32(new.GetMCUNumber()) / 14
+
+		if e.lastSeq > sequence && e.lastSeq > 16000 && e.lastTime < new.GetDate().GetMilliseconds() {
 			e.rollover += 16384
 		}
-		e.last = uint32(packet.GetSequenceCount())
 
-		if uint32(new.GetMCUNumber())/14 == 0 {
-			e.offset = 43 - (uint32(packet.GetSequenceCount())+e.rollover)%43
+		if mcuNumber == 0 {
+			e.offset = 43 - (sequence+e.rollover)%43
 		}
 
-		t := uint32(packet.GetSequenceCount()) + e.rollover + e.offset
-		id := t/43*14 + uint32(new.GetMCUNumber())/14
+		id := ((sequence + e.rollover + e.offset) / 43 * 14) + mcuNumber
 
 		if e.LastSegment < id {
 			e.LastSegment = id
@@ -106,6 +109,8 @@ func (e *Channel) Parse(packet frames.SpacePacketFrame) {
 			e.StartTime = new.GetDate()
 		}
 
+		e.lastSeq = sequence
+		e.lastTime = new.GetDate().GetMilliseconds()
 		e.segments[id] = new
 		e.SegmentCount++
 	}

@@ -34,6 +34,7 @@ func NewBody(buf []byte) *Body {
 	return &e
 }
 
+// FromBinary parses the binary data into the dectector struct.
 func (e *Body) FromBinary(dat []byte) {
 	if len(dat) < bodyMinimum {
 		return
@@ -58,6 +59,7 @@ func (e *Body) FromBinary(dat []byte) {
 	e.fillFrame = false
 }
 
+// Print all exported variables from the current class into the terminal.
 func (e Body) Print() {
 	fmt.Println("### VIIRS Science Body")
 	fmt.Printf("Sequence Count: %032b\n", e.sequenceCount)

@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 )
 
+// HandleInput with user defined functions gathered by the CLI tool.
 func HandleInput(datalink, inputFile, outputPath, decoderType string, wf img.Pipeline) {
 	fmt.Printf("[CLI] Activating %s workflow.\n", strings.ToUpper(datalink))
 

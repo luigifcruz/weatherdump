@@ -1,8 +1,13 @@
 package jpeg
 
+// EOB indicates the End Of Block of each MCU.
 var EOB = []int64{-99999}
+
+// CFC indicates that no match was found inside the Huffman LUT.
 var CFC = []int64{-99998}
 
+// GetQuantizationTable returns the standard quantization table
+// with the quality factor correction.
 func GetQuantizationTable(qf float64) []int64 {
 	var table [64]int64
 
@@ -21,6 +26,8 @@ func GetQuantizationTable(qf float64) []int64 {
 	return table[:]
 }
 
+// FindDC decodes and return the next DC coefficient by
+// applying Huffman to the bool slice received.
 func FindDC(dat *[]bool) int64 {
 	buf := *dat
 	bufl := len(*dat)
@@ -46,6 +53,7 @@ func FindDC(dat *[]bool) int64 {
 	return CFC[0]
 }
 
+// FindAC decodes and return the AC coefficient by applying Huffman.
 func FindAC(dat *[]bool) []int64 {
 	bufl := len(*dat)
 	for _, m := range acCategories {
@@ -75,6 +83,9 @@ func FindAC(dat *[]bool) []int64 {
 	return CFC
 }
 
+// ConvertToArray receives the byte slice and convert
+// each bit to a boolean slice that will be returned
+// as a pointer.
 func ConvertToArray(buf []byte, len int) *[]bool {
 	var soft = make([]bool, len*8)
 	for i := 0; i < len; i++ {

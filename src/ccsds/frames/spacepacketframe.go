@@ -7,6 +7,7 @@ import (
 
 const spacePacketFrameMinimum = 6
 
+// SpacePacketFrame data structure.
 type SpacePacketFrame struct {
 	versionNumber       uint8
 	typeIndicator       uint8
@@ -20,6 +21,7 @@ type SpacePacketFrame struct {
 	dataLength int
 }
 
+// FromBinary parses the binary data into the dectector struct.
 func (e *SpacePacketFrame) FromBinary(dat []byte) {
 	if len(dat) < spacePacketFrameMinimum {
 		return
@@ -40,6 +42,7 @@ func (e *SpacePacketFrame) FromBinary(dat []byte) {
 	}
 }
 
+// FeedData receives chunks of data and append it to the current data.
 func (e *SpacePacketFrame) FeedData(dat []byte) []byte {
 	currentData := (e.packetDataLength + 1)
 	dataLeft := currentData - uint16(len(e.packetData))
@@ -55,30 +58,38 @@ func (e *SpacePacketFrame) FeedData(dat []byte) []byte {
 	return dat[dataLeft:]
 }
 
+// GetAPID return the current frame APID value.
 func (e SpacePacketFrame) GetAPID() uint16 {
 	return e.APID
 }
 
+// GetSequenceCount returns the current frame sequence count.
 func (e SpacePacketFrame) GetSequenceCount() uint16 {
 	return e.packetSeqCount
 }
 
+// GetPacketLength returns the current frame data length.
 func (e SpacePacketFrame) GetPacketLength() uint16 {
 	return e.packetDataLength
 }
 
+// GetData returns a slice containing the frame data.
 func (e SpacePacketFrame) GetData() []byte {
 	return e.packetData
 }
 
+// GetSequenceFlags returns the sequence flags of the current frame.
 func (e SpacePacketFrame) GetSequenceFlags() uint8 {
 	return e.sequenceFlags
 }
 
+// IsValid checks if the current packet is valid by comparing the data size.
+// This is helpful to identify corrupted packets.
 func (e SpacePacketFrame) IsValid() bool {
 	return (e.packetDataLength + 1) == uint16(len(e.packetData))
 }
 
+// Print all exported variables from the current class into the terminal.
 func (e SpacePacketFrame) Print() {
 	fmt.Println("### Space Packet Primary Header")
 	fmt.Printf("Version Number: %03b\n", e.versionNumber)
