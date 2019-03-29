@@ -78,7 +78,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	var currentParser, currentComposer uint16
 
 	progress := uiprogress.New()
-	//progress.Start()
+	progress.Start()
 
 	bar1 := progress.AddBar(manifest.ParserCount()).AppendCompleted()
 	bar2 := progress.AddBar(manifest.ComposerCount()).AppendCompleted()
@@ -88,7 +88,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 		case 0:
 			return fmt.Sprintf("[DEC] Starting render		")
 		case 9999:
-			return fmt.Sprintf("[DEC] Processing completed 	")
+			return fmt.Sprintf("[DEC] Processing completed ")
 		default:
 			return fmt.Sprintf("[DEC] Rendering %s	", manifest.Parser[currentParser].Name)
 		}
@@ -97,9 +97,9 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	bar2.PrependFunc(func(b *uiprogress.Bar) string {
 		switch currentComposer {
 		case 0:
-			return fmt.Sprintf("[DEC] Waiting for render	")
+			return fmt.Sprintf("[DEC] Waiting for render")
 		case 9999:
-			return fmt.Sprintf("[DEC] Components completed	")
+			return fmt.Sprintf("[DEC] Components completed")
 		default:
 			return fmt.Sprintf("[DEC] Rendering %s	", manifest.Composer[currentComposer].Name)
 		}
@@ -134,7 +134,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	}
 
 	currentComposer = 9999
-	//progress.Stop()
+	progress.Stop()
 	color.Green("[PRC] Done! All products and components were saved.")
 }
 

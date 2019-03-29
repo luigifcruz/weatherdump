@@ -48,14 +48,26 @@ func (e Composer) Render(ch parser.List, outputFolder string) {
 
 	ch01.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
 	ch02.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
-	ch03.SetBounds(MaxIntSlice(firstScan)-1, MinIntSlice(lastScan))
+	ch03.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
 
 	ch01.Process(e.scft)
 	ch02.Process(e.scft)
 	ch03.Process(e.scft)
-	fmt.Println(ch01.GetDimensions())
-	fmt.Println(ch02.GetDimensions())
-	fmt.Println(ch03.GetDimensions())
+
+	a := make([]int, 3)
+	b := make([]int, 3)
+
+	a[0], b[0] = ch01.GetTime()
+	a[1], b[1] = ch02.GetTime()
+	a[2], b[2] = ch03.GetTime()
+
+	ch01.SetBounds(MaxIntSlice(firstScan)-((a[0]-MinIntSlice(a))/1232), MinIntSlice(lastScan))
+	ch02.SetBounds(MaxIntSlice(firstScan)-((a[1]-MinIntSlice(a))/1232), MinIntSlice(lastScan))
+	ch03.SetBounds(MaxIntSlice(firstScan)-((a[2]-MinIntSlice(a))/1232), MinIntSlice(lastScan))
+
+	ch01.Process(e.scft)
+	ch02.Process(e.scft)
+	ch03.Process(e.scft)
 
 	// Create output image struct.
 	w, h := ch01.GetDimensions()

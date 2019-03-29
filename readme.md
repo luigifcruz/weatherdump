@@ -18,6 +18,10 @@ Decoding and processing a Meteor-MN2 soft-symbol file:
 weatherdump lrpt soft ./file_path.bin
 ```
 
+## Known Bugs
+
+- The LRPT RGB composite is unsynchonized in most occasions.
+
 ## Upcoming Features List
 
 - [ ] Support SatNOGS compatible output.
