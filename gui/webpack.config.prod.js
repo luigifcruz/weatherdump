@@ -1,12 +1,13 @@
 const webpack = require('webpack');
 const path = require('path');
+const WebpackBar = require('webpackbar');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const prodConfig = {
     mode: 'production',
     target: 'web',
-    entry: './src/client/index.js',
+    entry: './src/client/index.jsx',
     output: {
         path: path.resolve(__dirname, 'resources'),
         filename: 'bundle.js'
@@ -25,7 +26,8 @@ const prodConfig = {
                     loader: 'sass-resources-loader',
                     options: {
                         resources: [
-                            path.resolve(__dirname, 'src/styles/Resources.scss')
+                            path.resolve(__dirname, 'src/styles/palette.scss'),
+                            path.resolve(__dirname, 'src/styles/mixins.scss')
                         ],
                     },
                 },
@@ -34,12 +36,16 @@ const prodConfig = {
             test: /\.(js|jsx)$/,
             loader: "babel-loader",
             exclude: /(node_modules)/,
+            resolve: {
+                extensions: [".js", ".jsx"]
+            },
             options: {
                 presets: ['@babel/react', '@babel/env']
             }
         }]
     },
     plugins: [
+        new WebpackBar(),
         new MiniCssExtractPlugin({
             filename: "[name].css",
             allChunks: false

@@ -1,7 +1,8 @@
-import React, { Component } from 'react'
-import '../../styles/About.scss'
-import '../../styles/TabView.scss'
-import { version, engineVersion } from '../../../package.json'
+import React, { Component } from 'react';
+import { version, engineVersion } from '../../../package.json';
+
+import '../../styles/About.scss';
+import '../../styles/TabView.scss';
 
 class About extends Component {
 	render() {
@@ -27,9 +28,8 @@ class About extends Component {
 					</div>
 				</div>
 			</div>
-        )
+        );
 	}
-
 }
 
 export default About

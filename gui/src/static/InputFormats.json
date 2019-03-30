@@ -1,0 +1,44 @@
+{
+    "hrd": {
+        "recorder": [
+
+        ],
+        "demodulator": [
+
+        ],
+        "decoder": [{
+            "descriptor": "soft",
+            "title": "Soft-Symbol File",
+            "description": "Demodulator output with interleaved 8-bit soft-symbols."
+        },{
+            "descriptor": "cadu",
+            "title": "CADU Frames File",
+            "description": "Randomized and unsynchronized sequential CADU frames."
+        },{
+            "descriptor": "asm",
+            "title": "CADU Frames File",
+            "description": "Unrandomized and synchronized sequential CADU frames with ASM."
+        }],
+        "processor": [{
+            "title": "Transfer Frames File",
+            "description": "Decoder output with serialized CCSDS Transfer Frames."
+        }]
+    },
+    "lrpt": {
+        "recorder": [
+
+        ],
+        "demodulator": [
+
+        ],
+        "decoder": [{
+            "descriptor": "soft",
+            "title": "Soft-Symbol File",
+            "description": "Demodulator output with interleaved 8-bit soft-symbols."
+        }],
+        "processor": [{
+            "title": "Transfer Frames File",
+            "description": "Decoder output with serialized CCSDS Transfer Frames."
+        }]
+    }        
+}

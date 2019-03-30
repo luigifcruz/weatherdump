@@ -12,7 +12,7 @@ const render = (Component) => {
         document.getElementById('root'),
     );
 };
-
+ 
 render(Client);
 
 if (module && module.hot) {

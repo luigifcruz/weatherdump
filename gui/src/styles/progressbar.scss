@@ -1,0 +1,67 @@
+.progress-bar {
+    height: 2.5em;
+}
+
+.progress-bar > .bar {
+    width: 100%;
+    height: 1.25em;
+    margin-bottom: 0.25em;
+    border-radius: 0.5em;
+}
+
+.progress-bar > .bar > .filler {
+    height: 100%;
+    border-radius: 0.5em;
+}
+
+@mixin progress-bar-theme($in, $out) {
+    .bar {
+        background-color: $out !important;
+    }
+
+    .filler {
+        background-color: $in !important;
+    }
+}
+
+.progress-bar > .text {
+    display: flex;
+    font-size: 0.8em;
+
+    .percentage {
+        font-family: 'Roboto Mono', monospace;
+        text-align: right;
+        width: 30%;
+    }
+    
+    .description {
+        text-align: left;
+        font-weight: 500;
+        width: 70%;
+    } 
+}
+
+@mixin progress-bar-text-theme($percentage, $description) {
+    .percentage {
+        color: $percentage;
+    }
+
+    .description {
+        color: $description;
+    }
+}
+
+.progress-bar-orange-dark {
+    @include progress-bar-theme($orange-color, $background-hightlight-color);
+    @include progress-bar-text-theme($light-background-text-color, $faint-background-text-color);
+}
+
+.progress-bar-green-dark {
+    @include progress-bar-theme($green-color, $background-hightlight-color);
+    @include progress-bar-text-theme($light-background-text-color, $faint-background-text-color);
+}
+
+.progress-bar-blue-dark {
+    @include progress-bar-theme($blue-color, $background-hightlight-color);
+    @include progress-bar-text-theme($light-background-text-color, $faint-background-text-color);
+}

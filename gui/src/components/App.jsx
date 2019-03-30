@@ -1,20 +1,21 @@
-import { withRouter } from 'react-router-dom'
-import React, { Component } from 'react'
-import * as rxa from '../redux/actions'
-import { Link } from 'react-router-dom'
-import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom';
+import React, { Component } from 'react';
+import * as rxa from '../redux/actions';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { version } from '../../package.json';
 
-import '../styles/App.scss'
+
+import '../styles/App.scss';
 
 class App extends Component {
-
     render() {
         return (
             <div className="App">
                 {this.props.children}
                 <div className="Footer">
                     <div className="Left">
-                        Alpha Version 2 • <Link to="/meta/about">About</Link>
+                        Version {version} • <Link to="/meta/about">About</Link>
                     </div>
                     <div className="Center">
                         WeatherDump
@@ -26,7 +27,6 @@ class App extends Component {
             </div>
         )
     }
-
 }
 
 App.propTypes = rxa.props

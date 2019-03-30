@@ -1,10 +1,12 @@
+@import 'btn';
+
 .Dashboard {
     .Satellite {
         width: 16em;
         height: 95px;
-        border-radius: 0.75em;
+        border-radius: .75em;
         margin-right: 1em;
-        padding: 0.5em 0.5em 1.25em 0.75em;
+        padding: .5em .5em 1em .75em;
         position: relative;
         background: $background-hightlight-color;
     
@@ -20,14 +22,8 @@
             top: 0.85em;
         }
     
-        a {
-            border: 2px solid $blue-color;
-            color: $blue-color;
-            padding: 0.35em 0.75em 0.45em 0.75em;
-            margin-right: 0.5em;
-            border-radius: 0.5em;
-            text-decoration: none;
-            font-weight: 700;
+        .btn {
+            @include btn-size(4.75em, 2.15em);
         }
     
         h3 {
@@ -36,7 +32,7 @@
         }
     
         h4 {
-            margin: 0 0 1.25em 0;
+            margin: 0 0 .5em 0;
             color: $light-background-text-color;
         }
     }

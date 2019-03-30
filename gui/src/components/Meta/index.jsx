@@ -1,9 +1,13 @@
-import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
-import { Route } from 'react-router-dom'
-import About from './About'
-import '../../styles/About.scss'
-import '../../styles/TabView.scss'
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import { Route } from 'react-router-dom';
+import About from './About';
+import Feedback from './Feedback';
+
+import '../../styles/About.scss';
+import '../../styles/TabView.scss';
+import Updates from './Updates';
+import Licenses from './Licenses';
 
 class Meta extends Component {
     render() {
@@ -38,9 +42,12 @@ class Meta extends Component {
                         </Link>
                     </div>
                     <Route exact path="/meta/about" component={About}/>
+                    <Route exact path="/meta/feedback" component={Feedback}/>
+                    <Route exact path="/meta/updates" component={Updates}/>
+                    <Route exact path="/meta/licenses" component={Licenses}/>
                 </div>
             </div>
-        )
+        );
     }
 }
 

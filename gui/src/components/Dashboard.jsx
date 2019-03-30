@@ -1,9 +1,9 @@
-import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
-import '../styles/Dashboard.scss'
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+
+import '../styles/Dashboard.scss';
 
 class Dashboard extends Component {
-
     render() {
         return (
             <div className="View">
@@ -18,19 +18,18 @@ class Dashboard extends Component {
                         <h3>NPOESS</h3>
                         <label className="Beta">BETA</label>
                         <h4>NOAA-20 & Suomi</h4>
-                        <Link to="/steps/hrd/decoder" className="Band">X-Band</Link>
+                        <Link to="/steps/hrd/decoder" className="btn btn-blue">X-Band</Link>
                     </div>
                     <div className="Satellite">
                         <h3>Meteor</h3>
                         <label className="Alpha">ALPHA</label>
                         <h4>Meteor-MN2</h4>
-                        <Link to="/steps/lrpt/decoder" className="Band">VHF</Link>
+                        <Link to="/steps/lrpt/decoder" className="btn btn-blue">VHF</Link>
                     </div>
                 </div>
             </div>
         )
     }
-
 }
 
 export default Dashboard

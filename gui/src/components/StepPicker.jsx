@@ -1,66 +1,22 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
-import * as rxa from '../redux/actions'
-import '../styles/StepPicker.scss'
-import '../styles/TabView.scss'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import * as rxa from '../redux/actions';
+import inputFormats from '../static/InputFormats.json'
 
-const options = {
-    hrd: {
-        recorder: [
-
-        ],
-        demodulator: [
-
-        ],
-        decoder: [{
-            descriptor: "soft",
-            title: "Soft-Symbol File",
-            description: "Demodulator output with interleaved 8-bit soft-symbols."
-        },{
-            descriptor: "cadu",
-            title: "CADU Frames File",
-            description: "Randomized and unsynchronized sequential CADU frames with ASM."
-        },{
-            descriptor: "asm",
-            title: "CADU Frames File",
-            description: "Unrandomized and synchronized sequential CADU frames with ASM."
-        }],
-        processor: [{
-            title: "Transfer Frames File",
-            description: "Decoder output with serialized CCSDS Transfer Frames."
-        }]
-    },
-    lrpt: {
-        recorder: [
-
-        ],
-        demodulator: [
-
-        ],
-        decoder: [{
-            descriptor: "soft",
-            title: "Soft-Symbol File",
-            description: "Demodulator output with interleaved 8-bit soft-symbols."
-        }],
-        processor: [{
-            title: "Transfer Frames File",
-            description: "Decoder output with serialized CCSDS Transfer Frames."
-        }]
-    },
-}
+import '../styles/StepPicker.scss';
+import '../styles/TabView.scss';
 
 class StepPicker extends Component {
     constructor(props) {
         super(props);
         this.fileUpload = React.createRef();
-        this.state = {};
-    }
 
-    handleSelection(currentTab) {
-        this.setState({ currentTab })
+        this.getUploadedFileName = this.getUploadedFileName.bind(this);
+        this.selectInput = this.selectInput.bind(this);
+        this.goBack = this.goBack.bind(this);
     }
-
+ 
     getUploadedFileName(e) {
         const inputFile = e.target.files[0].path
         if (inputFile == undefined) {
@@ -102,7 +58,7 @@ class StepPicker extends Component {
             <div className="View">
                 <div className="Header">
                     <h1 className="Title">
-                        <div onClick={this.goBack.bind(this)} className="icon">
+                        <div onClick={this.goBack} className="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         </div>
                         Where are you at?
@@ -131,25 +87,24 @@ class StepPicker extends Component {
                         </Link>
                     </div>
                     <div className="TabViewBody">
-                        {(Object.entries(options[datalink][tab]).length == 0) ? (
+                        {(Object.entries(inputFormats[datalink][tab]).length == 0) ? (
                             <div className="Option Deactivated">
                                 <h3>No Options Yet</h3>
                                 <h4>We're working hard to bring new features. They're coming soon!</h4>
                             </div>
                         ) : (
-                        Object.entries(options[datalink][tab]).map((o, i) =>
+                        Object.entries(inputFormats[datalink][tab]).map((o, i) =>
                             <div key={i} className="Option">
-                                <h3 onClick={this.selectInput.bind(this, o[1].descriptor)}>{o[1].title}</h3>
+                                <h3 onClick={() => this.selectInput(o[1].descriptor)}>{o[1].title}</h3>
                                 <h4>{o[1].description}</h4>
                             </div>
                         ))}
                     </div>
                 </div>
-                <input type="file" ref={this.fileUpload} onInput={this.getUploadedFileName.bind(this)} />
+                <input type="file" ref={this.fileUpload} onInput={this.getUploadedFileName} />
             </div>
-        )
+        );
     }
-
 }
 
 StepPicker.propTypes = rxa.props

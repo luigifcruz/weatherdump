@@ -1,3 +1,5 @@
+@import 'btn';
+
 .Decoder { 
     margin-top: -0.35em;
 
@@ -21,45 +23,11 @@
                 font-weight: 700;
             }
         
-            .ProgressBar {
+            .progress-bar {
                 margin-left: -10px;
                 padding-top: 1em;
                 position: absolute;
-                height: 15px;
                 width: 270px;
-        
-                .Text {
-                    display: flex;
-                    font-size: 0.8em;
-        
-                    .Percentage {
-                        font-family: 'Roboto Mono', monospace;
-                        color: $light-background-text-color;
-                        text-align: right;
-                        width: 30%;
-                    }
-                    
-                    .Description {
-                        color: $faint-background-text-color;
-                        text-align: left;
-                        font-weight: 500;
-                        width: 70%;
-                    }
-                }
-        
-                .Body {
-                    width: 100%;
-                    height: 1.25em;
-                    margin-bottom: 0.25em;
-                    background: $background-hightlight-color;
-                    border-radius: 0.5em;
-        
-                    .Progress {
-                        height: 100%;
-                        background: $orange-color;
-                        border-radius: 0.5em;
-                    }
-                }
             }
         }    
     }
@@ -240,43 +208,21 @@
             }
         }
 
-        .ControllBox {
-            width: 100%;
+        .controll-box {
+            margin-top: .71em;
+            display: flex;
 
-            .Button {  
-                background: transparent;
-                border: 2px solid $orange-color;
-                height: 2.1em;
-                margin-top: 0.575em;
-                border-radius: 0.5em;
-                text-align: center;
-                line-height: 2em;
-                font-weight: 700;
-                cursor: pointer;
-                padding: 0em 5% 0em 5%;
-                
+            .btn-small {
+                display: inline-block;
+                @include btn-size(8em, 2.05em);
             }
-   
-            .Button:hover {
-                transition: background-color 100ms ease-in-out;
-                transition: border-color 100ms ease-in-out;
+
+            .btn-large {
+                @include btn-size(17em, 2.05em);
             }
-    
-            .Abort {
-                color: $orange-color;
-            }
-        
-            .Open {
-                color: $orange-color;
-                border-color: $orange-color;
-                float: left;
-            }
-        
-            .Next {
-                border-color: $green-color;
-                background: $green-color;
-                padding: 0em 2em 0em 2em;
-                float: right;
+
+            .btn-left {
+                margin-right: 0.8em;
             }
         }
     }

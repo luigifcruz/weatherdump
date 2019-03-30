@@ -99,7 +99,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 		case 0:
 			return fmt.Sprintf("[DEC] Waiting for render")
 		case 9999:
-			return fmt.Sprintf("[DEC] Components completed")
+			return fmt.Sprintf("[DEC] Components completed ")
 		default:
 			return fmt.Sprintf("[DEC] Rendering %s	", manifest.Composer[currentComposer].Name)
 		}
