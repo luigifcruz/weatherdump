@@ -1,33 +1,33 @@
 .TabViewHeader {
     user-select: none;
-    margin-top: 0.15em;
+    margin-top: .15em;
     display: flex;
 
     .Tabs {
         height: 2em;
-        padding: 0.15em 1.5em 0.15em 0.75em;
+        padding: .15em 1.5em .15em .75em;
         border-radius: 2em;
         display: flex;
         cursor: pointer;
-        margin-right: 0.5em;
+        margin-right: .5em;
         color: white;
         text-decoration: none;
 
         svg {
-            margin-top: 0.35em;
-            margin-left: 0.5em;
+            margin-top: .35em;
+            margin-left: .5em;
             width: 20px;
         }
 
         h3 {
-            margin-left: 0.75em;
+            margin-left: .75em;
             margin-top: 0em;
             font-size: 1em;
             line-height: 1.85em;
         }
 
         .feather { 
-            margin-top: 0.22em;
+            margin-top: .22em;
         }
     }
 
@@ -46,6 +46,6 @@
 
 .TabViewBody {
     display: flex;
-    margin-top: 0.75em;
+    margin-top: .75em;
     height: 18.5em;
 }

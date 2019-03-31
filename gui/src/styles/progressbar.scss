@@ -5,13 +5,13 @@
 .progress-bar > .bar {
     width: 100%;
     height: 1.25em;
-    margin-bottom: 0.25em;
-    border-radius: 0.5em;
+    margin-bottom: .25em;
+    border-radius: .5em;
 }
 
 .progress-bar > .bar > .filler {
     height: 100%;
-    border-radius: 0.5em;
+    border-radius: .5em;
 }
 
 @mixin progress-bar-theme($in, $out) {
@@ -26,7 +26,7 @@
 
 .progress-bar > .text {
     display: flex;
-    font-size: 0.8em;
+    font-size: .8em;
 
     .percentage {
         font-family: 'Roboto Mono', monospace;

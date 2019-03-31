@@ -1,0 +1,14 @@
+.scroll-bar {
+    overflow-y: scroll;
+    margin-right: -.7em;
+}
+
+.scroll-bar::-webkit-scrollbar {
+    width: .7em;
+	background-color: transparent;
+}
+
+.scroll-bar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-right: .25em solid $faint-background-text-color;
+}

@@ -1,11 +1,18 @@
 .btn {
-    display: block;
-    border-radius: 0.5em;
+    border-radius: .5em;
     text-align: center;
     font-weight: 700;
     cursor: pointer;
     color: white;
     text-decoration: none;
+}
+
+.btn-block {
+    display: block;
+}
+
+.btn-flex {
+    display: flex;
 }
 
 @mixin btn-size($width, $height) {

@@ -3,9 +3,13 @@ import { connect } from 'react-redux';
 import * as rxa from '../redux/actions';
 import Websocket from 'react-websocket';
 
-import '../styles/showroom.scss';
-import '../styles/progressbar.scss';
-import '../styles/btn.scss'
+import { showroom as headerText } from '../static/HeaderText';
+
+import '../styles/showroom';
+import '../styles/progressbar';
+import '../styles/btn';
+import '../styles/matrix';
+import '../styles/scrollbar';
 
 class Showroom extends Component {
     constructor(props) {
@@ -61,25 +65,36 @@ class Showroom extends Component {
                         <div onClick={this.handleAbort} className="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         </div>
-                        Where are you at?
+                        {headerText.title}
                     </h1>
-                    <h2 className="Description">
-                        From the recording thru processing, the WeatherDump supports a myriad of input options. To proceed, select below where are you at in the receiving process and what kind of input file you want to process.
-                    </h2>
+                    <h2 className="Description">{headerText.description}</h2>
                </div> 
                 <div className="Body showroom">
-                    <div className="products">
-                        <div className="product">
-                            <img src=""></img>
-                            <div className="Title">Channel 69</div>
-                            <div className="Dimensions">2330x512</div>
-                            <div className="Size">44 MB</div>
+                    <div className="products mtx-container scroll-bar">
+                        <div className="product product-dark mtx-cell">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
                         </div>
-                        <div className="product">
-                            <img src=""></img>
-                            <div className="Title">Channel 69</div>
-                            <div className="Dimensions">2330x512</div>
-                            <div className="Size">44 MB</div>
+                        <div className="product product-dark mtx-cell">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
+                        </div>
+                        <div className="product product-dark mtx-cell">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
+                        </div>
+                        <div className="product product-dark mtx-cell">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
+                        </div>
+                        <div className="product product-dark mtx-cell">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
                         </div>
                     </div>
                     <div className="controller">

@@ -1,20 +1,73 @@
 @import 'btn';
 
-.showroom {
-    .products {
-        height: 18.5em;
+.products {
+    height: 19.2em;
+    margin-bottom: .25em;
+    overflow-y: scroll;
+}
+
+.product {
+    height: 9.25em;
+    width: 13em;
+    cursor: pointer;
+    margin-bottom: .35em;
+    border-radius: .5em;
+}
+
+.product > .img {
+    height: 70%;
+    border-top-left-radius: .5em;
+    border-top-right-radius: .5em;
+}
+
+.product > .title {
+    font-size: .95em;
+    font-weight: 700;
+    margin-left: .5em;
+    margin-top: .15em;
+}
+
+.product > .description {
+    font-size: .85em;
+    font-weight: 700;
+    margin-left: .5em;
+}
+
+@mixin product-theme($background-color, $title-color, $dimensions-color) {
+    background-color: $background-color;
+    @include transition(background-color .1s ease-in-out);
+
+    &:hover {
+        background-color: darken($background-color, 2.5%);
+        @include transition(background-color .2s ease-in-out);
     }
 
-    .controller {
-        display: flex;
-
-        .progress-bar {
-            width: 100%;
-            margin-right: 1em;
-        }
-
-        .btn {
-            @include btn-size(10em, 2.25em);
-        }
+    & > .img {
+        background: lighten($color: $background-color, $amount: 5%);
     }
+
+    & > .title {
+        color: $title-color;
+    }
+
+    & > .description {
+        color: $dimensions-color;
+    }
+}
+
+.product-dark {
+    @include product-theme($background-hightlight-color, #ffffff, $faint-background-text-color);
+}
+ 
+.controller {
+    display: flex;
+}
+
+.controller > .progress-bar {
+    width: 100%;
+    margin-right: 1em;
+}
+
+.controller > .btn {
+    @include btn-size(10em, 2.25em);
 }

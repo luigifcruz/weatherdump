@@ -1,0 +1,10 @@
+.mtx-container {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    justify-content: space-between;
+}
+
+.mtx-container > .mtx-cell {
+    page-break-after: always;
+}

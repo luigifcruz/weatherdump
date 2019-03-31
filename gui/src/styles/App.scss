@@ -16,22 +16,22 @@ body {
     margin-left: 2.5%;
     
     .Header {
-        height: 6em; 
+        height: 5.5em; 
 
         .Title {
             color: white;
             width: 100%;
             font-size: 1.75em;
-            margin: 0.5em 0 0 0;
+            margin: .5em 0 0 0;
             display: flex;
 
             .icon {
-                margin-top: 0.1em;
+                margin-top: .1em;
                 margin-bottom: -1em;
 
                 svg {
                     cursor: pointer;    
-                    margin-right: 0.25em;
+                    margin-right: .25em;
                 }
             }
         }
@@ -73,7 +73,7 @@ body {
 
         .Left {
             width: 25%;
-            font-size: 0.85em;
+            font-size: .85em;
             text-decoration: none;
             text-align: left;
             line-height: 3em;
@@ -96,7 +96,7 @@ body {
 
         .Right {
             width: 25%;
-            font-size: 0.85em;
+            font-size: .85em;
             text-decoration: none;
             text-align: right;
             line-height: 3em;

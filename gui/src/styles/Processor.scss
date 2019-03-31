@@ -1,45 +1,113 @@
-.Processor {
-    .List {
-        margin-top: 0.25em;
-        user-select: none;
-        position: absolute;
+//
+// Processor
+//
 
-        .Item {
-            margin: 0.5em;
-            padding: 0.5em;
-            font-size: 0.85em;
-            border-radius: 0.5em;
-            border: 2px solid transparent;
-            background: $background-hightlight-color;
-            cursor: pointer;
-            height: 1.35em;
+.processor {
+    margin-top: .5em;
+    align-content: space-between !important;
+}
 
-            .feather {
-                margin-left: 0.3em;
-            }
-        }
+.processor > .btn > .feather {
+    margin: auto;
+}
 
-        .Active {
-            border-color: $green-color;
-
-            .feather {
-                display: inline-flex !important;
-                color: $green-color;
-            }
-        }
+@mixin processor-theme($background-color, $detail-color, $text-color) {
+    .mtx-block {
+        border-color: $detail-color;
+    }
+    
+    .mtx-cell {
+        color: $text-color;
+        background-color: $detail-color;
     }
 
+    .mtx-block-name {
+        background-color: $background-color;
+    }
+}
+
+.processor-dark {
+    @include processor-theme($background-color, $background-hightlight-color, #ffffff);
+}
+
+//
+// Matrix Block
+//
+
+.mtx-block {
+    display: flex;
+    box-sizing: border-box;
+    border: .2em solid;
+    border-radius: .5em;
+}
+
+.mtx-block-large {
+    width: 26.5em;
+    height: 50%;
+}
+
+.mtx-block-medium {
+    width: 16em;
+    height: 46%;
+}
+
+.mtx-block-small {
+    width: 3.5em;
+    height: 45%;
+}
+
+//
+// Processor & Matrix Block
+//
+
+.processor > .mtx-block > .mtx-block-name {
+    position: absolute;
+    padding: 0em .35em;
+    margin-top: -.95em;
+    margin-left: .5em;
+}
+
+.processor > .mtx-block > .mtx-container {
+    width: 100%;
+    padding: .75em .5em;
+    user-select: none;
+}
+
+.processor > .mtx-block > .mtx-container > .mtx-cell {
+    $height: 1.35em;
+
+    padding: .35em;
+    height: $height;
+    cursor: pointer;
+    font-size: .85em;
+    border-radius: .5em;
+    line-height: $height;
+    border: 2px solid transparent;
+    font-family: 'Roboto Mono', monospace;
+    
+    .feather {
+        margin-left: .3em;
+    }
+}
+
+.processor > .mtx-block > .mtx-container > .cell-active {
+    border-color: $green-color;
+
+    .feather {
+        display: inline-flex !important;
+        color: $green-color;
+    }
+}
+
+
+
+
+
+
+
+.b {
+
     .Channels {
-        display: flex;
-        height: 50%;
-        
-        .Channel {
-            box-sizing: border-box;
-            margin-right: 0.5em;
-            border: 0.2em solid $background-hightlight-color;
-            border-radius: 0.5em;
-            width: 50%;
-            display: flex;
 
             .List {
                 width: 45%;
@@ -55,11 +123,6 @@
                     font-family: 'Roboto Mono', monospace;
                 }
             }
-        }
-
-        .Last {
-            margin-right: 0em;
-        }
     }
 
     .Options {
@@ -98,15 +161,7 @@
         }
     }
 
-    .StartButton {
-        width: 7%;
-        height: 100%;
-        border-radius: 0.5em;
-        text-align: center;
-        line-height: 10em;
-        cursor: pointer;
-        background-color: $green-color;
-    }
+
 
     .Name {
         margin: -0.95em 0em 0em 0.85em;

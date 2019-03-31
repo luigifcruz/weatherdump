@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import request from 'superagent';
 import Constellation from './Constellation';
 
+import { decoder as headerText } from '../../static/HeaderText';
+
 import '../../styles/Decoder.scss';
 
 function _base64ToArrayBuffer(base64) {
@@ -60,7 +62,7 @@ class Decoder extends Component {
     componentDidMount() {
         const { datalink } = this.props.match.params
         const { processDescriptor } = this.props
-/*
+
         request
             .post(`http://localhost:3000/${datalink}/${processDescriptor}/start/decoder`)
             .field("inputFile", this.props.demodulatedFile)
@@ -75,7 +77,6 @@ class Decoder extends Component {
                 alert(err.response.body.Code);
                 this.props.history.goBack()
             })
-            */
     }
 
     handleFinish() {
@@ -132,13 +133,13 @@ class Decoder extends Component {
                     <div>
                         <Websocket 
                             reconnect={true}
-                            debug={true}
+                            debug={process.env.NODE_ENV == 'development'}
                             url={`ws://localhost:3000/${datalink}/${this.props.processId}/constellation`}
                             onMessage={this.handleConstellation}
                         />
                         <Websocket
                             reconnect={true}
-                            debug={true}
+                            debug={process.env.NODE_ENV == 'development'}
                             url={`ws://localhost:3000/${datalink}/${this.props.processId}/statistics`}
                             onMessage={this.handleStatistics}
                         />
@@ -149,11 +150,9 @@ class Decoder extends Component {
                         <div onClick={this.handleAbort} className="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         </div>
-                        Decoding the input file for NPOESS...
+                        {headerText.title}
                     </h1>
-                    <h2 className="Description">
-                        In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while.
-                    </h2>
+                    <h2 className="Description">{headerText.description}</h2>
                 </div>
                 <div className="Body Flex Decoder">
                     <div className="LeftWindow">

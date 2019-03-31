@@ -1,15 +1,15 @@
 
 .StepPicker {
     .Option {
-        padding: 0.5em 1em 0.5em 1em;
-        margin-right: 0.75em;
+        padding: .5em 1em .5em 1em;
+        margin-right: .75em;
         width: 15em;
         height: 5em;
         
         h3 {
             cursor: pointer;
             font-size: 1.25em;
-            margin: 0em 0.5em 0em 0em;
+            margin: 0em .5em 0em 0em;
         }
 
         h3:hover {
@@ -17,13 +17,13 @@
         }
 
         h4 {
-            font-size: 0.85em;
+            font-size: .85em;
             font-weight: normal;
-            margin: 0.5em 0.5em 0em 0em;
+            margin: .5em .5em 0em 0em;
         }
 
         background: $background-hightlight-color;
-        border-radius: 0.25em;
+        border-radius: .25em;
     }
 
     .Deactivated {

@@ -37,7 +37,7 @@ const prodConfig = {
             loader: "babel-loader",
             exclude: /(node_modules)/,
             resolve: {
-                extensions: [".js", ".jsx"]
+                extensions: [".js", ".jsx", ".json", ".scss"]
             },
             options: {
                 presets: ['@babel/react', '@babel/env']
