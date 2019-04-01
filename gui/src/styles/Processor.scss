@@ -75,18 +75,30 @@
 
 .processor > .mtx-block > .mtx-container > .mtx-cell {
     $height: 1.35em;
-
+    
     padding: .35em;
     height: $height;
     cursor: pointer;
     font-size: .85em;
     border-radius: .5em;
     line-height: $height;
+    margin: .1em .075em;
     border: 2px solid transparent;
     font-family: 'Roboto Mono', monospace;
     
     .feather {
         margin-left: .3em;
+    }
+}
+
+.processor > .mtx-block-medium > .mtx-container  > .mtx-cell {
+    width: 95%;
+    display: flex;
+    justify-content: space-between;
+
+    .feather {
+        margin-top: .15em;
+        display: none;
     }
 }
 
@@ -96,78 +108,5 @@
     .feather {
         display: inline-flex !important;
         color: $green-color;
-    }
-}
-
-
-
-
-
-
-
-.b {
-
-    .Channels {
-
-            .List {
-                width: 45%;
-                margin: 0.25em;
-                margin-top: 0.5em;
-                display: absolute;
-
-                .Item {
-                    margin-right: 0em;
-                    display: inline-block;
-                    margin: 0.25em;
-                    padding: 0.25em 0.25em 0.2em 0.3em;
-                    font-family: 'Roboto Mono', monospace;
-                }
-            }
-    }
-
-    .Options {
-        display: flex;
-        margin-top: 1em;
-        width: 100%;
-        height: 44%;
-
-        .Option {
-            display: flex;
-            box-sizing: border-box;
-            margin-right: 0.5em;
-            border: 0.2em solid $background-hightlight-color;
-            border-radius: 0.5em;
-            width: 30%;
-
-            .List {
-                width: 15.75em;
-
-                .Item {
-                    height: 0.85em;
-                    line-height: 0.90em;
-                    display: flex;
-                }
-
-                .feather {
-                    display: none;
-                    margin-top: -0.1em;
-                }
-
-                .Active .feather {
-                    position: absolute;
-                    right: 1.25em;
-                }
-            }
-        }
-    }
-
-
-
-    .Name {
-        margin: -0.95em 0em 0em 0.85em;
-        padding: 0em 0.75em 0em 0.75em;
-        background: $background-color;
-        text-align: center;
-        width: auto;
     }
 }

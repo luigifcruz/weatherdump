@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import * as rxa from '../redux/actions';
+import * as rxa from 'redux/actions';
 import { connect } from 'react-redux';
 import request from 'superagent';
 
-import { processor as headerText } from '../static/HeaderText';
+import { processor as headerText } from 'static/HeaderText';
 
-import '../styles/processor';
-import '../styles/matrix';
-import '../styles/btn';
+import 'styles/processor';
+import 'styles/matrix';
+import 'styles/btn';
 
 class Processor extends Component {
     constructor(props) {
@@ -76,7 +76,7 @@ class Processor extends Component {
                 <div className="Body mtx-container processor processor-dark">
                     <div className="mtx-block mtx-block-large">
                         <div className="mtx-block-name">Individual Bands</div>
-                        <div className="mtx-container">
+                        <div className="mtx-container mtx-flex">
                             {Object.entries(this.props.manifestParser).map((p, i) => {
                                 return (
                                     <div
@@ -92,7 +92,7 @@ class Processor extends Component {
                     </div>
                     <div className="mtx-block mtx-block-large">
                         <div className="mtx-block-name">Multispectral Composites</div>
-                        <div className="mtx-container">
+                        <div className="mtx-container mtx-flex">
                             {Object.entries(this.props.manifestComposer).map((p, i) => {
                                 return (
                                     <div

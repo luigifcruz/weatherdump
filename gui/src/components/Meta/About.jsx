@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { version, engineVersion } from '../../../package.json';
 
-import '../../styles/About.scss';
-import '../../styles/TabView.scss';
+import 'styles/About';
+import 'styles/tabview';
 
 class About extends Component {
 	render() {
 		const { tab } = this.props.match.params
 		return (
-			<div className="TabViewBody">
+			<div className="tab-view-body">
 				<div className="LeftContainer">
 					<figure>
 						<img className="MainIcon" src="/icon_by_eucalyp.png" />

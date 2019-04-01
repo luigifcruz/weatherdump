@@ -1,51 +1,50 @@
-.TabViewHeader {
+.tab-view-header {
     user-select: none;
     margin-top: .15em;
     display: flex;
+}
 
-    .Tabs {
-        height: 2em;
-        padding: .15em 1.5em .15em .75em;
-        border-radius: 2em;
-        display: flex;
-        cursor: pointer;
-        margin-right: .5em;
-        color: white;
-        text-decoration: none;
+.tab-view-body {
+    margin-top: .75em;
+    height: 18.5em;
+}
 
-        svg {
-            margin-top: .35em;
-            margin-left: .5em;
-            width: 20px;
-        }
+.tab-view-tab {
+    height: 2em;
+    padding: .15em 1.5em .15em .75em;
+    border-radius: 2em;
+    display: flex;
+    cursor: pointer;
+    margin-right: .5em;
+    color: white;
+    text-decoration: none;
 
-        h3 {
-            margin-left: .75em;
-            margin-top: 0em;
-            font-size: 1em;
-            line-height: 1.85em;
-        }
-
-        .feather { 
-            margin-top: .22em;
-        }
-    }
-
-    .Tabs:hover {
+    &:hover {
         background: $background-hightlight-color;
-    }
-
-    .Selected {
-        background: $green-color;   
-    }
-
-    .Selected:hover {
-        background: $green-color !important;
     }
 }
 
-.TabViewBody {
-    display: flex;
-    margin-top: .75em;
-    height: 18.5em;
+.tab-view-tab > .feather { 
+    margin-top: .22em;
+}
+
+.tab-view-tab > h3 {
+    margin-left: .75em;
+    margin-top: 0em;
+    font-size: 1em;
+    line-height: 1.85em;
+}
+
+.tab-view-tab > svg {
+    margin-top: .35em;
+    margin-left: .5em;
+    width: 20px;
+}
+
+.tab-view-tab-selected {
+    background: $green-color; 
+
+    &:hover {
+        background: $green-color !important;
+    }
 }

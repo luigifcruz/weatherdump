@@ -1,12 +1,12 @@
 import { withRouter } from 'react-router-dom';
 import React, { Component } from 'react';
-import * as rxa from '../redux/actions';
+import * as rxa from 'redux/actions';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { version } from '../../package.json';
 
-
-import '../styles/App.scss';
+import 'styles/fonts';
+import 'styles/App';
 
 class App extends Component {
     render() {

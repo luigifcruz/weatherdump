@@ -1,40 +1,38 @@
 @import 'btn';
 
-.Dashboard {
-    .Satellite {
-        width: 16em;
-        height: 95px;
-        border-radius: .75em;
-        margin-right: 1em;
-        padding: .5em .5em 1em .75em;
-        position: relative;
-        background: $background-hightlight-color;
-    
-        label {
-            position: absolute;
-            font-size: .85em;
-            padding: .15em .45em .15em .45em;
-            background: $faint-background-text-color;
-            line-height: 1.4em; 
-            border-radius: .35em;
-            line-height: 1.5em; 
-            right: .75em;
-            top: .85em;
-        }
-    
-        .btn {
-            @include btn-size(4.75em, 2.15em);
-        }
-    
-        h3 {
-            font-size: 1.5em;
-            margin: 0;
-        }
-    
-        h4 {
-            margin: 0 0 .5em 0;
-            color: $light-background-text-color;
-        }
-    }
+.dashboard > .sat-option {
+    width: 16em;
+    height: 95px;
+    border-radius: .75em;
+    margin-right: 1em;
+    padding: .5em .5em 1em .75em;
+    position: relative;
+    background: $background-hightlight-color;
+}
+
+.dashboard > .sat-option > label {
+    position: absolute;
+    font-size: .85em;
+    padding: .15em .45em .15em .45em;
+    background: $faint-background-text-color;
+    line-height: 1.4em; 
+    border-radius: .35em;
+    line-height: 1.5em; 
+    right: .75em;
+    top: .85em;
+}
+
+.dashboard > .sat-option > h3 {
+    font-size: 1.5em;
+    margin: 0;
+}
+
+.dashboard > .sat-option > h4 {
+    margin: 0 0 .5em 0;
+    color: $light-background-text-color;
+}
+
+.dashboard > .sat-option > .btn {
+    @include btn-size(4.75em, 2.15em);
 }
 

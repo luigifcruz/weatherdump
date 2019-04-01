@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Shaders, Node, GLSL } from "gl-react";
 import { Surface } from "gl-react-dom";
 
-import "../../styles/progressbar.scss"
+import "styles/progressbar";
 
 const shaders = Shaders.create({
     constellation: {

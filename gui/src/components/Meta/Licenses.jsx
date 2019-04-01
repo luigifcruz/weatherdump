@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 
-import '../../styles/About.scss';
-import '../../styles/TabView.scss';
+import 'styles/About';
+import 'styles/tabview';
 
 class Licenses extends Component {
 	render() {
 		const { tab } = this.props.match.params
 		return (
-			<div className="TabViewBody">
+			<div className="tab-view-body">
 				Open-source licenses will be put in this area.
 			</div>
         );

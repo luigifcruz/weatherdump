@@ -46,11 +46,18 @@ const devConfig = {
                 loader: "babel-loader",
                 exclude: /(node_modules)/,
                 resolve: {
-                    extensions: [".js", ".jsx", ".json", ".scss"]
+                    extensions: [".js", ".jsx", ".json", ".scss"],
+                    modules: [
+                        path.resolve(__dirname, 'src'),
+                        "node_modules"
+                    ]
                 },
                 options: {
                     presets: ['@babel/react', '@babel/env']
                 }
+            },{
+                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                use: ['url-loader']
             }
         ]
     },

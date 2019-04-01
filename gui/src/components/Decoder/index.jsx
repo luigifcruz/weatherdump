@@ -3,11 +3,11 @@ import Websocket from 'react-websocket';
 import * as rxa from '../../redux/actions';
 import { connect } from 'react-redux';
 import request from 'superagent';
+
 import Constellation from './Constellation';
+import { decoder as headerText } from 'static/HeaderText';
 
-import { decoder as headerText } from '../../static/HeaderText';
-
-import '../../styles/Decoder.scss';
+import 'styles/Decoder';
 
 function _base64ToArrayBuffer(base64) {
     var wordArray = window.atob(base64);

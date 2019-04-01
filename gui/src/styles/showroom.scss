@@ -3,14 +3,16 @@
 .products {
     height: 19.2em;
     margin-bottom: .25em;
+    overflow-x: hidden;
     overflow-y: scroll;
+    grid-row-gap: .5em;
+    grid-column-gap: .5em;
 }
 
 .product {
     height: 9.25em;
     width: 13em;
     cursor: pointer;
-    margin-bottom: .35em;
     border-radius: .5em;
 }
 

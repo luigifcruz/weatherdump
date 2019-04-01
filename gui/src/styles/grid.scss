@@ -1,0 +1,18 @@
+.grid-container {
+    display: grid;
+    justify-content: space-between;
+}
+
+@mixin grid-container-size($size-columns, $size-rows) {
+    @extend .grid-container;
+    grid-template-columns: repeat(auto-fill, minmax($size-columns, 1fr));
+    grid-template-rows: repeat(auto-fill, minmax($size-rows, 1fr));
+}
+
+.grid-container-three-three {
+    @include grid-container-size(14em, 5em);
+}
+
+.grid-container-four-two {
+    @include grid-container-size(12em, 3);
+}

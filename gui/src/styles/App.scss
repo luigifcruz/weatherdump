@@ -4,12 +4,11 @@ body {
     overflow: hidden;
     font-family: 'Roboto Slab', serif;
     background-color: $background-color;
-
-    input {
-        display: none;
-    }
 }
 
+input {
+    display: none;
+}
 
 .App {
     width: 95%;

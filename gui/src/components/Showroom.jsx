@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import * as rxa from '../redux/actions';
+import * as rxa from 'redux/actions';
 import Websocket from 'react-websocket';
 
-import { showroom as headerText } from '../static/HeaderText';
+import { showroom as headerText } from 'static/HeaderText';
 
-import '../styles/showroom';
-import '../styles/progressbar';
-import '../styles/btn';
-import '../styles/matrix';
-import '../styles/scrollbar';
+import 'styles/showroom';
+import 'styles/progressbar';
+import 'styles/btn';
+import 'styles/grid';
+import 'styles/scrollbar';
 
 class Showroom extends Component {
     constructor(props) {
@@ -70,28 +70,43 @@ class Showroom extends Component {
                     <h2 className="Description">{headerText.description}</h2>
                </div> 
                 <div className="Body showroom">
-                    <div className="products mtx-container scroll-bar">
-                        <div className="product product-dark mtx-cell">
+                    <div className="products grid-container-four-two scroll-bar">
+                        <div className="product product-dark">
                             <div className="img"><img src=""></img></div>
                             <div className="title">Channel 69</div>
                             <div className="description">2330x512 • 44 MB</div>
                         </div>
-                        <div className="product product-dark mtx-cell">
+                        <div className="product product-dark">
                             <div className="img"><img src=""></img></div>
                             <div className="title">Channel 69</div>
                             <div className="description">2330x512 • 44 MB</div>
                         </div>
-                        <div className="product product-dark mtx-cell">
+                        <div className="product product-dark">
                             <div className="img"><img src=""></img></div>
                             <div className="title">Channel 69</div>
                             <div className="description">2330x512 • 44 MB</div>
                         </div>
-                        <div className="product product-dark mtx-cell">
+                        <div className="product product-dark">
                             <div className="img"><img src=""></img></div>
                             <div className="title">Channel 69</div>
                             <div className="description">2330x512 • 44 MB</div>
                         </div>
-                        <div className="product product-dark mtx-cell">
+                        <div className="product product-dark">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
+                        </div>
+                        <div className="product product-dark">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
+                        </div>
+                        <div className="product product-dark">
+                            <div className="img"><img src=""></img></div>
+                            <div className="title">Channel 69</div>
+                            <div className="description">2330x512 • 44 MB</div>
+                        </div>
+                        <div className="product product-dark">
                             <div className="img"><img src=""></img></div>
                             <div className="title">Channel 69</div>
                             <div className="description">2330x512 • 44 MB</div>

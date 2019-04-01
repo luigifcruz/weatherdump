@@ -5,6 +5,13 @@
     justify-content: space-between;
 }
 
+.mtx-flex {
+    &:after {
+        content: "";
+        flex: auto;
+    }
+}
+
 .mtx-container > .mtx-cell {
     page-break-after: always;
 }

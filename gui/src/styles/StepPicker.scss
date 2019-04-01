@@ -1,38 +1,41 @@
 
-.StepPicker {
-    .Option {
-        padding: .5em 1em .5em 1em;
-        margin-right: .75em;
-        width: 15em;
-        height: 5em;
-        
-        h3 {
-            cursor: pointer;
-            font-size: 1.25em;
-            margin: 0em .5em 0em 0em;
-        }
+.step-picker {
+    width: 100%;
+}
 
-        h3:hover {
-            text-decoration: underline;
-        }
+.step-picker > .grid-container-three-three {
+    grid-column-gap: 1em;
+    grid-row-gap: 1em;
+}
 
-        h4 {
-            font-size: .85em;
-            font-weight: normal;
-            margin: .5em .5em 0em 0em;
-        }
+.option-cell {
+    background: $background-hightlight-color;
+    border-radius: .5em;
+    padding: .5em 1em;
+    width: 15em;
+    height: 4.5em;
+}
 
-        background: $background-hightlight-color;
-        border-radius: .25em;
+.option-cell > h4 {
+    font-size: .85em;
+    font-weight: normal;
+    margin: .25em 0em;
+}
+
+.option-cell > h3 {
+    cursor: pointer;
+    font-size: 1.25em;
+    margin: 0em;
+
+    &:hover {
+        text-decoration: underline;
     }
+}
 
-    .Deactivated {
-        h3 {
-            cursor: auto;
-        }
+.option-cell-disabled > h3 {
+    cursor: auto;
 
-        h3:hover {
-            text-decoration: none !important;
-        }
+    &:hover {
+        text-decoration: none !important;
     }
 }
