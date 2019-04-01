@@ -1,6 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WebpackBar = require('webpackbar');
 
 const buildDate = new Date().toISOString()
@@ -15,12 +15,19 @@ const devConfig = {
     entry: [
         'react-hot-loader/patch',
         'webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000',
-        './src/client/index.jsx'
+        path.resolve(__dirname, 'src/client/index.jsx')
     ],
     output: {
         path: path.resolve(__dirname, 'resources'),
         filename: 'bundle.js',
-        publicPath: "/"
+        publicPath: '/'
+    },
+    resolve: {
+        extensions: ['.js', '.jsx', '.json', '.scss'],
+        modules: [
+            path.resolve(__dirname, 'src'),
+            path.resolve(__dirname, 'node_modules')
+        ]
     },
     module: {
         rules: [
@@ -43,15 +50,8 @@ const devConfig = {
                 ],
             },{
                 test: /\.(js|jsx)$/,
-                loader: "babel-loader",
-                exclude: /(node_modules)/,
-                resolve: {
-                    extensions: [".js", ".jsx", ".json", ".scss"],
-                    modules: [
-                        path.resolve(__dirname, 'src'),
-                        "node_modules"
-                    ]
-                },
+                loader: 'babel-loader',
+                exclude: /node_modules/,
                 options: {
                     presets: ['@babel/react', '@babel/env']
                 }
@@ -63,7 +63,7 @@ const devConfig = {
     },
     plugins: [
         new MiniCssExtractPlugin({
-            filename: "[name].css",
+            filename: '[name].css',
             allChunks: false
         }),
         new WebpackBar(),

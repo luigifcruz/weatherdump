@@ -1,19 +1,26 @@
 const webpack = require('webpack');
 const path = require('path');
 const WebpackBar = require('webpackbar');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const prodConfig = {
     mode: 'production',
     target: 'web',
-    entry: './src/client/index.jsx',
+    entry: path.resolve(__dirname, 'src/client/index.jsx'),
     output: {
         path: path.resolve(__dirname, 'resources'),
         filename: 'bundle.js'
     },
     performance: {
         hints: false
+    },
+    resolve: {
+        extensions: ['.js', '.jsx', '.json', '.scss'],
+        modules: [
+            path.resolve(__dirname, 'src'),
+            path.resolve(__dirname, 'node_modules')
+        ]
     },
     module: {
         rules: [{
@@ -34,15 +41,8 @@ const prodConfig = {
             ],
         },{
             test: /\.(js|jsx)$/,
-            loader: "babel-loader",
-            exclude: /(node_modules)/,
-            resolve: {
-                extensions: [".js", ".jsx", ".json", ".scss"],
-                modules: [
-                    path.resolve(__dirname, 'src'),
-                    "node_modules"
-                ]
-            },
+            loader: 'babel-loader',
+            exclude: /node_modules/,
             options: {
                 presets: ['@babel/react', '@babel/env']
             }
@@ -54,7 +54,7 @@ const prodConfig = {
     plugins: [
         new WebpackBar(),
         new MiniCssExtractPlugin({
-            filename: "[name].css",
+            filename: '[name].css',
             allChunks: false
         })
     ]
