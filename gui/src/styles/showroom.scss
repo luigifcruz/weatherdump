@@ -1,4 +1,10 @@
 @import 'btn';
+@import 'grid';
+
+.showroom > .grid-container {
+    @include grid-container-size(12em, 3);
+    @include grid-container-gap(.5em, .5em);
+}
 
 .products {
     height: 19.2em;
@@ -63,6 +69,7 @@
  
 .controller {
     display: flex;
+    margin-top: .3em;
 }
 
 .controller > .progress-bar {

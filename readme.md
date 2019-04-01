@@ -45,4 +45,6 @@ weatherdump lrpt soft ./file_path.bin
 - New LRPT frame stacker with proper line synchronization.
 - Added RGB multispectral composites for LRPT.
 - Exported functions better documentated. 
-- GUI partial refactor following Airbnb's styleguide.
+- GUI stylesheet refactor following Airbnb's styleguide.
+- Webfonts now loaded from the CSS. 
+- Improving multi-theme support.

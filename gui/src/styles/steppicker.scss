@@ -1,11 +1,12 @@
+@import 'grid';
 
 .step-picker {
     width: 100%;
 }
 
-.step-picker > .grid-container-three-three {
-    grid-column-gap: 1em;
-    grid-row-gap: 1em;
+.step-picker > .tab-view-body {
+    @include grid-container-size(14em, 5em);
+    @include grid-container-gap(1em, 1em);
 }
 
 .option-cell {

@@ -4,16 +4,17 @@ import { Link } from 'react-router-dom';
 import { index as headerText } from 'static/HeaderText';
 
 import 'styles/dashboard';
+import 'styles/grid';
 
 class Dashboard extends Component {
     render() {
         return (
-            <div className="View">
-                <div className="Header">
-                    <h1 className="Title">{headerText.title}</h1>
-                    <h2 className="Description">{headerText.description}</h2>
+            <div className="dashboard">
+                <div className="main-header">
+                    <h1 className="main-title">{headerText.title}</h1>
+                    <h2 className="main-description">{headerText.description}</h2>
                 </div>
-                <div className="Body Flex dashboard">
+                <div className="main-body grid-container">
                     <div className="sat-option">
                         <h3>NPOESS</h3>
                         <label>BETA</label>

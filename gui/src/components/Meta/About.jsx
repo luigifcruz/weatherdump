@@ -1,29 +1,27 @@
 import React, { Component } from 'react';
 import { version, engineVersion } from '../../../package.json';
 
-import 'styles/About';
-import 'styles/tabview';
+import 'styles/meta';
 
 class About extends Component {
 	render() {
-		const { tab } = this.props.match.params
 		return (
-			<div className="tab-view-body">
-				<div className="LeftContainer">
+			<div className="about">
+				<div className="about-left">
 					<figure>
-						<img className="MainIcon" src="/icon_by_eucalyp.png" />
+						<img className="about-left-icon" src="/icon_by_eucalyp.png" />
 						<figcaption>Icon made by <a target="_blank" href="https://www.flaticon.com/authors/eucalyp">Eucalyp</a> from <a target="_blank" href="https://www.flaticon.com">Flaticon</a>.</figcaption>
 					</figure>
 				</div>
-				<div className="RightContainer">
-					<div className="AppName">WeatherDump</div>
-					<div className="AppSubtitle">by <a target="_blank" href="https://github.com/opensatelliteproject">Open Satellite Project</a></div>
-					<div className="AppDescription">
+				<div className="about-right">
+					<div className="about-right-title">WeatherDump</div>
+					<div className="about-right-subtitle">by <a target="_blank" href="https://github.com/opensatelliteproject">Open Satellite Project</a></div>
+					<div className="about-right-body">
 						<div>Interface Version: {version}</div>
 						<div>Engine Version: {engineVersion}</div>
 						<div>Build Date: {BUILD_DATE}</div>
 					</div>
-					<div className="AppDescription">
+					<div className="about-right-body">
 						<div>This program comes with absolutely no warranty.</div>
 					</div>
 				</div>

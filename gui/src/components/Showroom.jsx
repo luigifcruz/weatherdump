@@ -53,24 +53,24 @@ class Showroom extends Component {
     render() {
         const { tab, datalink } = this.props.match.params
         return (
-            <div className="View">
+            <div>
                 {(this.props.processId != null) ? (
                     <div>
                         <Websocket reconnect={true} debug={true} url={`ws://localhost:3000/${datalink}/${this.props.processId}/statistics`}
                             onMessage={this.handleStatistics} />
                     </div>        
                 ) :  null}
-                <div className="Header">
-                    <h1 className="Title">
+                <div className="main-header">
+                    <h1 className="main-title">
                         <div onClick={this.handleAbort} className="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         </div>
                         {headerText.title}
                     </h1>
-                    <h2 className="Description">{headerText.description}</h2>
+                    <h2 className="main-description">{headerText.description}</h2>
                </div> 
-                <div className="Body showroom">
-                    <div className="products grid-container-four-two scroll-bar">
+                <div className="main-body showroom">
+                    <div className="products grid-container scroll-bar">
                         <div className="product product-dark">
                             <div className="img"><img src=""></img></div>
                             <div className="title">Channel 69</div>

@@ -6,21 +6,21 @@ import { connect } from 'react-redux';
 import { version } from '../../package.json';
 
 import 'styles/fonts';
-import 'styles/App';
+import 'styles/app';
 
 class App extends Component {
     render() {
         return (
-            <div className="App">
+            <div className="main-app main-app-dark">
                 {this.props.children}
-                <div className="Footer">
-                    <div className="Left">
+                <div className="main-footer">
+                    <div className="main-footer-left">
                         Version {version} • <Link to="/meta/about">About</Link>
                     </div>
-                    <div className="Center">
+                    <div className="main-footer-center">
                         WeatherDump
                     </div>
-                    <div className="Right">
+                    <div className="main-footer-right">
                         <a target="_blank" href="https://github.com/opensatelliteproject">Open Satellite Project</a>
                     </div>
                 </div>

@@ -63,17 +63,17 @@ class Processor extends Component {
 
     render() {
         return (
-            <div className="View">
-                <div className="Header">
-                    <h1 className="Title">
+            <div>
+                <div className="main-header">
+                    <h1 className="main-title">
                         <div onClick={this.goBack} className="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         </div>
                         {headerText.title}
                     </h1>
-                    <h2 className="Description">{headerText.description}</h2>
+                    <h2 className="main-description">{headerText.description}</h2>
                 </div>
-                <div className="Body mtx-container processor processor-dark">
+                <div className="main-body mtx-container processor processor-dark">
                     <div className="mtx-block mtx-block-large">
                         <div className="mtx-block-name">Individual Bands</div>
                         <div className="mtx-container mtx-flex">

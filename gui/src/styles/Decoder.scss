@@ -1,7 +1,8 @@
 @import 'btn';
 
-.Decoder { 
-    margin-top: -0.35em;
+.Decoder {
+    display: flex;
+    margin-top: .25em;
 
     .LeftWindow {
         width: 30%;

@@ -6,23 +6,23 @@ import Feedback from './Feedback';
 import Updates from './Updates';
 import Licenses from './Licenses';
 
-import 'styles/About';
+import 'styles/meta';
 import 'styles/tabview';
 
 class Meta extends Component {
     render() {
         const { tab } = this.props.match.params
         return (
-            <div className="View">
-                <div className="Header Reduced">
-                    <h1 className="Title">
+            <div>
+                <div className="main-header main-header-small">
+                    <h1 className="main-title">
                         <div onClick={this.props.history.goBack} className="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </div>
                         WeatherDump
                     </h1>
                 </div>
-                <div className="Body About">
+                <div className="meta main-body main-body-large">
                     <div className="tab-view-header">
                         <Link to={`/meta/about`} className={tab == "about" ? "tab-view-tab tab-view-tab-selected" : "tab-view-tab"}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
@@ -41,10 +41,12 @@ class Meta extends Component {
                             <h3>Licenses</h3>
                         </Link>
                     </div>
-                    <Route exact path="/meta/about" component={About}/>
-                    <Route exact path="/meta/feedback" component={Feedback}/>
-                    <Route exact path="/meta/updates" component={Updates}/>
-                    <Route exact path="/meta/licenses" component={Licenses}/>
+                    <div className="tab-view-body">
+                        <Route exact path="/meta/about" component={About}/>
+                        <Route exact path="/meta/feedback" component={Feedback}/>
+                        <Route exact path="/meta/updates" component={Updates}/>
+                        <Route exact path="/meta/licenses" component={Licenses}/>
+                    </div>
                 </div>
             </div>
         );
