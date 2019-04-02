@@ -13,10 +13,10 @@ import (
 	"encoding/binary"
 	"encoding/json"
 
-	SatHelper "github.com/OpenSatelliteProject/libsathelper"
 	"github.com/fatih/color"
 	"github.com/gorilla/websocket"
 	"github.com/gosuri/uiprogress"
+	SatHelper "github.com/luigifreitas/libsathelper"
 )
 
 const defaultFlywheelRecheck = 256

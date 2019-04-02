@@ -2,13 +2,12 @@ FROM quay.io/bitriseio/android-ndk
 
 RUN apt-get update && apt-get install -y build-essential cmake --no-install-recommends
 
-RUN find /opt/* | grep clang++
-
 ENV PATH="/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}"
 ENV CC="armv7a-linux-androideabi22-clang"
 ENV CXX="armv7a-linux-androideabi22-clang++"
 ENV LD="/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ld"
 ENV AR="/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar"
+ENV CGO_LDFLAGS="-Wl,-Bstatic -L/usr/local/lib -laec -L/usr/local/lib -lSatHelper -L/usr/local/lib -lcorrect -Wl,-Bdynamic -L/opt/android-ndk/platforms/android-22/arch-arm/usr/lib -llog"
 ENV PACKAGE_NAME="weatherdump-cli-android-armv7a"
 ENV CXXFLAGS="-I/usr/local/include"
 ENV CGO_ENABLED="1"
@@ -38,13 +37,6 @@ RUN git clone https://github.com/luigifreitas/libsathelper.git \
     && mkdir /usr/local/include/SatHelper && cp -R /usr/local/include/sathelper/* /usr/local/include/SatHelper
 
 WORKDIR /home/go/src/weather-dump
-
-ENV CGO_LDFLAGS="-Wl,-Bstatic -L/usr/local/lib -laec -L/usr/local/lib -lsathelper -L/usr/local/lib -lcorrect -Wl,-Bdynamic -L/opt/android-ndk/platforms/android-22/arch-arm/usr/lib -llog"
-
-COPY dependencies.sh /home/go/src/weather-dump
-RUN chmod +x dependencies.sh && ./dependencies.sh
-
-RUN find /* | grep ldd
 
 ADD generator.sh /go/generator.sh
 RUN chmod +x /go/generator.sh && ls -lh

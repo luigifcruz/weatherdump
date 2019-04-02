@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 	"weather-dump/src/handlers"
-	"weather-dump/src/tools/img"
+	"weather-dump/src/img"
 
 	"github.com/fatih/color"
 )

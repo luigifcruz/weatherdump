@@ -11,10 +11,10 @@ import (
 	"weather-dump/src/assets"
 	"weather-dump/src/handlers/interfaces"
 
-	SatHelper "github.com/OpenSatelliteProject/libsathelper"
 	"github.com/fatih/color"
 	"github.com/gorilla/websocket"
 	"github.com/gosuri/uiprogress"
+	SatHelper "github.com/luigifreitas/libsathelper"
 )
 
 // Decoder CADU

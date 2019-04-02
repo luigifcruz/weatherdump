@@ -8,13 +8,14 @@ ENV PACKAGE_NAME="weatherdump-cli-linux-armhf"
 ENV CGO_ENABLED="1"
 ENV CGO_CFLAGS="-I/go/libaec/src"
 ENV CGO_CXXFLAGS="-I/go/libsathelper/includes -I/go/libcorrect/build/include"
-ENV CGO_LDFLAGS="-static -L/go/libaec/build/src -laec -L/go/libsathelper/build/lib -lsathelper -L/usr/arm-linux-gnueabihf/lib -lcorrect"
+ENV CGO_LDFLAGS="-static -L/go/libaec/build/src -laec -L/go/libsathelper/build/lib -lSatHelper -L/usr/arm-linux-gnueabihf/lib -lcorrect"
 ENV GOOS="linux"
 ENV GOARCH="arm"
 ENV GOARM="6"
 ENV GOPATH="/home/go"
 ENV COMPRESS="tar.gz"
 ENV BINARY_NAME="weatherdump"
+ENV GO111MODULE=on
 
 RUN git clone https://github.com/erget/libaec.git \
     && cd libaec \
@@ -33,9 +34,6 @@ RUN git clone https://github.com/luigifreitas/libsathelper.git \
     && cd ./../..
 
 WORKDIR /home/go/src/weather-dump
-
-COPY dependencies.sh /home/go/src/weather-dump
-RUN chmod +x dependencies.sh && ./dependencies.sh
 
 ADD generator.sh /go/generator.sh
 RUN chmod +x /go/generator.sh && ls -lh

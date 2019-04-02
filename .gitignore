@@ -14,3 +14,4 @@ dist/*
 gui/dist/*
 gui/build/*
 xcompilation/tarball/*
+vendor/*

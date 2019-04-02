@@ -2,7 +2,7 @@ package interfaces
 
 import (
 	"weather-dump/src/assets"
-	"weather-dump/src/tools/img"
+	"weather-dump/src/img"
 )
 
 type ProcessorMakers map[string]func(string) Processor

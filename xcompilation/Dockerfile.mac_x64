@@ -14,12 +14,13 @@ ENV PACKAGE_NAME="weatherdump-cli-mac-x64"
 ENV CGO_ENABLED="1"
 ENV CGO_CFLAGS="-I/go/libaec/src"
 ENV CGO_CXXFLAGS="-I/go/libsathelper/includes -I/go/libcorrect/build/include"
-ENV CGO_LDFLAGS="-L/go/libaec/build/src -laec -L/go/libsathelper/build/lib -lsathelper -L/go/libcorrect/build/lib -lcorrect"
+ENV CGO_LDFLAGS="-L/go/libaec/build/src -laec -L/go/libsathelper/build/lib -lSatHelper -L/go/libcorrect/build/lib -lcorrect"
 ENV GOOS="darwin"
 ENV GOARCH="amd64"
 ENV GOPATH="/home/go"
 ENV COMPRESS="tar.gz"
 ENV BINARY_NAME="weatherdump"
+ENV GO111MODULE=on
 
 RUN git clone https://github.com/erget/libaec.git \
     && cd libaec \
@@ -42,9 +43,6 @@ WORKDIR /home/go/src/weather-dump
 RUN rm -f /go/libaec/build/src/libaec.dylib
 RUN rm -f /go/libcorrect/build/lib/libcorrect.dylib
 RUN rm -f /go/libsathelper/build/lib/libsathelper.dylib
-
-COPY dependencies.sh /home/go/src/weather-dump
-RUN chmod +x dependencies.sh && ./dependencies.sh
 
 ADD generator.sh /go/generator.sh
 RUN chmod +x /go/generator.sh && ls -lh

@@ -46,7 +46,7 @@ func (s *Remote) Listen(port string) {
 }
 
 func (s *Remote) register() uuid.UUID {
-	id := uuid.Must(uuid.NewV4())
+	id := uuid.Must(uuid.NewV4(), nil)
 	s.processes[id] = &process{true}
 	fmt.Printf("[RMT] Process registered: %s\n", id.String())
 	return id

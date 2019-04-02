@@ -8,7 +8,7 @@ import (
 	"strings"
 	"weather-dump/src/assets"
 	"weather-dump/src/handlers"
-	"weather-dump/src/tools/img"
+	"weather-dump/src/img"
 
 	uuid "github.com/satori/go.uuid"
 )

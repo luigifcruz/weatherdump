@@ -9,10 +9,10 @@ import (
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
+	"weather-dump/src/img"
 	"weather-dump/src/protocols/hrd"
 	"weather-dump/src/protocols/hrd/processor/composer"
 	"weather-dump/src/protocols/hrd/processor/parser"
-	"weather-dump/src/tools/img"
 
 	"github.com/fatih/color"
 	"github.com/gorilla/websocket"

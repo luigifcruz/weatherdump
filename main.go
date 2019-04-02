@@ -5,7 +5,7 @@ import (
 	"time"
 	remoteHandler "weather-dump/src/handlers/remote"
 	terminalHandler "weather-dump/src/handlers/terminal"
-	"weather-dump/src/tools/img"
+	"weather-dump/src/img"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
