@@ -13,5 +13,5 @@ release-builds/*
 dist/*
 gui/dist/*
 gui/build/*
-xcompilation/tarball/*
+docker/tarball/*
 vendor/*

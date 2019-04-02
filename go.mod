@@ -13,7 +13,7 @@ require (
 	github.com/gosuri/uiprogress v0.0.0-20170224063937-d0567a9d84a1
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/luigifreitas/gofast v0.0.0-20190320204939-3582e734e6cd
-	github.com/luigifreitas/libsathelper v0.0.0-20190402020208-8fae0b198a19
+	github.com/luigifreitas/libsathelper v0.0.0-20190402034953-9cb2b576a312
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/satori/go.uuid v1.2.0

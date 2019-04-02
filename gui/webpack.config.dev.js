@@ -69,8 +69,7 @@ const devConfig = {
         new WebpackBar(),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify('development'),
-            'BUILD_DATE': JSON.stringify(buildDate)
+            'process.env.NODE_ENV': JSON.stringify('development')
         }),
     ]
 };

@@ -38,6 +38,8 @@ RUN git clone https://github.com/luigifreitas/libsathelper.git \
     && cmake -DCMAKE_SYSTEM_NAME=Darwin -DARCHITECTURE=x86_64 .. && make -j$(nproc) && make install \
     && cd ./../..
 
+RUN ls -l /go/libsathelper/build/lib/
+
 WORKDIR /home/go/src/weather-dump
 
 RUN rm -f /go/libaec/build/src/libaec.dylib

@@ -19,7 +19,6 @@ class About extends Component {
 					<div className="about-right-body">
 						<div>Interface Version: {version}</div>
 						<div>Engine Version: {engineVersion}</div>
-						<div>Build Date: {BUILD_DATE}</div>
 					</div>
 					<div className="about-right-body">
 						<div>This program comes with absolutely no warranty.</div>

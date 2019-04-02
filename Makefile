@@ -7,10 +7,10 @@ fix-permission:
 	sudo chown -fR $(shell whoami) release-builds/* || :
 
 build-cli-compiler:
-	cd ./xcompilation && docker build -t weatherdump_linux_x64 -f Dockerfile.linux_x64 .
-	cd ./xcompilation && docker build -t weatherdump_linux_armhf -f Dockerfile.linux_armhf .
-	cd ./xcompilation && docker build -t weatherdump_win_x64 -f Dockerfile.win_x64 .
-	cd ./xcompilation && docker build -t weatherdump_mac_x64 -f Dockerfile.mac_x64 .
+	cd ./docker && docker build -t weatherdump_linux_x64 -f Dockerfile.linux_x64 .
+	cd ./docker && docker build -t weatherdump_linux_armhf -f Dockerfile.linux_armhf .
+	cd ./docker && docker build -t weatherdump_win_x64 -f Dockerfile.win_x64 .
+	cd ./docker && docker build -t weatherdump_mac_x64 -f Dockerfile.mac_x64 .
 
 build-cli-release:
 	mkdir -p release-builds ./dist
