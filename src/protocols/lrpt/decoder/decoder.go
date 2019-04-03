@@ -41,6 +41,7 @@ type Worker struct {
 	Statistics   assets.Statistics
 	constSock    *websocket.Conn
 	statsSock    *websocket.Conn
+	uuid         string
 }
 
 // NewDecoder creator
@@ -50,6 +51,7 @@ func NewDecoder(uuid string) interfaces.Decoder {
 	if uuid != "" {
 		http.HandleFunc(fmt.Sprintf("/lrpt/%s/constellation", uuid), e.constellation)
 		http.HandleFunc(fmt.Sprintf("/lrpt/%s/statistics", uuid), e.statistics)
+		e.uuid = uuid
 	}
 
 	if uselastFrameData {
@@ -89,7 +91,7 @@ func NewDecoder(uuid string) interfaces.Decoder {
 	return &e
 }
 
-func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
+func (e *Worker) Work(inputPath string, outputPath string, signal chan bool) {
 	var phaseShift SatHelper.SatHelperPhaseShift
 	flywheelCount := 0
 
@@ -120,11 +122,18 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 			s.AverageRSCorrections[0], s.AverageRSCorrections[1], s.AverageRSCorrections[2], s.AverageRSCorrections[3],
 			float32(s.DroppedPackets)/float32(s.TotalPackets)*100)
 	})
-
-	for *g {
+	/*
+		interfaces.WatchFor(signal, func() bool {
+			for e.constSock == nil && e.statsSock == nil && e.uuid != "" {
+				return false
+			}
+			return true
+		})
+	*/
+	interfaces.WatchFor(signal, func() bool {
 		n, err := input.Read(e.codedData)
 		if datalink[id].CodedFrameSize != n {
-			break
+			return true
 		}
 
 		if err == nil {
@@ -160,125 +169,124 @@ func (e *Worker) Work(inputPath string, outputPath string, g *bool) {
 			pos := e.correlator.GetHighestCorrelationPosition()
 			cor := e.correlator.GetHighestCorrelation()
 
-			if cor < datalink[id].MinCorrelationBits {
-				//fmt.Printf("[DEC] Not enough correlations %d/%d. Skipping...\n", corr, datalink[id].MinCorrelationBits)
-				continue
-			}
+			if cor > datalink[id].MinCorrelationBits {
 
-			iqInv := (word / 4) > 0
-			switch word % 4 {
-			case 0:
-				phaseShift = SatHelper.DEG_0
-			case 1:
-				phaseShift = SatHelper.DEG_90
-			case 2:
-				phaseShift = SatHelper.DEG_180
-			case 3:
-				phaseShift = SatHelper.DEG_270
-			}
-
-			if pos != 0 {
-				shiftWithConstantSize(&e.codedData, int(pos), datalink[id].CodedFrameSize)
-				offset := datalink[id].CodedFrameSize - int(pos)
-
-				buffer := make([]byte, int(pos))
-				n, err = input.Read(buffer)
-
-				e.Statistics.TotalBytesRead += uint64(n)
-				if err != nil {
-					fmt.Println(err)
-					break
+				iqInv := (word / 4) > 0
+				switch word % 4 {
+				case 0:
+					phaseShift = SatHelper.DEG_0
+				case 1:
+					phaseShift = SatHelper.DEG_90
+				case 2:
+					phaseShift = SatHelper.DEG_180
+				case 3:
+					phaseShift = SatHelper.DEG_270
 				}
 
-				for i := offset; i < datalink[id].CodedFrameSize; i++ {
-					e.codedData[i] = buffer[i-offset]
+				if pos != 0 {
+					shiftWithConstantSize(&e.codedData, int(pos), datalink[id].CodedFrameSize)
+					offset := datalink[id].CodedFrameSize - int(pos)
+
+					buffer := make([]byte, int(pos))
+					n, err = input.Read(buffer)
+
+					e.Statistics.TotalBytesRead += uint64(n)
+					if err != nil {
+						fmt.Println(err)
+						return true
+					}
+
+					for i := offset; i < datalink[id].CodedFrameSize; i++ {
+						e.codedData[i] = buffer[i-offset]
+					}
 				}
-			}
 
-			e.packetFixer.FixPacket(&e.codedData[0], uint(datalink[id].CodedFrameSize), phaseShift, iqInv)
+				e.packetFixer.FixPacket(&e.codedData[0], uint(datalink[id].CodedFrameSize), phaseShift, iqInv)
 
-			if uselastFrameData {
-				for i := 0; i < lastFrameDataBits; i++ {
-					e.viterbiData[i] = e.lastFrameEnd[i]
+				if uselastFrameData {
+					for i := 0; i < lastFrameDataBits; i++ {
+						e.viterbiData[i] = e.lastFrameEnd[i]
+					}
+					for i := lastFrameDataBits; i < datalink[id].CodedFrameSize+lastFrameDataBits; i++ {
+						e.viterbiData[i] = e.codedData[i-lastFrameDataBits]
+					}
+				} else {
+					for i := 0; i < datalink[id].CodedFrameSize; i++ {
+						e.viterbiData[i] = e.codedData[i]
+					}
 				}
-				for i := lastFrameDataBits; i < datalink[id].CodedFrameSize+lastFrameDataBits; i++ {
-					e.viterbiData[i] = e.codedData[i-lastFrameDataBits]
+
+				e.viterbi.Decode(&e.viterbiData[0], &e.decodedData[0])
+
+				signalErrors := float32(e.viterbi.GetPercentBER())
+				signalErrors = 100 - (signalErrors * 10)
+
+				if uselastFrameData {
+					shiftWithConstantSize(&e.decodedData, lastFrameData/2, datalink[id].FrameSize+lastFrameData/2)
+					for i := 0; i < lastFrameDataBits; i++ {
+						e.lastFrameEnd[i] = e.viterbiData[datalink[id].CodedFrameSize+i]
+					}
 				}
-			} else {
-				for i := 0; i < datalink[id].CodedFrameSize; i++ {
-					e.viterbiData[i] = e.codedData[i]
+
+				for i := 0; i < datalink[id].SyncWordSize; i++ {
+					e.Statistics.SyncWord[i] = e.decodedData[i]
 				}
-			}
 
-			e.viterbi.Decode(&e.viterbiData[0], &e.decodedData[0])
+				shiftWithConstantSize(&e.decodedData, datalink[id].SyncWordSize, datalink[id].FrameSize-datalink[id].SyncWordSize)
 
-			signalErrors := float32(e.viterbi.GetPercentBER())
-			signalErrors = 100 - (signalErrors * 10)
+				e.Statistics.TotalPackets++
 
-			if uselastFrameData {
-				shiftWithConstantSize(&e.decodedData, lastFrameData/2, datalink[id].FrameSize+lastFrameData/2)
-				for i := 0; i < lastFrameDataBits; i++ {
-					e.lastFrameEnd[i] = e.viterbiData[datalink[id].CodedFrameSize+i]
+				SatHelper.DeRandomizerDeRandomize(&e.decodedData[0], datalink[id].FrameSize-datalink[id].SyncWordSize)
+
+				var derrors [4]int
+				for i := 0; i < datalink[id].RsBlocks; i++ {
+					e.reedSolomon.Deinterleave(&e.decodedData[0], &e.rsWorkBuffer[0], byte(i), byte(datalink[id].RsBlocks))
+					derrors[i] = int(int8(e.reedSolomon.Decode_rs8(&e.rsWorkBuffer[0])))
+					e.reedSolomon.Interleave(&e.rsWorkBuffer[0], &e.decodedData[0], byte(i), byte(datalink[id].RsBlocks))
+					if derrors[i] != -1 {
+						e.Statistics.AverageRSCorrections[i] = (e.Statistics.AverageRSCorrections[i] + derrors[i]) / 2
+					}
 				}
-			}
 
-			for i := 0; i < datalink[id].SyncWordSize; i++ {
-				e.Statistics.SyncWord[i] = e.decodedData[i]
-			}
-
-			shiftWithConstantSize(&e.decodedData, datalink[id].SyncWordSize, datalink[id].FrameSize-datalink[id].SyncWordSize)
-
-			e.Statistics.TotalPackets++
-
-			SatHelper.DeRandomizerDeRandomize(&e.decodedData[0], datalink[id].FrameSize-datalink[id].SyncWordSize)
-
-			var derrors [4]int
-			for i := 0; i < datalink[id].RsBlocks; i++ {
-				e.reedSolomon.Deinterleave(&e.decodedData[0], &e.rsWorkBuffer[0], byte(i), byte(datalink[id].RsBlocks))
-				derrors[i] = int(int8(e.reedSolomon.Decode_rs8(&e.rsWorkBuffer[0])))
-				e.reedSolomon.Interleave(&e.rsWorkBuffer[0], &e.decodedData[0], byte(i), byte(datalink[id].RsBlocks))
-				if derrors[i] != -1 {
-					e.Statistics.AverageRSCorrections[i] = (e.Statistics.AverageRSCorrections[i] + derrors[i]) / 2
+				if derrors[0] == -1 && derrors[1] == -1 && derrors[2] == -1 && derrors[3] == -1 {
+					e.Statistics.AverageRSCorrections = [4]int{-1, -1, -1, -1}
+					e.Statistics.FrameLock = false
+					e.Statistics.DroppedPackets++
+				} else {
+					e.Statistics.FrameLock = true
 				}
-			}
 
-			if derrors[0] == -1 && derrors[1] == -1 && derrors[2] == -1 && derrors[3] == -1 {
-				e.Statistics.AverageRSCorrections = [4]int{-1, -1, -1, -1}
-				e.Statistics.FrameLock = false
-				e.Statistics.DroppedPackets++
-			} else {
-				e.Statistics.FrameLock = true
-			}
+				e.Statistics.VCID = e.decodedData[1] & 0x3F
+				e.Statistics.FrameBits = uint16(datalink[id].FrameBits)
+				e.Statistics.PacketNumber = binary.BigEndian.Uint32(e.decodedData[2:]) & 0xFFFFFF00 >> 8
+				e.Statistics.SignalQuality = uint8(signalErrors)
+				e.Statistics.SyncCorrelation = uint8(cor)
 
-			e.Statistics.VCID = e.decodedData[1] & 0x3F
-			e.Statistics.FrameBits = uint16(datalink[id].FrameBits)
-			e.Statistics.PacketNumber = binary.BigEndian.Uint32(e.decodedData[2:]) & 0xFFFFFF00 >> 8
-			e.Statistics.SignalQuality = uint8(signalErrors)
-			e.Statistics.SyncCorrelation = uint8(cor)
+				if e.Statistics.SignalQuality > 100 || !e.Statistics.FrameLock {
+					e.Statistics.SignalQuality = 0
+				}
 
-			if e.Statistics.SignalQuality > 100 || !e.Statistics.FrameLock {
-				e.Statistics.SignalQuality = 0
-			}
+				e.Statistics.AverageVitCorrections += e.viterbi.GetBER()
+				e.Statistics.AverageVitCorrections /= 2
 
-			e.Statistics.AverageVitCorrections += e.viterbi.GetBER()
-			e.Statistics.AverageVitCorrections /= 2
+				if e.Statistics.FrameLock {
+					e.Statistics.ReceivedPacketsPerChannel[e.Statistics.VCID]++
+					dat := e.decodedData[:datalink[id].FrameSize-datalink[id].RsParityBlockSize-datalink[id].SyncWordSize]
+					output.Write(dat)
+				}
 
-			if e.Statistics.FrameLock {
-				e.Statistics.ReceivedPacketsPerChannel[e.Statistics.VCID]++
-				dat := e.decodedData[:datalink[id].FrameSize-datalink[id].RsParityBlockSize-datalink[id].SyncWordSize]
-				output.Write(dat)
-			}
-
-			if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
-				e.updateStatistics(e.Statistics)
+				if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
+					e.updateStatistics(e.Statistics)
+				}
 			}
 		} else {
 			if err != io.EOF {
 				log.Fatal(err)
 			}
-			break
+			return true
 		}
-	}
+		return false
+	})
 
 	if e.statsSock != nil {
 		e.Statistics.Finish()

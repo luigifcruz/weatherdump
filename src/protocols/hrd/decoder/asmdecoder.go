@@ -47,7 +47,7 @@ func NewAsmDecoder(uuid string) interfaces.Decoder {
 	return &e
 }
 
-func (e *AsmDecoder) Work(inputPath string, outputPath string, g *bool) {
+func (e *AsmDecoder) Work(inputPath string, outputPath string, signal chan bool) {
 	color.Yellow("[DEC] WARNING! This decoder is currently in BETA development state.")
 
 	fi, err := os.Stat(inputPath)
@@ -81,10 +81,10 @@ func (e *AsmDecoder) Work(inputPath string, outputPath string, g *bool) {
 	e.Statistics.TotalBytes = uint64(fi.Size())
 	e.Statistics.TaskName = "Decoding soft-symbol file"
 
-	for *g {
+	interfaces.WatchFor(signal, func() bool {
 		n, err := input.Read(e.hardData)
 		if datalink[id].FrameSize != n {
-			break
+			return true
 		}
 
 		if err == nil {
@@ -113,9 +113,10 @@ func (e *AsmDecoder) Work(inputPath string, outputPath string, g *bool) {
 			if err != io.EOF {
 				log.Fatal(err)
 			}
-			break
+			return true
 		}
-	}
+		return false
+	})
 
 	progress.Stop()
 	os.Remove(outputPath + ".buf")

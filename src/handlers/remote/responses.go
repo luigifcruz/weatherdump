@@ -7,9 +7,9 @@ import (
 
 // Response standard response structure.
 type Response struct {
-	Res         bool
-	Code        string
-	Description string
+	Res  bool
+	Code string
+	Data string
 }
 
 // ResError ends the current request with Code 400 (Bad Request).

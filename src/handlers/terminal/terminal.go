@@ -14,7 +14,6 @@ import (
 func HandleInput(datalink, inputFile, outputPath, decoderType string, wf img.Pipeline) {
 	fmt.Printf("[CLI] Activating %s workflow.\n", strings.ToUpper(datalink))
 
-	heartbeat := true
 	workingPath, fileName := handlers.GenerateDirectories(inputFile, outputPath)
 
 	if decoderType != "none" {
@@ -24,7 +23,7 @@ func HandleInput(datalink, inputFile, outputPath, decoderType string, wf img.Pip
 		}
 
 		decodedFile := fmt.Sprintf("%s/decoded_%s.bin", workingPath, strings.ToLower(fileName))
-		handlers.AvailableDecoders[datalink][decoderType]("").Work(inputFile, decodedFile, &heartbeat)
+		handlers.AvailableDecoders[datalink][decoderType]("").Work(inputFile, decodedFile, nil)
 		inputFile = decodedFile
 	}
 

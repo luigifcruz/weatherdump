@@ -1,7 +1,6 @@
 package assets
 
 import (
-	"encoding/json"
 	"sort"
 
 	"github.com/gorilla/websocket"
@@ -17,11 +16,6 @@ type Manifest map[uint16]*struct {
 type ProcessingManifest struct {
 	Parser   Manifest
 	Composer Manifest
-}
-
-func (e ProcessingManifest) GetString() string {
-	data, _ := json.Marshal(e)
-	return string(data)
 }
 
 func (e ProcessingManifest) ParserCount() int {

@@ -8,6 +8,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.0
+	github.com/gorilla/schema v1.1.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/gosuri/uilive v0.0.0-20170323041506-ac356e6e42cd // indirect
 	github.com/gosuri/uiprogress v0.0.0-20170224063937-d0567a9d84a1

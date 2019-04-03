@@ -4,96 +4,58 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"weather-dump/src/handlers"
 
 	httpHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	uuid "github.com/satori/go.uuid"
 )
 
-type handler map[string]func(http.ResponseWriter, *http.Request, map[string]string, uuid.UUID)
-
-type process struct {
-	heartbeart bool
-}
+var decoder = schema.NewDecoder()
 
 type Remote struct {
-	processes     map[uuid.UUID]*process
-	startHandlers handler
+	routines map[uuid.UUID](chan bool)
 }
 
 func New() *Remote {
-	e := Remote{}
-	e.processes = make(map[uuid.UUID]*process)
-	e.startHandlers = handler{
-		"decoder":   e.decoderStart,
-		"processor": e.processorStart,
-	}
-	return &e
+	return &Remote{make(map[uuid.UUID](chan bool))}
 }
 
 func (s *Remote) Listen(port string) {
-	origins := httpHandlers.AllowedOrigins([]string{"http://localhost:3002"})
-	headers := httpHandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+	fmt.Println("[RMT] Starting to listen requests from port " + port + "...")
 
 	r := mux.NewRouter()
-	r.HandleFunc("/{datalink}/{decoder}/{cmd}/{handler}", s.router)
-	http.Handle("/", httpHandlers.CORS(origins, headers)(r))
+	r.HandleFunc("/start/processor", s.processorHandler)
+	r.HandleFunc("/start/decoder", s.decoderHandler)
+	r.HandleFunc("/abort/{id}", s.abortHandler)
+	r.HandleFunc("/get/manifest", s.manifestHandler)
 
-	fmt.Println("[RMT] Starting to listen requests from port " + port + "...")
+	origins := httpHandlers.AllowedOrigins([]string{"http://localhost:3002"})
+	headers := httpHandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+	http.Handle("/", httpHandlers.CORS(origins, headers)(r))
 	log.Fatal(http.ListenAndServe("127.0.0.1:"+port, nil))
 }
 
 func (s *Remote) register() uuid.UUID {
 	id := uuid.Must(uuid.NewV4(), nil)
-	s.processes[id] = &process{true}
 	fmt.Printf("[RMT] Process registered: %s\n", id.String())
 	return id
 }
 
 func (s *Remote) terminate(id uuid.UUID) {
-	if s.processes[id] == nil {
-		return
-	}
-
-	s.processes[id].heartbeart = false
-	delete(s.processes, id)
+	s.routines[id] <- true
+	delete(s.routines, id)
 	fmt.Printf("[RMT] Process terminated: %s\n", id.String())
 }
 
-func (s *Remote) router(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+func (s *Remote) abortHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.FromString(mux.Vars(r)["id"])
 
-	if handlers.AvailableDecoders[vars["datalink"]] == nil {
-		ResError(w, "INVALID_DATALINK", "Datalink not supported.")
+	if err != nil || s.routines[id] == nil {
+		ResError(w, "INVALID_ID", "Invalid ID or process already exited.")
 		return
 	}
 
-	if s.startHandlers[vars["handler"]] == nil {
-		ResError(w, "INVALID_HANDLER", "Handler not supported.")
-		return
-	}
-
-	switch vars["cmd"] {
-	case "abort":
-		id, err := uuid.FromString(r.FormValue("id"))
-
-		if err != nil || s.processes[id] == nil {
-			ResError(w, "INVALID_ID", "Invalid ID or process already exited.")
-			return
-		}
-
-		s.terminate(id)
-		ResSuccess(w, "PROCESS_TERMINATED", "")
-	case "manifest":
-		processor := handlers.AvailableProcessors[vars["datalink"]]("")
-		ResSuccess(w, "MANIFEST", processor.GetProductsManifest().GetString())
-	case "start":
-		s.startHandlers[vars["handler"]](w, r, vars, s.register())
-	case "exit":
-		os.Exit(0)
-	default:
-		ResError(w, "INVALID_COMMAND", "Invalid command.")
-	}
+	s.terminate(id)
+	ResSuccess(w, "PROCESS_TERMINATED", "")
 }

@@ -78,7 +78,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	var currentParser, currentComposer uint16
 
 	progress := uiprogress.New()
-	progress.Start()
+	//progress.Start()
 
 	bar1 := progress.AddBar(manifest.ParserCount()).AppendCompleted()
 	bar2 := progress.AddBar(manifest.ComposerCount()).AppendCompleted()
@@ -134,7 +134,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	}
 
 	currentComposer = 9999
-	progress.Stop()
+	//progress.Stop()
 	color.Green("[PRC] Done! All products and components were saved.")
 }
 
