@@ -9,6 +9,10 @@
     height: 18.5em;
 }
 
+.tab-view-body > div {
+  position: absolute;
+}
+
 .tab-view-tab {
     height: 2em;
     padding: .15em 1.5em .15em .75em;

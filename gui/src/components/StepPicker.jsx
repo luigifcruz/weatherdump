@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import * as rxa from 'redux/actions';
-
 import inputFormats from 'static/InputFormats';
 import { steps as headerText } from 'static/HeaderText';
 
@@ -19,7 +18,7 @@ class StepPicker extends Component {
         this.selectInput = this.selectInput.bind(this);
         this.goBack = this.goBack.bind(this);
     }
- 
+
     getUploadedFileName(e) {
         const inputFile = e.target.files[0].path
         if (inputFile == undefined) {

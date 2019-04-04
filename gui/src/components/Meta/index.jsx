@@ -1,22 +1,66 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { spring, AnimatedSwitch } from 'react-router-transition';
 import About from './About';
 import Feedback from './Feedback';
 import Updates from './Updates';
 import Licenses from './Licenses';
+import Advanced from './Advanced';
 
 import 'styles/meta';
 import 'styles/tabview';
 
+function mapStyles(styles) {
+    return {
+        opacity: styles.opacity,
+        transform: `scale(${styles.scale})`,
+    };
+}
+  
+function bounce(val) {
+    return spring(val, {
+        stiffness: 330,
+        damping: 22,
+    });
+}
+
+const bounceTransition = {
+    atEnter: {
+        opacity: 0,
+        scale: 1.05,
+    },
+    atLeave: {
+        opacity: bounce(0),
+        scale: bounce(0.95),
+    },
+    atActive: {
+        opacity: bounce(1),
+        scale: bounce(1),
+    },
+};
+
 class Meta extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            previous: props.location.state.previous
+        }
+        this.handleClose = this.handleClose.bind(this);
+    }
+
+    handleClose() {
+        const { history } = this.props;
+        history.push(this.state.previous);
+    }
+
     render() {
         const { tab } = this.props.match.params
         return (
             <div>
                 <div className="main-header main-header-small">
                     <h1 className="main-title">
-                        <div onClick={this.props.history.goBack} className="icon">
+                        <div onClick={this.handleClose} className="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </div>
                         WeatherDump
@@ -40,13 +84,24 @@ class Meta extends Component {
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-pen-tool"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
                             <h3>Licenses</h3>
                         </Link>
+                        <Link to={`/meta/advanced`} className={tab == "advanced" ? "tab-view-tab tab-view-tab-selected" : "tab-view-tab"}>               
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-terminal"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                            <h3>Advanced</h3>
+                        </Link>
                     </div>
-                    <div className="tab-view-body">
+                    <AnimatedSwitch
+                            atEnter={bounceTransition.atEnter}
+                            atLeave={bounceTransition.atLeave}
+                            atActive={bounceTransition.atActive}
+                            mapStyles={mapStyles}
+                        className="tab-view-body"
+                    >
                         <Route exact path="/meta/about" component={About}/>
                         <Route exact path="/meta/feedback" component={Feedback}/>
                         <Route exact path="/meta/updates" component={Updates}/>
                         <Route exact path="/meta/licenses" component={Licenses}/>
-                    </div>
+                        <Route exact path="/meta/advanced" component={Advanced}/>
+                    </AnimatedSwitch>
                 </div>
             </div>
         );

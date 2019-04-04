@@ -15,7 +15,14 @@ class App extends Component {
                 {this.props.children}
                 <div className="main-footer">
                     <div className="main-footer-left">
-                        Version {version} • <Link to="/meta/about">About</Link>
+                        Version {version}
+                        <label> • </label> 
+                        <Link to={{
+                            pathname: '/meta/about',
+                            state: {
+                                previous: this.props.history.location.pathname
+                            }
+                        }}>About</Link>
                     </div>
                     <div className="main-footer-center">
                         WeatherDump

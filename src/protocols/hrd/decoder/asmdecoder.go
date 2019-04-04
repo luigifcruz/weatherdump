@@ -25,16 +25,16 @@ type AsmDecoder struct {
 	rsWorkBuffer []byte
 	reedSolomon  SatHelper.ReedSolomon
 	Statistics   assets.Statistics
-	constSock    *websocket.Conn
-	statsSock    *websocket.Conn
+	sockets      *websocket.Conn
+	uuid         string
 }
 
 func NewAsmDecoder(uuid string) interfaces.Decoder {
 	e := AsmDecoder{}
 
 	if uuid != "" {
-		http.HandleFunc(fmt.Sprintf("/hrd/%s/constellation", uuid), e.constellation)
-		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
+		http.HandleFunc(fmt.Sprintf("/socket/hrd/%s", uuid), e.socketsHandler)
+		e.uuid = uuid
 	}
 
 	e.hardData = make([]byte, datalink[id].FrameSize)
@@ -64,7 +64,10 @@ func (e *AsmDecoder) Work(inputPath string, outputPath string, signal chan bool)
 	e.Statistics.TaskName = "Decoding CADU file	"
 
 	progress := uiprogress.New()
-	progress.Start()
+
+	if e.uuid == "" {
+		progress.Start()
+	}
 
 	bar := progress.AddBar(int(fi.Size())).AppendCompleted()
 
@@ -80,6 +83,13 @@ func (e *AsmDecoder) Work(inputPath string, outputPath string, signal chan bool)
 	e.Statistics.TotalBytesRead = 0
 	e.Statistics.TotalBytes = uint64(fi.Size())
 	e.Statistics.TaskName = "Decoding soft-symbol file"
+
+	interfaces.WatchFor(signal, func() bool {
+		for e.sockets == nil && e.uuid != "" {
+			return false
+		}
+		return true
+	})
 
 	interfaces.WatchFor(signal, func() bool {
 		n, err := input.Read(e.hardData)
@@ -106,8 +116,8 @@ func (e *AsmDecoder) Work(inputPath string, outputPath string, signal chan bool)
 			dat := e.hardData[:datalink[id].FrameSize-datalink[id].RsParityBlockSize-datalink[id].SyncWordSize]
 			output.Write(dat)
 
-			if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
-				e.updateStatistics(e.Statistics)
+			if e.Statistics.TotalPackets%512 == 0 && e.sockets != nil {
+				e.updateSockets(e.Statistics)
 			}
 		} else {
 			if err != io.EOF {
@@ -118,32 +128,29 @@ func (e *AsmDecoder) Work(inputPath string, outputPath string, signal chan bool)
 		return false
 	})
 
-	progress.Stop()
 	os.Remove(outputPath + ".buf")
 
-	if e.statsSock != nil {
+	if e.sockets != nil {
 		e.Statistics.Finish()
-		e.updateStatistics(e.Statistics)
+		e.updateSockets(e.Statistics)
 	}
 
+	if e.uuid == "" {
+		progress.Stop()
+	}
 	color.Green("[DEC] Decoding finished! File saved in the same folder.\n")
 }
 
-func (e *AsmDecoder) updateStatistics(s assets.Statistics) {
+func (e *AsmDecoder) updateSockets(s assets.Statistics) {
 	json, err := json.Marshal(s)
 	if err == nil {
-		e.statsSock.WriteMessage(1, []byte(json))
+		e.sockets.WriteMessage(1, []byte(json))
 	}
 }
 
-func (e *AsmDecoder) constellation(w http.ResponseWriter, r *http.Request) {
+func (e *AsmDecoder) socketsHandler(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	e.constSock, _ = upgrader.Upgrade(w, r, nil)
-}
-
-func (e *AsmDecoder) statistics(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
+	e.sockets, _ = upgrader.Upgrade(w, r, nil)
 }
 
 func shiftWithConstantSize(arr *[]byte, pos int, length int) {

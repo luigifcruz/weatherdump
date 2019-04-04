@@ -27,16 +27,16 @@ type CaduDecoder struct {
 	correlator   SatHelper.Correlator
 	reedSolomon  SatHelper.ReedSolomon
 	Statistics   assets.Statistics
-	constSock    *websocket.Conn
-	statsSock    *websocket.Conn
+	sockets      *websocket.Conn
+	uuid         string
 }
 
 func NewCaduDecoder(uuid string) interfaces.Decoder {
 	e := CaduDecoder{}
 
 	if uuid != "" {
-		http.HandleFunc(fmt.Sprintf("/hrd/%s/constellation", uuid), e.constellation)
-		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
+		http.HandleFunc(fmt.Sprintf("/socket/hrd/%s", uuid), e.socketsHandler)
+		e.uuid = uuid
 	}
 
 	e.softData = make([]byte, datalink[id].FrameBits)
@@ -69,7 +69,10 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, signal chan bool
 	e.Statistics.TaskName = "Converting CADU file"
 
 	progress := uiprogress.New()
-	progress.Start()
+
+	if e.uuid == "" {
+		progress.Start()
+	}
 
 	bar1 := progress.AddBar(int(fi.Size())).AppendCompleted()
 	bar2 := progress.AddBar(int(fi.Size()) * 8).AppendCompleted()
@@ -91,6 +94,13 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, signal chan bool
 	})
 
 	interfaces.WatchFor(signal, func() bool {
+		for e.sockets == nil && e.uuid != "" {
+			return false
+		}
+		return true
+	})
+
+	interfaces.WatchFor(signal, func() bool {
 		n, err := input.Read(e.hardData)
 		if datalink[id].FrameSize != n {
 			return true
@@ -103,8 +113,8 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, signal chan bool
 			convertToArray(e.hardData, &e.softData, datalink[id].FrameSize)
 			outputBuf.Write(e.softData)
 
-			if e.Statistics.TotalBytesRead%1e4 == 0 && e.statsSock != nil {
-				e.updateStatistics(e.Statistics)
+			if e.Statistics.TotalBytesRead%1e4 == 0 && e.sockets != nil {
+				e.updateSockets(e.Statistics)
 			}
 		} else {
 			if err != io.EOF {
@@ -162,7 +172,7 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, signal chan bool
 			pos := e.correlator.GetHighestCorrelationPosition()
 			cor := e.correlator.GetHighestCorrelation()
 
-			if cor < datalink[id].MinCorrelationBits/2 {
+			if cor > datalink[id].MinCorrelationBits/2 {
 				if pos != 0 {
 					shiftWithConstantSize(&e.softData, int(pos), datalink[id].FrameBits)
 					offset := datalink[id].FrameBits - int(pos)
@@ -227,8 +237,8 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, signal chan bool
 					output.Write(dat)
 				}
 
-				if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
-					e.updateStatistics(e.Statistics)
+				if e.Statistics.TotalPackets%32 == 0 && e.sockets != nil {
+					e.updateSockets(e.Statistics)
 				}
 			}
 		} else {
@@ -242,14 +252,16 @@ func (e *CaduDecoder) Work(inputPath string, outputPath string, signal chan bool
 
 	output.Close()
 	inputBuf.Close()
-	progress.Stop()
 	os.Remove(outputPath + ".buf")
 
-	if e.statsSock != nil {
+	if e.sockets != nil {
 		e.Statistics.Finish()
-		e.updateStatistics(e.Statistics)
+		e.updateSockets(e.Statistics)
 	}
 
+	if e.uuid == "" {
+		progress.Stop()
+	}
 	color.Green("[DEC] Decoding finished! File saved in the same folder.\n")
 }
 
@@ -274,19 +286,14 @@ func convertToArray(hard []byte, soft *[]byte, len int) {
 	}
 }
 
-func (e *CaduDecoder) updateStatistics(s assets.Statistics) {
+func (e *CaduDecoder) updateSockets(s assets.Statistics) {
 	json, err := json.Marshal(s)
 	if err == nil {
-		e.statsSock.WriteMessage(1, []byte(json))
+		e.sockets.WriteMessage(1, []byte(json))
 	}
 }
 
-func (e *CaduDecoder) constellation(w http.ResponseWriter, r *http.Request) {
+func (e *CaduDecoder) socketsHandler(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	e.constSock, _ = upgrader.Upgrade(w, r, nil)
-}
-
-func (e *CaduDecoder) statistics(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
+	e.sockets, _ = upgrader.Upgrade(w, r, nil)
 }

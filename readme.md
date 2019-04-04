@@ -44,7 +44,12 @@ weatherdump lrpt soft ./file_path.bin
 - Statistical SCID recover.
 - New LRPT frame stacker with proper line synchronization.
 - Added RGB multispectral composites for LRPT.
-- Exported functions better documentated. 
+- Exported functions better documentated.
 - GUI stylesheet refactor following Airbnb's styleguide.
-- Webfonts now loaded from the CSS. 
+- Webfonts now loaded from the CSS.
 - Improving multi-theme support.
+- Implemented Golang module manager.
+- Tabs routing to the right place.
+- New Javascript library for the REST API.
+- Fix WebSockets synchronization.
+- General improvements to the REST API.

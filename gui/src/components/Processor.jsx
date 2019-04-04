@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import * as rxa from 'redux/actions';
 import { connect } from 'react-redux';
-import request from 'superagent';
-
+import WeatherRemote from 'weather-remote';
 import { processor as headerText } from 'static/HeaderText';
 
 import 'styles/processor';
@@ -15,46 +14,30 @@ class Processor extends Component {
 
         this.goBack = this.goBack.bind(this);
         this.startProcessor = this.startProcessor.bind(this);
+        this.remote = new WeatherRemote("localhost:3000");
+        this.datalink = this.props.match.params.datalink;
     }
 
     componentDidMount() {
-        const { datalink } = this.props.match.params
-        const { processDescriptor } = this.props
-        request
-            .get(`http://localhost:3000/${datalink}/${processDescriptor}/manifest/processor`)
-            .then((res) => {
-                let { Code, Description } = res.body;
-                if (Code == "MANIFEST") {
-                    let { Parser, Composer } = JSON.parse(Description)
-                    this.props.dispatch(rxa.updateManifest(Parser, Composer))
-                }
-            })
-            .catch((err, res) => {
-                console.log(err.response.body)
-                alert(err.response.body.Code);
-            })
+        this.remote.getManifest(this.datalink).then((manifest) => {
+            this.props.dispatch(rxa.updateManifest(manifest.Parser, manifest.Composer))
+        });
     }
 
     startProcessor() {
-        const { datalink } = this.props.match.params
-        request
-            .post(`http://localhost:3000/${datalink}/${this.props.processDescriptor}/start/processor`)
-            .field("inputFile", this.props.decodedFile)
-            .field("pipeline", JSON.stringify(this.props.processorEnhancements))
-            .field("manifest", JSON.stringify({
+        this.remote.startProcessor({
+            datalink: this.datalink,
+            inputPath: this.props.decodedFile,
+            pipeline: JSON.stringify(this.props.processorEnhancements),
+            manifest: JSON.stringify({
                 Parser: this.props.manifestParser,
                 Composer: this.props.manifestComposer
-            }))
-            .then((res) => {
-                let { Code, Description } = res.body;
-                this.props.dispatch(rxa.updateProcessId(Code))
-                this.props.dispatch(rxa.updateWorkingFolder(Description))
-                this.props.history.push(`/showroom/${datalink}`)
             })
-            .catch((err, res) => {
-                console.log(err.response.body)
-                alert(err.response.body.Code);
-            })
+        }).then((res) => {
+            this.props.dispatch(rxa.updateProcessId(res.uuid))
+            this.props.dispatch(rxa.updateWorkingFolder(res.outputPath))
+            this.props.history.push(`/showroom/${this.datalink}`)
+        });
     }
 
     goBack() {

@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import Websocket from 'react-websocket';
 import * as rxa from '../../redux/actions';
 import { connect } from 'react-redux';
-import request from 'superagent';
-
+import WeatherRemote from 'weather-remote';
 import Constellation from './Constellation';
+import { RingLoader } from 'react-spinners';
 import { decoder as headerText } from 'static/HeaderText';
 
 import 'styles/Decoder';
@@ -26,6 +26,7 @@ class Decoder extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            socketOpen: false,
             complex: [],
             stats: {
                 TotalBytesRead: 0.0,
@@ -36,47 +37,44 @@ class Decoder extends Component {
                 ReceivedPacketsPerChannel: [],
                 Finished: false,
                 TaskName: "Starting decoder"
-            },
-            n: 0
+            }
         };
 
-        this.handleConstellation = this.handleConstellation.bind(this);
-        this.handleStatistics = this.handleStatistics.bind(this);
         this.handleAbort = this.handleAbort.bind(this);
         this.openDecodedFolder = this.openDecodedFolder.bind(this);
         this.openProcessor = this.openProcessor.bind(this);
+        this.handleSocketEvent = this.handleSocketEvent.bind(this);
+        this.handleSocketMessage = this.handleSocketMessage.bind(this);
+
+        this.remote = new WeatherRemote("localhost:3000");
+        this.datalink = this.props.match.params.datalink;
     }
 
-    handleConstellation(data) {
-        this.setState({ complex: _base64ToArrayBuffer(data), n: this.state.n + 1 })
-    }
-
-    handleStatistics(payload) {
-        const stats = JSON.parse(payload)
-        if (this.state.stats.Finished != this.props.Finished && stats.Finished) {
-            this.handleFinish()
+    handleSocketMessage(payload) {
+        if (payload.charAt(0) != "{") {
+            this.setState({ complex: _base64ToArrayBuffer(payload), n: this.state.n + 1 })
+        } else {
+            const stats = JSON.parse(payload)
+            if (this.state.stats.Finished != this.props.Finished && stats.Finished) {
+                this.handleFinish()
+            }
+            this.setState({ stats })
         }
-        this.setState({ stats })
+    }
+
+    handleSocketEvent() {
+        this.setState({ socketOpen: !this.state.socketOpen });
     }
 
     componentDidMount() {
-        const { datalink } = this.props.match.params
-        const { processDescriptor } = this.props
-
-        request
-            .post(`http://localhost:3000/${datalink}/${processDescriptor}/start/decoder`)
-            .field("inputFile", this.props.demodulatedFile)
-            .then((res) => {
-                let { Code, Description } = res.body;
-                this.props.dispatch(rxa.updateProcessId(Code))
-                this.props.dispatch(rxa.updateDecodedFile(Description))
-                
-            })
-            .catch((err, res) => {
-                console.log(err.response.body)
-                alert(err.response.body.Code);
-                this.props.history.goBack()
-            })
+        this.remote.startDecoder({
+            datalink: this.datalink,
+            inputFile: this.props.demodulatedFile,
+            decoder: this.props.processDescriptor
+        }).then((res) => {
+            this.props.dispatch(rxa.updateProcessId(res.uuid))
+            this.props.dispatch(rxa.updateDecodedFile(res.outputPath))
+        });
     }
 
     handleFinish() {
@@ -85,24 +83,17 @@ class Decoder extends Component {
                 body: 'WeatherDump finished decoding your file.'
             })
         }
-        
         this.props.dispatch(rxa.updateProcessId(null))
     }
 
     handleAbort() {
-        const { datalink } = this.props.match.params
-        const { history, processId, processDescriptor } = this.props
-        history.push(`/steps/${datalink}/decoder`)
+        const { history, processId } = this.props
+        history.push(`/steps/${this.datalink}/decoder`)
 
-        if (processId != null && processDescriptor != null) {
-            request
-            .post(`http://localhost:3000/${datalink}/${processDescriptor}/abort/decoder`)
-            .field("id", processId)
-            .then((res) => {
+        if (processId != null) {
+            this.remote.abortTask(processId).then(() => {
                 this.handleFinish()
-                console.log("Process aborted.")
-            })
-            .catch(err => console.log(err))
+            });
         }
     }
 
@@ -113,12 +104,10 @@ class Decoder extends Component {
     }
 
     openProcessor() {
-        const { datalink } = this.props.match.params
-        this.props.history.push(`/processor/${datalink}`)
+        this.props.history.push(`/processor/${this.datalink}`)
     }
 
     render() {
-        const { datalink } = this.props.match.params
         const { stats } = this.state;
 
         let percentage = (stats.TotalBytesRead / stats.TotalBytes) * 100
@@ -129,22 +118,6 @@ class Decoder extends Component {
 
         return (
             <div>
-                {(this.props.processId != null) ? (
-                    <div>
-                        <Websocket 
-                            reconnect={true}
-                            debug={process.env.NODE_ENV == 'development'}
-                            url={`ws://localhost:3000/${datalink}/${this.props.processId}/constellation`}
-                            onMessage={this.handleConstellation}
-                        />
-                        <Websocket
-                            reconnect={true}
-                            debug={process.env.NODE_ENV == 'development'}
-                            url={`ws://localhost:3000/${datalink}/${this.props.processId}/statistics`}
-                            onMessage={this.handleStatistics}
-                        />
-                    </div>        
-                ) :  null}
                 <div className="main-header">
                     <h1 className="main-title">
                         <div onClick={this.handleAbort} className="icon">
@@ -154,85 +127,105 @@ class Decoder extends Component {
                     </h1>
                     <h2 className="main-description">{headerText.description}</h2>
                 </div>
-                <div className="main-body Decoder">
-                    <div className="LeftWindow">
-                        <Constellation
-                            percentage={percentage}
-                            stats={this.state.stats}
-                            complex={this.state.complex}
-                            n={this.state.n}
+                {(this.props.processId != null) ? (
+                    <div>
+                        <Websocket 
+                            reconnect={true}
+                            debug={process.env.NODE_ENV == 'development'}
+                            url={`ws://localhost:3000/socket/${this.datalink}/${this.props.processId}`}
+                            onMessage={this.handleSocketMessage}
+                            onOpen={this.handleSocketEvent}
+                            onClose={this.handleSocketEvent}
                         />
                     </div>
-                    <div className="CenterWindow">
-                        <div className="ReedSolomon">
-                            <div className="Indicator">
-                                <div className="Block">
-                                    <div className="Corrections">{stats.AverageRSCorrections[0]}</div>
-                                    <div className="Label">B01</div>
+                ) : null}
+                {(this.state.socketOpen || this.state.stats.Finished) ? (
+                    <div className="main-body Decoder">
+                        <div className="LeftWindow">
+                            <Constellation
+                                percentage={percentage}
+                                stats={this.state.stats}
+                                complex={this.state.complex}
+                                n={this.state.n}
+                            />
+                        </div>
+                        <div className="CenterWindow">
+                            <div className="ReedSolomon">
+                                <div className="Indicator">
+                                    <div className="Block">
+                                        <div className="Corrections">{stats.AverageRSCorrections[0]}</div>
+                                        <div className="Label">B01</div>
+                                    </div>
+                                    <div className="Block">
+                                        <div className="Corrections">{stats.AverageRSCorrections[1]}</div>
+                                        <div className="Label">B02</div>
+                                    </div>
+                                    <div className="Block">
+                                        <div className="Corrections">{stats.AverageRSCorrections[2]}</div>
+                                        <div className="Label">B03</div>
+                                    </div>
+                                    <div className="Block">
+                                        <div className="Corrections">{stats.AverageRSCorrections[3]}</div>
+                                        <div className="Label">B04</div>
+                                    </div>
                                 </div>
-                                <div className="Block">
-                                    <div className="Corrections">{stats.AverageRSCorrections[1]}</div>
-                                    <div className="Label">B02</div>
-                                </div>
-                                <div className="Block">
-                                    <div className="Corrections">{stats.AverageRSCorrections[2]}</div>
-                                    <div className="Label">B03</div>
-                                </div>
-                                <div className="Block">
-                                    <div className="Corrections">{stats.AverageRSCorrections[3]}</div>
-                                    <div className="Label">B04</div>
-                                </div>
+                                <div className="Name">Reed-Solomon Corrections</div>
                             </div>
-                            <div className="Name">Reed-Solomon Corrections</div>
+                            <div className="SignalQuality">
+                                <div className="Number">{stats.SignalQuality}%</div>
+                                <div className="Name">Signal Quality</div>
+                            </div>
+                            <div className="DroppedPackets">
+                                <div className="Number">{droppedpackets.toFixed(2)}%</div>
+                                <div className="Name">Dropped Packets</div>
+                            </div>
+                            <div className="SignalQuality">
+                                <div className="Number">{stats.FrameLock ? stats.VCID : 0}</div>
+                                <div className="Name">VCID</div>
+                            </div>
+                            <div className="DroppedPackets">
+                                <div className="Number">{stats.AverageVitCorrections}/{stats.FrameBits}</div>
+                                <div className="Name">Viterbi Errors</div>
+                            </div>
+                            <div className="LockIndicator" style={{ background: stats.FrameLock ? "#00BA8C" : "#282A37" }}>
+                                {stats.FrameLock ? "LOCKED" : "UNLOCKED"}
+                            </div>
                         </div>
-                        <div className="SignalQuality">
-                            <div className="Number">{stats.SignalQuality}%</div>
-                            <div className="Name">Signal Quality</div>
-                        </div>
-                        <div className="DroppedPackets">
-                            <div className="Number">{droppedpackets.toFixed(2)}%</div>
-                            <div className="Name">Dropped Packets</div>
-                        </div>
-                        <div className="SignalQuality">
-                            <div className="Number">{stats.FrameLock ? stats.VCID : 0}</div>
-                            <div className="Name">VCID</div>
-                        </div>
-                        <div className="DroppedPackets">
-                            <div className="Number">{stats.AverageVitCorrections}/{stats.FrameBits}</div>
-                            <div className="Name">Viterbi Errors</div>
-                        </div>
-                        <div className="LockIndicator" style={{ background: stats.FrameLock ? "#00BA8C" : "#282A37" }}>
-                            {stats.FrameLock ? "LOCKED" : "UNLOCKED"}
+                        <div className="RightWindow">
+                            <div className="ChannelList">
+                                <div className="Label">Received Packets per Channel</div>
+                                {
+                                    stats.ReceivedPacketsPerChannel.map((received, i) => {
+                                        if (received > 0) {
+                                            return (
+                                                <div key={i} className="Channel">
+                                                    <div className="VCID">{i}</div>
+                                                    <div className="Count">{received}</div>
+                                                </div>
+                                            )
+                                        }
+                                    })
+                                }
+                            </div>
+                            <div className="controll-box">
+                                {(this.props.processId != null && this.props.decodedFile != null) ? (
+                                    <div onClick={this.handleAbort} className="btn btn-orange btn-large">Abort Decoding</div>
+                                ) : (
+                                    <div>
+                                        <div onClick={this.openDecodedFolder} className="btn btn-blue btn-small btn-left">Open Folder</div>
+                                        <div onClick={this.openProcessor} className="btn btn-green btn-small">Next Step</div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    <div className="RightWindow">
-                        <div className="ChannelList">
-                            <div className="Label">Received Packets per Channel</div>
-                            {
-                                stats.ReceivedPacketsPerChannel.map((received, i) => {
-                                    if (received > 0) {
-                                        return (
-                                            <div key={i} className="Channel">
-                                                <div className="VCID">{i}</div>
-                                                <div className="Count">{received}</div>
-                                            </div>
-                                        )
-                                    }
-                                })
-                            }
-                        </div>
-                        <div className="controll-box">
-                            {(this.props.processId != null && this.props.decodedFile != null) ? (
-                                <div onClick={this.handleAbort} className="btn btn-orange btn-large">Abort Decoding</div>
-                            ) : (
-                                <div>
-                                    <div onClick={this.openDecodedFolder} className="btn btn-blue btn-small btn-left">Open Folder</div>
-                                    <div onClick={this.openProcessor} className="btn btn-green btn-small">Next Step</div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                ) : (
+                    <RingLoader
+                        sizeUnit={"px"}
+                        size={100}
+                        color={'#A2A0A1'}
+                    />
+                )}
             </div>
         );
     }

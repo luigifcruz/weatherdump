@@ -8,7 +8,7 @@
         "description": "From the recording thru processing, the WeatherDump supports a myriad of input options. To proceed, select below where are you at in the receiving process and what kind of input file you want to process."
     },
     "decoder": {
-        "title": "Decoding the input file for NPOESS...",
+        "title": "Decoding the input file...",
         "description": "In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while."
     },
     "processor": {

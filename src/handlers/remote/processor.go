@@ -34,7 +34,7 @@ func (s *Remote) processorHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := s.register()
 	wf := img.NewPipeline()
-	workingPath, _ := handlers.GenerateDirectories(req.InputFile, req.OutputPath)
+	req.OutputPath, _ = handlers.GenerateDirectories(req.InputFile, req.OutputPath)
 
 	var p map[string]struct {
 		Name      string
@@ -52,7 +52,7 @@ func (s *Remote) processorHandler(w http.ResponseWriter, r *http.Request) {
 
 		var m assets.ProcessingManifest
 		json.Unmarshal([]byte(req.Manifest), &m)
-		processor.Export(workingPath, wf, m)
+		processor.Export(req.OutputPath, wf, m)
 
 		fmt.Printf("[RMT] Decoder %s exited.\n", id.String())
 	}()

@@ -41,6 +41,7 @@ func (s *Remote) decoderHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("[RMT] Processor %s exited.\n", id.String())
 	}()
 
+	req.OutputPath = decodedFile
 	request, _ := json.Marshal(req)
 	ResSuccess(w, id.String(), string(request))
 }

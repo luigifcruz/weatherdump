@@ -30,16 +30,16 @@ type SoftSymbolDecoder struct {
 	correlator   SatHelper.Correlator
 	packetFixer  SatHelper.PacketFixer
 	Statistics   assets.Statistics
-	constSock    *websocket.Conn
-	statsSock    *websocket.Conn
+	sockets      *websocket.Conn
+	uuid         string
 }
 
 func NewSoftSymbolDecoder(uuid string) interfaces.Decoder {
 	e := SoftSymbolDecoder{}
 
 	if uuid != "" {
-		http.HandleFunc(fmt.Sprintf("/hrd/%s/constellation", uuid), e.constellation)
-		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
+		http.HandleFunc(fmt.Sprintf("/socket/hrd/%s", uuid), e.socketsHandler)
+		e.uuid = uuid
 	}
 
 	if uselastFrameData {
@@ -97,7 +97,10 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, signal cha
 	e.Statistics.TaskName = "Decoding soft-symbol file"
 
 	progress := uiprogress.New()
-	progress.Start()
+
+	if e.uuid == "" {
+		progress.Start()
+	}
 
 	bar := progress.AddBar(int(fi.Size())).AppendCompleted()
 	bar.PrependFunc(func(b *uiprogress.Bar) string {
@@ -112,6 +115,13 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, signal cha
 	})
 
 	interfaces.WatchFor(signal, func() bool {
+		for e.sockets == nil && e.uuid != "" {
+			return false
+		}
+		return true
+	})
+
+	interfaces.WatchFor(signal, func() bool {
 		n, err := input.Read(e.codedData)
 		if datalink[id].CodedFrameSize != n {
 			return true
@@ -121,8 +131,8 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, signal cha
 			e.Statistics.TotalBytesRead += uint64(n)
 			bar.Set(int(e.Statistics.TotalBytesRead))
 
-			if (e.Statistics.TotalPackets%32 == 0) && e.constSock != nil {
-				e.constSock.WriteMessage(1, []byte(base64.StdEncoding.EncodeToString(e.codedData[:200])))
+			if (e.Statistics.TotalPackets%32 == 0) && e.sockets != nil {
+				e.sockets.WriteMessage(1, []byte(base64.StdEncoding.EncodeToString(e.codedData[:200])))
 			}
 
 			if e.Statistics.TotalPackets%averageLastNSamples == 0 {
@@ -150,7 +160,7 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, signal cha
 			word := e.correlator.GetCorrelationWordNumber()
 			pos := e.correlator.GetHighestCorrelationPosition()
 
-			if cor < datalink[id].MinCorrelationBits {
+			if cor > datalink[id].MinCorrelationBits {
 				iqInv := (word / 4) > 0
 				switch word % 4 {
 				case 0:
@@ -264,8 +274,8 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, signal cha
 					output.Write(dat)
 				}
 
-				if e.Statistics.TotalPackets%32 == 0 && e.statsSock != nil {
-					e.updateStatistics(e.Statistics)
+				if e.Statistics.TotalPackets%32 == 0 && e.sockets != nil {
+					e.updateSockets(e.Statistics)
 				}
 			}
 		} else {
@@ -277,28 +287,25 @@ func (e *SoftSymbolDecoder) Work(inputPath string, outputPath string, signal cha
 		return false
 	})
 
-	if e.statsSock != nil {
+	if e.sockets != nil {
 		e.Statistics.Finish()
-		e.updateStatistics(e.Statistics)
+		e.updateSockets(e.Statistics)
 	}
 
-	progress.Stop()
+	if e.uuid == "" {
+		progress.Stop()
+	}
 	color.Green("[DEC] Decoding finished! File saved in the same folder.\n")
 }
 
-func (e *SoftSymbolDecoder) updateStatistics(s assets.Statistics) {
+func (e *SoftSymbolDecoder) updateSockets(s assets.Statistics) {
 	json, err := json.Marshal(s)
 	if err == nil {
-		e.statsSock.WriteMessage(1, []byte(json))
+		e.sockets.WriteMessage(1, []byte(json))
 	}
 }
 
-func (e *SoftSymbolDecoder) constellation(w http.ResponseWriter, r *http.Request) {
+func (e *SoftSymbolDecoder) socketsHandler(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	e.constSock, _ = upgrader.Upgrade(w, r, nil)
-}
-
-func (e *SoftSymbolDecoder) statistics(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
+	e.sockets, _ = upgrader.Upgrade(w, r, nil)
 }

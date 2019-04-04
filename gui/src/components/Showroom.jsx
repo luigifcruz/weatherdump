@@ -24,16 +24,7 @@ class Showroom extends Component {
         const { history, processId, processDescriptor } = this.props
         history.push(`/steps/${datalink}/processor`)
 
-        if (processId != null && processDescriptor != null) {
-            request
-            .post(`http://localhost:3000/${datalink}/${processDescriptor}/abort/decoder`)
-            .field("id", processId)
-            .then((res) => {
-                this.handleFinish()
-                console.log("Process aborted.")
-            })
-            .catch(err => console.log(err))
-        }
+        // To-do: ADD DECODER ABORT WHEN AVAILABLE
     }
 
     handleFinish() {
