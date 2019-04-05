@@ -51,15 +51,14 @@ class Decoder extends Component {
     }
 
     handleSocketMessage(payload) {
-        if (payload.charAt(0) != "{") {
-            this.setState({ complex: _base64ToArrayBuffer(payload), n: this.state.n + 1 })
-        } else {
-            const stats = JSON.parse(payload)
-            if (this.state.stats.Finished != this.props.Finished && stats.Finished) {
-                this.handleFinish()
-            }
-            this.setState({ stats })
+        const data = JSON.parse(payload)
+        if (this.state.stats.Finished != this.props.Finished && data.Finished) {
+            this.handleFinish()
         }
+        this.setState({
+            stats: data,
+            complex: _base64ToArrayBuffer(data.Constellation)
+        })
     }
 
     handleSocketEvent() {
@@ -67,14 +66,16 @@ class Decoder extends Component {
     }
 
     componentDidMount() {
-        this.remote.startDecoder({
-            datalink: this.datalink,
-            inputFile: this.props.demodulatedFile,
-            decoder: this.props.processDescriptor
-        }).then((res) => {
-            this.props.dispatch(rxa.updateProcessId(res.uuid))
-            this.props.dispatch(rxa.updateDecodedFile(res.outputPath))
-        });
+        if (this.props.processId == null) {
+            this.remote.startDecoder({
+                datalink: this.datalink,
+                inputFile: this.props.demodulatedFile,
+                decoder: this.props.processDescriptor
+            }).then((res) => {
+                this.props.dispatch(rxa.updateProcessId(res.uuid))
+                this.props.dispatch(rxa.updateDecodedFile(res.outputPath))
+            });
+        }
     }
 
     handleFinish() {
@@ -139,14 +140,13 @@ class Decoder extends Component {
                         />
                     </div>
                 ) : null}
-                {(this.state.socketOpen || this.state.stats.Finished) ? (
+                {(this.state.socketOpen || this.state.stats.Finished || false) ? (
                     <div className="main-body Decoder">
                         <div className="LeftWindow">
                             <Constellation
                                 percentage={percentage}
                                 stats={this.state.stats}
                                 complex={this.state.complex}
-                                n={this.state.n}
                             />
                         </div>
                         <div className="CenterWindow">
@@ -220,11 +220,13 @@ class Decoder extends Component {
                         </div>
                     </div>
                 ) : (
-                    <RingLoader
-                        sizeUnit={"px"}
-                        size={100}
-                        color={'#A2A0A1'}
-                    />
+                    <div className='sockets-loader'>
+                        <RingLoader
+                            sizeUnit={"px"}
+                            size={100}
+                            color={'#A2A0A1'}
+                        />
+                    </div>
                 )}
             </div>
         );

@@ -16,16 +16,3 @@ type DecoderMakers map[string]map[string]func(string) Decoder
 type Decoder interface {
 	Work(string, string, chan bool)
 }
-
-func WatchFor(signal chan bool, method func() bool) {
-	for {
-		select {
-		case <-signal:
-			return
-		default:
-			if method() {
-				return
-			}
-		}
-	}
-}
