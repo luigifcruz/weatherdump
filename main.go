@@ -39,6 +39,7 @@ var (
 
 	remote     = kingpin.Command("remote", "Activate the remote controll API.")
 	remotePort = remote.Arg("port", "server listen port").Default("3000").String()
+	clientPort = remote.Arg("client", "client port").Default("3002").String()
 )
 
 func main() {
@@ -51,7 +52,7 @@ func main() {
 	datalink := kingpin.Parse()
 
 	if datalink == "remote" {
-		remoteHandler.New().Listen(*remotePort)
+		remoteHandler.New().Listen(*remotePort, *clientPort)
 	}
 
 	wf := img.NewPipeline()

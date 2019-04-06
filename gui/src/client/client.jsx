@@ -20,7 +20,7 @@ export default class Client extends Component {
                 <BrowserRouter>
                     <App>
                         <Switch>
-                            <Route exact path="/index.html" component={Dashboard}/>
+                            <Route exact path="/" component={Dashboard}/>
                             <Route exact path="/meta/:tab" component={Meta}/>
                             <Route exact path="/steps/:datalink/:tab" component={StepPicker}/>
                             <Route exact path="/decoder/:datalink" component={Decoder}/>

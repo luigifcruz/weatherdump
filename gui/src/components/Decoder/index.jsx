@@ -133,7 +133,7 @@ class Decoder extends Component {
                         <Websocket 
                             reconnect={true}
                             debug={process.env.NODE_ENV == 'development'}
-                            url={`ws://localhost:3000/socket/${this.datalink}/${this.props.processId}`}
+                            url={`ws://${this.remote.enginePath}/socket/${this.datalink}/${this.props.processId}`}
                             onMessage={this.handleSocketMessage}
                             onOpen={this.handleSocketEvent}
                             onClose={this.handleSocketEvent}

@@ -8,7 +8,8 @@ fix-permission:
 
 build-cli-compiler:
 	cd ./docker && docker build -t weatherdump_linux_x64 -f Dockerfile.linux_x64 .
-	cd ./docker && docker build -t weatherdump_linux_armhf -f Dockerfile.linux_armhf .
+	cd ./docker && docker build -t weatherdump_linux_armv7 -f Dockerfile.linux_armv7 .
+	cd ./docker && docker build -t weatherdump_linux_armv6 -f Dockerfile.linux_armv6 .
 	cd ./docker && docker build -t weatherdump_win_x64 -f Dockerfile.win_x64 .
 	cd ./docker && docker build -t weatherdump_mac_x64 -f Dockerfile.mac_x64 .
 
@@ -16,7 +17,8 @@ build-cli-release:
 	mkdir -p release-builds ./dist
 	rm -fr ./release-builds/weatherdump-cli-* ./dist/*
 	docker run -v $(CD):/home/go/src/weather-dump weatherdump_linux_x64
-	docker run -v $(CD):/home/go/src/weather-dump weatherdump_linux_armhf
+	docker run -v $(CD):/home/go/src/weather-dump weatherdump_linux_armv7
+	docker run -v $(CD):/home/go/src/weather-dump weatherdump_linux_armv6
 	docker run -v $(CD):/home/go/src/weather-dump weatherdump_win_x64
 	docker run -v $(CD):/home/go/src/weather-dump weatherdump_mac_x64
 	make fix-permission

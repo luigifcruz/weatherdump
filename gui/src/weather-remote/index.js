@@ -8,6 +8,19 @@ class WeatherRemote {
 		this.serverAddress = `${engineAddr}:${enginePort}`;
 	}
 
+	get enginePort() {
+		return this.enginePort;
+	}
+
+	get engineAddr() {
+		return this.engineAddr;
+	}
+
+	get enginePath() {
+		return this.serverAddress;
+	}
+	
+
 	// Abort Task
 	// Endpoint: /abort/:uuid
 

@@ -1,12 +1,15 @@
-const { app, BrowserWindow, protocol, shell, dialog } = require('electron');
-const path = require('path');
-const getPort = require('get-port');
+const { app, BrowserWindow, protocol, shell, dialog, session } = require('electron');
 const { spawn } = require('child_process');
-const url = require('url');
+const getPort = require('get-port');
+const express = require('express');
+const http = require('http');
+const path = require('path');
 
-let win, cli = null;
+const serve = new express();
 
-function createWindow() {
+let win, cli, server = null;
+
+function createWindow(electronPort) {
     let height = 500;
 
     if (process.platform == 'darwin' || process.platform == 'win32') {
@@ -25,13 +28,9 @@ function createWindow() {
         win.webContents.openDevTools();
     }
 
-    win.loadURL(url.format({
-        pathname: 'index.html',
-        protocol: 'file',
-        slashes: true
-    }));
-
+    win.loadURL("http://localhost:"+electronPort)
     win.focus();
+
     win.webContents.on('new-window', function(e, payload) {
         e.preventDefault();
         const url = new URL(payload);
@@ -44,28 +43,33 @@ function createWindow() {
 
     win.on('closed', () => {
         win = null
-        if (cli) {
-            cli.stdin.pause();
-            cli.kill();
-        }
     });
 }
 
-app.on('ready', () => {
-    protocol.interceptFileProtocol('file', (request, callback) => {
-        const url = request.url.substr(7);
-        callback({ path: path.join(__dirname, "..", "app", "gui", url) });
-    }, (err) => {
-        if (err) console.error('Failed to register protocol');
-    });
+app.on('will-quit', () => {
+    console.log("Safely quiting...")
+    if (cli) {
+        cli.stdin.pause();
+        cli.kill();
+        cli = null;
+    }
+    server.close();
+});
 
+app.on('ready', () => {
     (async () => {
-        let enginePort = await getPort({port: getPort.makeRange(3050, 3150)});
+        enginePort = await getPort({port: getPort.makeRange(3050, 3150)});
+        electronPort = await getPort({port: getPort.makeRange(3100, 3150)});
+        startEngine(enginePort.toString(), electronPort.toString());
         setupCookie("engineAddr", "localhost");
         setupCookie("enginePort", enginePort.toString());
+        setupCookie("electronPort", electronPort.toString());
         setupCookie("systemLocale", app.getLocale());
-        startEngine(enginePort.toString());
-        createWindow();
+
+        serve.use('/', express.static(path.join(__dirname, "..", "app", "gui")))
+        server = http.createServer(serve).listen(electronPort);
+
+        createWindow(electronPort);
     })();
 
     if (process.platform === 'win32') {
@@ -95,22 +99,25 @@ function getBinaryPath() {
     return path.join(__dirname, "..", "app", "engine", binaryName)
 }
 
-function startEngine(enginePort) {
-    cli = spawn(getBinaryPath(), ['remote', enginePort]);
-    //cli = spawn("../dist/weatherdump-cli-linux-x64/weatherdump", ['remote']);
+function startEngine(enginePort, electronPort) {
+    cli = spawn(getBinaryPath(), ['remote', enginePort, electronPort]);
 
-    cli.on('exit', (code) => { 
-        cli = null;
-        dialog.showErrorBox(
-            "Unexpected Engine Crash",
-            "Something has gone terribly wrong with the WeatherDump engine. Please, report this error to @luigifcruz, @lucasteske or @OpenSatProject at Twitter.");
-        app.quit()
+    cli.on('exit', (code) => {
+        if (cli != null) {
+            dialog.showErrorBox(
+                "Unexpected Engine Crash",
+                "Something has gone terribly wrong with the WeatherDump engine. Please, report this error to @luigifcruz at Twitter."
+            );
+            cli = null;
+            app.quit();
+        }
     });
 }
 
 function setupCookie(name, value) {
+    const cookie = { url: "http://localhost:" + electronPort, name, value };
+
     console.log("Registering Cookie: ", name, value);
-    const cookie = { url: 'http://localhost:3002', name, value };
     session.defaultSession.cookies.set(cookie, (error) => {
         if (error) console.error(error);
     });

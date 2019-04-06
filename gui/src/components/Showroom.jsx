@@ -47,8 +47,12 @@ class Showroom extends Component {
             <div>
                 {(this.props.processId != null) ? (
                     <div>
-                        <Websocket reconnect={true} debug={true} url={`ws://localhost:3000/${datalink}/${this.props.processId}/statistics`}
-                            onMessage={this.handleStatistics} />
+                        <Websocket
+                            reconnect={true}
+                            debug={true}
+                            url={`ws://${this.remote.enginePath}/${datalink}/${this.props.processId}/statistics`}
+                            onMessage={this.handleStatistics}
+                        />
                     </div>        
                 ) :  null}
                 <div className="main-header">

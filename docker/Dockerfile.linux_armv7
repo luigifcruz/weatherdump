@@ -1,17 +1,17 @@
-FROM golang:1.11
+FROM golang:1.12
 
 RUN apt-get update && apt-get install -y build-essential cmake g++-arm-linux-gnueabihf --no-install-recommends
 
 ENV CC="arm-linux-gnueabihf-gcc"
 ENV CXX="arm-linux-gnueabihf-g++"
-ENV PACKAGE_NAME="weatherdump-cli-linux-armhf"
+ENV PACKAGE_NAME="weatherdump-cli-linux-armv7"
 ENV CGO_ENABLED="1"
 ENV CGO_CFLAGS="-I/go/libaec/src"
 ENV CGO_CXXFLAGS="-I/go/libsathelper/includes -I/go/libcorrect/build/include"
 ENV CGO_LDFLAGS="-static -L/go/libaec/build/src -laec -L/go/libsathelper/build/lib -lSatHelper -L/usr/arm-linux-gnueabihf/lib -lcorrect"
 ENV GOOS="linux"
 ENV GOARCH="arm"
-ENV GOARM="6"
+ENV GOARM="7"
 ENV GOPATH="/home/go"
 ENV COMPRESS="tar.gz"
 ENV BINARY_NAME="weatherdump"

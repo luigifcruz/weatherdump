@@ -21,8 +21,9 @@ func New() *Remote {
 	return &Remote{make(map[uuid.UUID](chan bool))}
 }
 
-func (s *Remote) Listen(port string) {
-	fmt.Println("[RMT] Starting to listen requests from port " + port + "...")
+func (s *Remote) Listen(serverPort, clientPort string) {
+	fmt.Println("[RMT] Server listening to port " + serverPort)
+	fmt.Println("[RMT] Accepting requests from client port " + clientPort)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/start/processor", s.processorHandler)
@@ -30,10 +31,10 @@ func (s *Remote) Listen(port string) {
 	r.HandleFunc("/abort/{id}", s.abortHandler)
 	r.HandleFunc("/get/manifest", s.manifestHandler)
 
-	origins := httpHandlers.AllowedOrigins([]string{"http://localhost:3002"})
+	origins := httpHandlers.AllowedOrigins([]string{"http://localhost:" + clientPort})
 	headers := httpHandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 	http.Handle("/", httpHandlers.CORS(origins, headers)(r))
-	log.Fatal(http.ListenAndServe("127.0.0.1:"+port, nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1:"+serverPort, nil))
 }
 
 func (s *Remote) register() uuid.UUID {
