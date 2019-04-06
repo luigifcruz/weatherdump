@@ -25,6 +25,12 @@ build-cli-release:
 	mv ./dist/export/* ./release-builds
 	rm -fr ./dist/export
 
+docker-gui-release-compiler:
+	cd ./docker && docker build -t weatherdump_gui -f Dockerfile.gui .
+
+docker-gui-release-build:
+	docker run -v $(CD):/weather-dump weatherdump_gui
+
 build-gui-release:
 	mkdir -p release-builds
 	make build-web-resources

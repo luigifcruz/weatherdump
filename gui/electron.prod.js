@@ -7,9 +7,9 @@ const path = require('path');
 
 const serve = new express();
 
-let win, cli, server = null;
+let win, cli, server, electronPort, enginePort = null;
 
-function createWindow(electronPort) {
+function createWindow() {
     let height = 500;
 
     if (process.platform == 'darwin' || process.platform == 'win32') {
@@ -60,16 +60,16 @@ app.on('ready', () => {
     (async () => {
         enginePort = await getPort({port: getPort.makeRange(3050, 3150)});
         electronPort = await getPort({port: getPort.makeRange(3100, 3150)});
-        startEngine(enginePort.toString(), electronPort.toString());
+
         setupCookie("engineAddr", "localhost");
         setupCookie("enginePort", enginePort.toString());
         setupCookie("electronPort", electronPort.toString());
         setupCookie("systemLocale", app.getLocale());
 
-        serve.use('/', express.static(path.join(__dirname, "..", "app", "gui")))
-        server = http.createServer(serve).listen(electronPort);
-
-        createWindow(electronPort);
+        startServer();
+        startEngine();
+        
+        createWindow();
     })();
 
     if (process.platform === 'win32') {
@@ -99,8 +99,15 @@ function getBinaryPath() {
     return path.join(__dirname, "..", "app", "engine", binaryName)
 }
 
-function startEngine(enginePort, electronPort) {
-    cli = spawn(getBinaryPath(), ['remote', enginePort, electronPort]);
+function startServer(electronPort) {
+    serve.use('/', express.static(path.join(__dirname, "..", "app", "gui")))
+    server = http.createServer(serve).app.listen(electronPort, 'localhost', function() {
+        console.log("Server started listening to port %d.", electronPort);
+    });
+}
+
+function startEngine() {
+    cli = spawn(getBinaryPath(), ['remote', enginePort.toString(), electronPort.toString()]);
 
     cli.on('exit', (code) => {
         if (cli != null) {

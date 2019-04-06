@@ -1,0 +1,8 @@
+FROM node:current-stretch
+
+RUN apt-get update && apt-get install -y build-essential --no-install-recommends
+
+RUN npm install -g electron-builder
+
+WORKDIR /weather-dump
+ENTRYPOINT ["make", "build-gui-release"]

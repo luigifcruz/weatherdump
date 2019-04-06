@@ -2,8 +2,6 @@ FROM golang:1.12
 
 RUN apt-get update && apt-get install -y build-essential cmake g++-arm-linux-gnueabi --no-install-recommends
 
-RUN find /* | grep gcc
-
 ENV CC="arm-linux-gnueabi-gcc"
 ENV CXX="arm-linux-gnueabi-g++"
 ENV PACKAGE_NAME="weatherdump-cli-linux-armv6"
