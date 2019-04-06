@@ -81,7 +81,7 @@ func (e *AsmDecoder) Work(inputPath string, outputPath string, signal chan bool)
 	helpers.WatchFor(signal, func() bool {
 		n, err := input.Read(e.hardData)
 		if datalink[id].FrameSize != n || err != nil {
-			if err != io.EOF {
+			if err != io.EOF && err != nil {
 				log.Fatal(err)
 			}
 			return true

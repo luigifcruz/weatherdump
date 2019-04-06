@@ -1,6 +1,6 @@
 package parser
 
-import "weather-dump/src/assets"
+import "weather-dump/src/protocols/helpers"
 
 type List map[uint16]*Channel
 
@@ -271,7 +271,7 @@ var Channels = List{
 	},
 }
 
-var Manifest = assets.Manifest{
+var Manifest = helpers.Manifest{
 	800: {
 		Name:        "M04",
 		Description: "Moderate Resolution Channel 04",

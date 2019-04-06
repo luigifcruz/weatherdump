@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import * as rxa from 'redux/actions';
+import WeatherRemote from 'weather-remote';
 import Websocket from 'react-websocket';
 
 import { showroom as headerText } from 'static/HeaderText';
@@ -15,6 +16,7 @@ class Showroom extends Component {
     constructor(props) {
         super(props);
 
+        this.remote = new WeatherRemote();
         this.handleStatistics = this.handleStatistics.bind(this);
         this.handleAbort = this.handleAbort.bind(this);
     }

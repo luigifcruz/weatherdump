@@ -41,7 +41,7 @@ class Processor extends Component {
     }
 
     goBack() {
-        this.props.history.push(`/index.html`)
+        this.props.history.push("/")
     }
 
     render() {

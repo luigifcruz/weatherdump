@@ -1,7 +1,7 @@
 package composer
 
 import (
-	"weather-dump/src/assets"
+	"weather-dump/src/protocols/helpers"
 )
 
 type List map[uint16]Composer
@@ -19,7 +19,7 @@ var Composers = List{
 	},
 }
 
-var Manifest = assets.Manifest{
+var Manifest = helpers.Manifest{
 	000: {
 		Name:        "False-Color",
 		Description: "False-Color Composite",

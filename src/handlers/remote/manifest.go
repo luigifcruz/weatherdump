@@ -3,13 +3,13 @@ package remote
 import (
 	"encoding/json"
 	"net/http"
-	"weather-dump/src/assets"
 	"weather-dump/src/handlers"
+	"weather-dump/src/protocols/helpers"
 )
 
 type manifestRequest struct {
-	Datalink string                    `schema:"datalink,required"`
-	Manifest assets.ProcessingManifest `schema:"-"`
+	Datalink string                     `schema:"datalink,required"`
+	Manifest helpers.ProcessingManifest `schema:"-"`
 }
 
 func (s *Remote) manifestHandler(w http.ResponseWriter, r *http.Request) {

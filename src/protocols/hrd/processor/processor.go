@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
-	"weather-dump/src/assets"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
 	"weather-dump/src/handlers/interfaces"
 	"weather-dump/src/img"
+	"weather-dump/src/protocols/helpers"
 	"weather-dump/src/protocols/hrd"
 	"weather-dump/src/protocols/hrd/processor/composer"
 	"weather-dump/src/protocols/hrd/processor/parser"
@@ -35,7 +35,7 @@ func NewProcessor(uuid string) interfaces.Processor {
 	e.ccsds = ccsds.New()
 
 	if uuid != "" {
-		http.HandleFunc(fmt.Sprintf("/hrd/%s/statistics", uuid), e.statistics)
+		http.HandleFunc(fmt.Sprintf("/socket/lrpt/%s", uuid), e.statistics)
 	}
 
 	return &e
@@ -69,7 +69,7 @@ func (e *Worker) Work(inputFile string) {
 	fmt.Printf("[PRC] Decoded %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 }
 
-func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.ProcessingManifest) {
+func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest helpers.ProcessingManifest) {
 	fmt.Printf("[PRC] Exporting VIIRS science products.\n")
 	var currentComposer, currentParser uint16
 
@@ -113,6 +113,8 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 			wf.AddException("Invert", ch.Invert)
 			wf.Target(img.NewGray16(&buf, w, h)).Process().Export(outputName, 100)
 			wf.ResetExceptions()
+
+			manifest.Parser.File(apid, outputName)
 		}
 
 		manifest.Parser.Completed(apid, e.statsSock)
@@ -124,7 +126,8 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest assets.Proc
 	for code := range manifest.Composer {
 		currentComposer = code
 		c := composer.Composers[uint16(code)]
-		c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
+		outputName := c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
+		manifest.Composer.File(uint16(code), outputName)
 		manifest.Composer.Completed(code, e.statsSock)
 		bar2.Incr()
 	}
@@ -139,8 +142,8 @@ func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {
 	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
 }
 
-func (e Worker) GetProductsManifest() assets.ProcessingManifest {
-	return assets.ProcessingManifest{
+func (e Worker) GetProductsManifest() helpers.ProcessingManifest {
+	return helpers.ProcessingManifest{
 		Parser:   parser.Manifest,
 		Composer: composer.Manifest,
 	}

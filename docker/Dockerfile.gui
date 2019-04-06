@@ -1,8 +1,9 @@
 FROM node:current-stretch
 
-RUN apt-get update && apt-get install -y build-essential --no-install-recommends
+RUN dpkg --add-architecture i386 && apt-get update && apt-get install wine32 -y --no-install-recommends
+RUN apt-get update && apt-get install -y mono-complete wine wine32 build-essential --no-install-recommends
 
 RUN npm install -g electron-builder
 
 WORKDIR /weather-dump
-ENTRYPOINT ["make", "build-gui-release"]
+ENTRYPOINT ["make", "build-gui"]

@@ -20,7 +20,8 @@ function createWindow() {
         width: 900,
         height,
         autoHideMenuBar: true,
-        resizable: false
+        resizable: false,
+        backgroundColor: "#212330"
     });
 
     if (process.env.NODE_ENV == 'debug') {
@@ -66,7 +67,7 @@ app.on('ready', () => {
         setupCookie("electronPort", electronPort.toString());
         setupCookie("systemLocale", app.getLocale());
 
-        startServer();
+        await startServer();
         startEngine();
         
         createWindow();
@@ -99,10 +100,17 @@ function getBinaryPath() {
     return path.join(__dirname, "..", "app", "engine", binaryName)
 }
 
-function startServer(electronPort) {
-    serve.use('/', express.static(path.join(__dirname, "..", "app", "gui")))
-    server = http.createServer(serve).app.listen(electronPort, 'localhost', function() {
-        console.log("Server started listening to port %d.", electronPort);
+function startServer() {
+    return new Promise((resolve, reject) => {
+        serve.use('/', express.static(path.join(__dirname, "..", "app", "gui")))
+        server = http.createServer(serve).listen({
+            host: 'localhost',
+            port: electronPort,
+            exclusive: true
+        }, () => {
+            console.log("Server started listening to port %d.", electronPort);
+            resolve();
+	    });
     });
 }
 

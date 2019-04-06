@@ -1,14 +1,14 @@
-package assets
+package helpers
 
 import (
-	"sort"
-
 	"github.com/gorilla/websocket"
+	"sort"
 )
 
 type Manifest map[uint16]*struct {
 	Name        string
 	Description string
+	Filename    string
 	Activated   bool
 	Finished    bool
 }
@@ -26,10 +26,14 @@ func (e ProcessingManifest) ComposerCount() int {
 	return len(e.Composer)
 }
 
+func (e *Manifest) File(i uint16, filename string) {
+	(*e)[i].Filename = filename
+}
+
 func (e *Manifest) Completed(i uint16, socket *websocket.Conn) {
 	(*e)[i].Finished = true
-
 	if socket != nil {
+
 		socket.WriteJSON(e)
 	}
 }

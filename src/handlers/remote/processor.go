@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"weather-dump/src/assets"
 	"weather-dump/src/handlers"
 	"weather-dump/src/img"
+	"weather-dump/src/protocols/helpers"
 )
 
 type processorRequest struct {
@@ -50,7 +50,7 @@ func (s *Remote) processorHandler(w http.ResponseWriter, r *http.Request) {
 		processor := handlers.AvailableProcessors[req.Datalink](id.String())
 		processor.Work(req.InputFile)
 
-		var m assets.ProcessingManifest
+		var m helpers.ProcessingManifest
 		json.Unmarshal([]byte(req.Manifest), &m)
 		processor.Export(req.OutputPath, wf, m)
 

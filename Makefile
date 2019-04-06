@@ -25,33 +25,33 @@ build-cli-release:
 	mv ./dist/export/* ./release-builds
 	rm -fr ./dist/export
 
-docker-gui-release-compiler:
+build-gui-release-compiler:
 	cd ./docker && docker build -t weatherdump_gui -f Dockerfile.gui .
 
-docker-gui-release-build:
+build-gui-release:
 	docker run -v $(CD):/weather-dump weatherdump_gui
 
-build-gui-release:
+build-gui:
 	mkdir -p release-builds
-	make build-web-resources
-	make build-gui-release-linux
-	make build-gui-release-windows
-	make build-gui-release-mac
+	make build-webpack
+	make build-gui-linux
+	make build-gui-windows
+	make build-gui-mac
 	rm -fr ./gui/dist
 
-build-gui-release-linux:
+build-gui-linux:
 	electron-builder --project ./gui -l --x64
 	mv ./gui/dist/*.AppImage ./release-builds
 
-build-gui-release-windows:
+build-gui-windows:
 	electron-builder --project ./gui -w --x64
 	mv ./gui/dist/*.exe ./release-builds
 
-build-gui-release-mac:
+build-gui-mac:
 	electron-builder --project ./gui -m --x64
 	mv ./gui/dist/*.zip ./release-builds
 
-build-web-resources:
+build-webpack:
 	cd ./gui && npm i && npm run build && cd -
 
 clean:

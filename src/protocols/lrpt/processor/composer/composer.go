@@ -24,7 +24,7 @@ func (e *Composer) Register(pipeline img.Pipeline, scft lrpt.SpacecraftParameter
 	return e
 }
 
-func (e Composer) Render(ch parser.List, outputFolder string) {
+func (e Composer) Render(ch parser.List, outputFolder string) string {
 	ch01 := ch[e.RequiredChannels[0]]
 	ch02 := ch[e.RequiredChannels[1]]
 	ch03 := ch[e.RequiredChannels[2]]
@@ -32,7 +32,7 @@ func (e Composer) Render(ch parser.List, outputFolder string) {
 	// Check if required channels exist.
 	if !ch01.HasData || !ch02.HasData || !ch03.HasData {
 		//fmt.Println("[COM] Can't export component channel. Not all required channels are available.")
-		return
+		return ""
 	}
 
 	outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s_%s_COMP_%s_LRPT",
@@ -108,6 +108,7 @@ func (e Composer) Render(ch parser.List, outputFolder string) {
 	// Render and save the true-color image.
 	e.pipeline.Target(img.NewRGBA(&finalBuf, w, h)).Export(outputName, 100)
 	e.pipeline.ResetExceptions()
+	return outputName
 }
 
 func MinIntSlice(v []int) int {
