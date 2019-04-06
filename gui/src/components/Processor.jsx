@@ -14,7 +14,7 @@ class Processor extends Component {
 
         this.goBack = this.goBack.bind(this);
         this.startProcessor = this.startProcessor.bind(this);
-        this.remote = new WeatherRemote("localhost:3000");
+        this.remote = new WeatherRemote();
         this.datalink = this.props.match.params.datalink;
     }
 

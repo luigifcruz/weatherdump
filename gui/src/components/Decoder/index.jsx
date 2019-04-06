@@ -46,7 +46,7 @@ class Decoder extends Component {
         this.handleSocketEvent = this.handleSocketEvent.bind(this);
         this.handleSocketMessage = this.handleSocketMessage.bind(this);
 
-        this.remote = new WeatherRemote("localhost:3000");
+        this.remote = new WeatherRemote();
         this.datalink = this.props.match.params.datalink;
     }
 

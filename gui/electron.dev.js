@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, session } = require('electron');
 const url = require('url')
 
 let win
@@ -34,16 +34,29 @@ function createWindow() {
     })
 }
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+    setupCookie("enginePort", "3000");
+    setupCookie("engineAddr", "localhost");
+    setupCookie("systemLocale", app.getLocale());
+    createWindow();
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        app.quit()
+        app.quit();
     }
-})
+});
 
 app.on('activate', () => {
     if (win === null) {
-        createWindow()
+        createWindow();
     }
-})
+});
+
+function setupCookie(name, value) {
+    console.log("Registering Cookie: ", name, value);
+    const cookie = { url: 'http://localhost:3002', name, value };
+    session.defaultSession.cookies.set(cookie, (error) => {
+        if (error) console.error(error);
+    });
+}

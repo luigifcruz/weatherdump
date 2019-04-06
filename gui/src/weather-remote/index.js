@@ -1,8 +1,11 @@
 import request from 'superagent';
+import Cookies from 'js-cookie';
 
 class WeatherRemote {
-	constructor(serverAddress) {
-		this.serverAddress = serverAddress;
+	constructor() {
+		const engineAddr = Cookies.get('engineAddr');
+		const enginePort = Cookies.get('enginePort');
+		this.serverAddress = `${engineAddr}:${enginePort}`;
 	}
 
 	// Abort Task

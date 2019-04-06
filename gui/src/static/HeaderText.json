@@ -1,7 +1,7 @@
 {
     "index": {
-        "title": "Select the satellite frequency band...",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut."
+        "title": "First, select the signal frequency band...",
+        "description": "There are a lot of signals with distinct protocols out there! This step will help us pick the right instruments for the specific signal you want to process. We also expect too add support for a lot more signals really soon."
     }, 
     "steps": {
         "title": "Where are you at?",

@@ -55,6 +55,7 @@ func (s *Remote) processorHandler(w http.ResponseWriter, r *http.Request) {
 		processor.Export(req.OutputPath, wf, m)
 
 		fmt.Printf("[RMT] Decoder %s exited.\n", id.String())
+		runtime.Free()
 	}()
 
 	request, _ := json.Marshal(req)
