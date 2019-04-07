@@ -3,7 +3,6 @@ package processor
 import (
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"path/filepath"
 	"weather-dump/src/ccsds"
 	"weather-dump/src/ccsds/frames"
@@ -25,18 +24,23 @@ var channels = parser.Channels
 const frameSize = 892
 
 type Worker struct {
-	ccsds     *ccsds.Worker
-	scid      uint8
-	statsSock *websocket.Conn
+	ccsds    *ccsds.Worker
+	scid     uint8
+	manifest helpers.ProcessingManifest
 }
 
-func NewProcessor(uuid string) interfaces.Processor {
-	e := Worker{}
-	e.ccsds = ccsds.New()
-
-	if uuid != "" {
-		http.HandleFunc(fmt.Sprintf("/socket/lrpt/%s", uuid), e.statistics)
+func NewProcessor(uuid string, manifest *helpers.ProcessingManifest) interfaces.Processor {
+	e := Worker{
+		ccsds: ccsds.New(),
 	}
+
+	if manifest == nil {
+		e.manifest = e.GetProductsManifest()
+	} else {
+		e.manifest = *manifest
+	}
+
+	e.manifest.Register("hrd", uuid)
 
 	return &e
 }
@@ -65,19 +69,22 @@ func (e *Worker) Work(inputFile string) {
 		}
 	}
 
-	e.scid = uint8(maxIntSlice(scidStat[:]))
+	e.scid = uint8(helpers.MaxIntSlice(scidStat[:]))
 	fmt.Printf("[PRC] Decoded %d packets from VCID 16.\n", len(e.ccsds.GetSpacePackets()))
 }
 
-func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest helpers.ProcessingManifest) {
+func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	fmt.Printf("[PRC] Exporting VIIRS science products.\n")
 	var currentComposer, currentParser uint16
 
 	progress := uiprogress.New()
-	progress.Start()
 
-	bar1 := progress.AddBar(manifest.ParserCount()).AppendCompleted()
-	bar2 := progress.AddBar(manifest.ComposerCount()).AppendCompleted()
+	if !e.manifest.IsRegistred() {
+		progress.Start()
+	}
+
+	bar1 := progress.AddBar(e.manifest.ParserCount()).AppendCompleted()
+	bar2 := progress.AddBar(e.manifest.ComposerCount()).AppendCompleted()
 
 	bar1.PrependFunc(func(b *uiprogress.Bar) string {
 		switch currentParser {
@@ -86,7 +93,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest helpers.Pro
 		case 9999:
 			return fmt.Sprintf("[DEC] Processing completed 	")
 		default:
-			return fmt.Sprintf("[DEC] Rendering channel %s	", manifest.Parser[currentParser].Name)
+			return fmt.Sprintf("[DEC] Rendering channel %s	", e.manifest.Parser[currentParser].Name)
 		}
 	})
 
@@ -97,11 +104,13 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest helpers.Pro
 		case 9999:
 			return fmt.Sprintf("[DEC] Components completed	")
 		default:
-			return fmt.Sprintf("[DEC] Rendering %s	", manifest.Composer[currentComposer].Name)
+			return fmt.Sprintf("[DEC] Rendering %s	", e.manifest.Composer[currentComposer].Name)
 		}
 	})
 
-	for _, apid := range manifest.Parser.Ordered() {
+	e.manifest.WaitForClient(nil)
+
+	for _, apid := range e.manifest.Parser.Parse() {
 		currentParser = apid
 		ch := channels[apid]
 
@@ -114,32 +123,33 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline, manifest helpers.Pro
 			wf.Target(img.NewGray16(&buf, w, h)).Process().Export(outputName, 100)
 			wf.ResetExceptions()
 
-			manifest.Parser.File(apid, outputName)
+			e.manifest.Parser[apid].FileName(outputName)
 		}
 
-		manifest.Parser.Completed(apid, e.statsSock)
+		e.manifest.Parser[apid].Completed()
+		e.manifest.Update()
 		bar1.Incr()
 	}
 
 	currentParser = 9999
 
-	for code := range manifest.Composer {
+	for _, code := range e.manifest.Composer.Parse() {
 		currentComposer = code
 		c := composer.Composers[uint16(code)]
 		outputName := c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
-		manifest.Composer.File(uint16(code), outputName)
-		manifest.Composer.Completed(code, e.statsSock)
+		e.manifest.Composer[code].FileName(outputName)
+		e.manifest.Composer[code].Completed()
+		e.manifest.Update()
 		bar2.Incr()
 	}
 
 	currentComposer = 9999
-	progress.Stop()
-	color.Green("[PRC] Done! All products and components were saved.")
-}
 
-func (e *Worker) statistics(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	e.statsSock, _ = upgrader.Upgrade(w, r, nil)
+	if !e.manifest.IsRegistred() {
+		progress.Stop()
+	}
+
+	color.Green("[PRC] Done! All products and components were saved.")
 }
 
 func (e Worker) GetProductsManifest() helpers.ProcessingManifest {
@@ -147,16 +157,4 @@ func (e Worker) GetProductsManifest() helpers.ProcessingManifest {
 		Parser:   parser.Manifest,
 		Composer: composer.Manifest,
 	}
-}
-
-func maxIntSlice(v []int) int {
-	index := 0
-	max := 0
-	for i, e := range v {
-		if e > max {
-			index = i
-			max = e
-		}
-	}
-	return index
 }

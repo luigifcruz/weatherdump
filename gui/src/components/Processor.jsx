@@ -35,7 +35,8 @@ class Processor extends Component {
             })
         }).then((res) => {
             this.props.dispatch(rxa.updateProcessId(res.uuid))
-            this.props.dispatch(rxa.updateWorkingFolder(res.outputPath))
+            this.props.dispatch(rxa.updateDemodulatedFile(res.outputPath))
+        }).then(() => {
             this.props.history.push(`/showroom/${this.datalink}`)
         });
     }

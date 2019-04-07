@@ -12,6 +12,7 @@
 .progress-bar > .bar > .filler {
     height: 100%;
     border-radius: .5em;
+    @include transition(width .15s ease-in-out);
 }
 
 @mixin progress-bar-theme($in, $out) {

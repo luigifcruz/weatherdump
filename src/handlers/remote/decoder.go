@@ -3,6 +3,7 @@ package remote
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fatih/color"
 	"net/http"
 	"os"
 	"strings"
@@ -38,7 +39,7 @@ func (s *Remote) decoderHandler(w http.ResponseWriter, r *http.Request) {
 		s.routines[id] = make(chan bool)
 		handlers.AvailableDecoders[req.Datalink][req.Decoder](id.String()).Work(req.InputFile, decodedFile, s.routines[id])
 		delete(s.routines, id)
-		fmt.Printf("[RMT] Processor %s exited.\n", id.String())
+		color.Magenta("[RMT] Decoder %s exited.\n", id.String())
 	}()
 
 	req.OutputPath = decodedFile

@@ -19,15 +19,15 @@ var Composers = List{
 	},
 }
 
-var Manifest = helpers.Manifest{
+var Manifest = helpers.ManifestList{
 	000: {
-		Name:        "False-Color",
-		Description: "False-Color Composite",
+		Name:        "False Color",
+		Description: "False Color RGB Composite",
 		Activated:   true,
 	},
 	001: {
 		Name:        "True-Color",
-		Description: "True-Color Composite",
+		Description: "True Color RGB Composite",
 		Activated:   true,
 	},
 }

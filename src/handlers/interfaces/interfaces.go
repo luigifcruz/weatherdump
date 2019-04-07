@@ -5,10 +5,10 @@ import (
 	"weather-dump/src/protocols/helpers"
 )
 
-type ProcessorMakers map[string]func(string) Processor
+type ProcessorMakers map[string]func(string, *helpers.ProcessingManifest) Processor
 type Processor interface {
 	Work(string)
-	Export(string, img.Pipeline, helpers.ProcessingManifest)
+	Export(string, img.Pipeline)
 	GetProductsManifest() helpers.ProcessingManifest
 }
 

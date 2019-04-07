@@ -5,6 +5,7 @@ release: build-cli-compiler build-cli-release build-gui-release
 fix-permission:
 	sudo chown -fR $(shell whoami) dist/* || :
 	sudo chown -fR $(shell whoami) release-builds/* || :
+	sudo chown -fR $(shell whoami) gui/* || :
 
 build-cli-compiler:
 	cd ./docker && docker build -t weatherdump_linux_x64 -f Dockerfile.linux_x64 .

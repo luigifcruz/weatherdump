@@ -16,7 +16,7 @@ function createWindow() {
     win.setSize(900, 760)
     win.webContents.openDevTools();
 
-    win.loadURL("http://localhost:3002/index.html")
+    win.loadURL("http://localhost:3002/")
     win.focus();
 
     win.webContents.on('new-window', function(e, payload) {

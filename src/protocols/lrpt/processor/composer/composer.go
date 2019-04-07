@@ -61,9 +61,9 @@ func (e Composer) Render(ch parser.List, outputFolder string) string {
 	a[1], b[1] = ch02.GetTime()
 	a[2], b[2] = ch03.GetTime()
 
-	fmt.Println(((a[0] - MinIntSlice(a)) / 1232))
-	fmt.Println(((a[1] - MinIntSlice(a)) / 1232))
-	fmt.Println(((a[2] - MinIntSlice(a)) / 1232))
+	//fmt.Println(((a[0] - MinIntSlice(a)) / 1232))
+	//fmt.Println(((a[1] - MinIntSlice(a)) / 1232))
+	//fmt.Println(((a[2] - MinIntSlice(a)) / 1232))
 
 	ch01.SetBounds(MaxIntSlice(firstScan)-((a[0]-MinIntSlice(a))/1232), MinIntSlice(lastScan))
 	ch02.SetBounds(MaxIntSlice(firstScan)-((a[1]-MinIntSlice(a))/1232), MinIntSlice(lastScan))

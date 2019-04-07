@@ -32,9 +32,7 @@ func HandleInput(datalink, inputFile, outputPath, decoderType string, wf img.Pip
 		os.Exit(0)
 	}
 
-	processor := handlers.AvailableProcessors[datalink]("")
+	processor := handlers.AvailableProcessors[datalink]("", nil)
 	processor.Work(inputFile)
-
-	manifest := processor.GetProductsManifest()
-	processor.Export(workingPath, wf, manifest)
+	processor.Export(workingPath, wf)
 }

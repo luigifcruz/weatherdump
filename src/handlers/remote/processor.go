@@ -2,7 +2,7 @@ package remote
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/fatih/color"
 	"net/http"
 	"os"
 	"weather-dump/src/handlers"
@@ -47,14 +47,15 @@ func (s *Remote) processorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		processor := handlers.AvailableProcessors[req.Datalink](id.String())
-		processor.Work(req.InputFile)
-
 		var m helpers.ProcessingManifest
 		json.Unmarshal([]byte(req.Manifest), &m)
-		processor.Export(req.OutputPath, wf, m)
 
-		fmt.Printf("[RMT] Decoder %s exited.\n", id.String())
+		processor := handlers.AvailableProcessors[req.Datalink](id.String(), &m)
+
+		processor.Work(req.InputFile)
+		processor.Export(req.OutputPath, wf)
+
+		color.Magenta("[RMT] Processor %s exited.\n", id.String())
 	}()
 
 	request, _ := json.Marshal(req)

@@ -21,7 +21,7 @@ func (s *Remote) manifestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	processor := handlers.AvailableProcessors[req.Datalink]("")
+	processor := handlers.AvailableProcessors[req.Datalink]("", nil)
 	req.Manifest = processor.GetProductsManifest()
 
 	request, _ := json.Marshal(req)

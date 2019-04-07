@@ -5,10 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/fatih/color"
+	"github.com/google/uuid"
 	httpHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
-	uuid "github.com/satori/go.uuid"
 )
 
 var decoder = schema.NewDecoder()
@@ -30,6 +31,7 @@ func (s *Remote) Listen(serverPort, clientPort string) {
 	r.HandleFunc("/start/decoder", s.decoderHandler)
 	r.HandleFunc("/abort/{id}", s.abortHandler)
 	r.HandleFunc("/get/manifest", s.manifestHandler)
+	r.HandleFunc("/get/thumbnail", s.thumbnailHandler)
 
 	origins := httpHandlers.AllowedOrigins([]string{"http://localhost:" + clientPort})
 	headers := httpHandlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
@@ -38,19 +40,19 @@ func (s *Remote) Listen(serverPort, clientPort string) {
 }
 
 func (s *Remote) register() uuid.UUID {
-	id := uuid.Must(uuid.NewV4(), nil)
-	fmt.Printf("[RMT] Process registered: %s\n", id.String())
+	id := uuid.Must(uuid.NewRandom())
+	color.Magenta("[RMT] Process registered: %s\n", id.String())
 	return id
 }
 
 func (s *Remote) terminate(id uuid.UUID) {
 	s.routines[id] <- true
 	delete(s.routines, id)
-	fmt.Printf("[RMT] Process terminated: %s\n", id.String())
+	color.Magenta("[RMT] Process terminated: %s\n", id.String())
 }
 
 func (s *Remote) abortHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.FromString(mux.Vars(r)["id"])
+	id, err := uuid.Parse(mux.Vars(r)["id"])
 
 	if err != nil || s.routines[id] == nil {
 		ResError(w, "INVALID_ID", "Invalid ID or process already exited.")

@@ -31,13 +31,13 @@ let defaultState = {
         }
     },
     'demodulatedFile': null,
-    'workingFolder': null,
+    'workingPath': null
 }
 
 let middleware = new Array()
 
 if (process.env.NODE_ENV == 'development') {
-    middleware.push(createLogger())
+    //middleware.push(createLogger())
 }
 
 function configureStore(initialState = defaultState) {

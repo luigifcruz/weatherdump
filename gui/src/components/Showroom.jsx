@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import * as rxa from 'redux/actions';
+import { connect } from 'react-redux';
 import WeatherRemote from 'weather-remote';
 import Websocket from 'react-websocket';
 
@@ -16,14 +16,40 @@ class Showroom extends Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            socketOpen: false
+        }
+
         this.remote = new WeatherRemote();
-        this.handleStatistics = this.handleStatistics.bind(this);
+        this.openDecodedFolder = this.openDecodedFolder.bind(this);
+        this.openDecodedFile = this.openDecodedFile.bind(this);
+        this.decodedFilePath = this.decodedFilePath.bind(this);
+        this.handleSocketMessage = this.handleSocketMessage.bind(this);
+        this.handleSocketEvent = this.handleSocketEvent.bind(this);
         this.handleAbort = this.handleAbort.bind(this);
+    }
+
+    decodedFilePath(path) {
+        let ext = ".jpeg";
+        if (!this.props.processorEnhancements.ExportJPEG.Activated) {
+            ext = ".png";
+        }
+        return path + ext
+    }
+
+    openDecodedFile(path) {
+        window.open(this.decodedFilePath(path), '_blank');
+    }
+
+    openDecodedFolder() {
+        window.open(this.props.demodulatedFile, '_blank');
     }
 
     handleAbort() {
         const { datalink } = this.props.match.params
         const { history, processId, processDescriptor } = this.props
+        
+        this.handleFinish()
         history.push(`/steps/${datalink}/processor`)
 
         // To-do: ADD DECODER ABORT WHEN AVAILABLE
@@ -39,12 +65,30 @@ class Showroom extends Component {
         this.props.dispatch(rxa.updateProcessId(null))
     }
 
-    handleStatistics() {
+    handleSocketMessage(payload) {
+        const manifest = JSON.parse(payload)
+        this.props.dispatch(rxa.updateManifest(manifest.Parser, manifest.Composer))
+    }
 
+    handleSocketEvent() {
+        this.setState({ socketOpen: !this.state.socketOpen });
     }
 
     render() {
-        const { tab, datalink } = this.props.match.params
+        const { datalink } = this.props.match.params
+        const { manifestComposer, manifestParser } = this.props;
+        const manifestMerged = Object.assign(manifestComposer, manifestParser);
+        
+        let count = 0, finished = 0;
+        Object.entries(manifestMerged).map((p, i) => {
+            if (p[1].Finished) {
+                finished++;
+            }
+            count++;
+        });
+
+        const ratio = (finished/count)*100;
+
         return (
             <div>
                 {(this.props.processId != null) ? (
@@ -52,74 +96,56 @@ class Showroom extends Component {
                         <Websocket
                             reconnect={true}
                             debug={true}
-                            url={`ws://${this.remote.enginePath}/${datalink}/${this.props.processId}/statistics`}
-                            onMessage={this.handleStatistics}
+                            url={`ws://${this.remote.enginePath}/socket/${datalink}/${this.props.processId}`}
+                            onMessage={this.handleSocketMessage}
+                            onOpen={this.handleSocketEvent}
+                            onClose={this.handleSocketEvent}
                         />
                     </div>        
                 ) :  null}
                 <div className="main-header">
                     <h1 className="main-title">
                         <div onClick={this.handleAbort} className="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </div>
                         {headerText.title}
                     </h1>
-                    <h2 className="main-description">{headerText.description}</h2>
+                    <h2 className="main-description">{this.props.workingFolder}</h2>
                </div> 
                 <div className="main-body showroom">
                     <div className="products grid-container scroll-bar">
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
-                        <div className="product product-dark">
-                            <div className="img"><img src=""></img></div>
-                            <div className="title">Channel 69</div>
-                            <div className="description">2330x512 • 44 MB</div>
-                        </div>
+                        {Object.entries(manifestMerged).map((p, i) => {
+                            const { Filename, Finished, Name, Description } = p[1];
+                            const filePath = this.decodedFilePath(Filename);
+
+                            if (Finished && Filename != "") {
+                                return (
+                                    <div 
+                                        key={i}
+                                        onClick={() => this.openDecodedFile(Filename)}
+                                        className="product product-dark"
+                                    >
+                                        <div className="img">
+                                            <img src={`http://${this.remote.enginePath}/get/thumbnail?filepath=/${filePath}`}/>
+                                        </div>
+                                        <div className="title">{Name}</div>
+                                        <div className="description">{Description}</div>
+                                    </div>
+                                )
+                            }
+                        })}
                     </div>
                     <div className="controller">
                         <div className="progress-bar progress-bar-green-dark">
                             <div className="bar">
-                                <div style={{ background: "#059C75", width: "50%" }} className="filler"></div>
+                                <div style={{ background: "#059C75", width: ratio + "%" }} className="filler"></div>
                             </div>
                             <div className="text">
                                 <div className="description">Processing CCSDS packets</div>
-                                <div className="percentage">{2}%</div>
+                                <div className="percentage">{finished}/{count} {ratio.toFixed(0)}%</div>
                             </div>
                         </div>
-                        <div className="btn btn-orange">Open Folder</div>
+                        <div onClick={this.openDecodedFolder} className="btn btn-orange">Open Folder</div>
                     </div>
                 </div>
             </div>

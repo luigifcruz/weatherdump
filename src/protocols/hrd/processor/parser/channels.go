@@ -271,125 +271,125 @@ var Channels = List{
 	},
 }
 
-var Manifest = helpers.Manifest{
+var Manifest = helpers.ManifestList{
 	800: {
 		Name:        "M04",
-		Description: "Moderate Resolution Channel 04",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	801: {
 		Name:        "M05",
-		Description: "Moderate Resolution Channel 05",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	802: {
 		Name:        "M03",
-		Description: "Moderate Resolution Channel 03",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	803: {
 		Name:        "M02",
-		Description: "Moderate Resolution Channel 02",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	804: {
 		Name:        "M01",
-		Description: "Moderate Resolution Channel 01",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	805: {
 		Name:        "M06",
-		Description: "Moderate Resolution Channel 06",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	806: {
 		Name:        "M07",
-		Description: "Moderate Resolution Channel 07",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	807: {
 		Name:        "M09",
-		Description: "Moderate Resolution Channel 09",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	808: {
 		Name:        "M10",
-		Description: "Moderate Resolution Channel 10",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	809: {
 		Name:        "M08",
-		Description: "Moderate Resolution Channel 08",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	810: {
 		Name:        "M11",
-		Description: "Moderate Resolution Channel 11",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	811: {
 		Name:        "M13",
-		Description: "Moderate Resolution Channel 13",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	812: {
 		Name:        "M12",
-		Description: "Moderate Resolution Channel 12",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	813: {
 		Name:        "I04",
-		Description: "Imagery Channel 04",
+		Description: "Imagery Resolution (375m)",
 		Activated:   true,
 	},
 	814: {
 		Name:        "M16",
-		Description: "Moderate Resolution Channel 16",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	815: {
 		Name:        "M15",
-		Description: "Moderate Resolution Channel 15",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	816: {
 		Name:        "M14",
-		Description: "Moderate Resolution Channel 14",
+		Description: "Moderate Resolution (750m)",
 		Activated:   true,
 	},
 	817: {
 		Name:        "I05",
-		Description: "Imagery Channel 05",
+		Description: "Imagery Resolution (375m)",
 		Activated:   true,
 	},
 	818: {
 		Name:        "I01",
-		Description: "Imagery Channel 01",
+		Description: "Imagery Resolution (375m)",
 		Activated:   true,
 	},
 	819: {
 		Name:        "I02",
-		Description: "Imagery Channel 02",
+		Description: "Imagery Resolution (375m)",
 		Activated:   true,
 	},
 	820: {
 		Name:        "I03",
-		Description: "Imagery Channel 03",
+		Description: "Imagery Resolution (375m)",
 		Activated:   true,
 	},
 	821: {
 		Name:        "DNB",
-		Description: "Day and Night Band",
+		Description: "Day and Night Band (750m)",
 		Activated:   true,
 	},
 	822: {
 		Name:        "DNBMGS",
-		Description: "Day and Night Band",
+		Description: "Day and Night Band (750m)",
 		Activated:   true,
 	},
 	823: {
 		Name:        "DNBLGS",
-		Description: "Day and Night Band",
+		Description: "Day and Night Band (750m)",
 		Activated:   true,
 	},
 }

@@ -1,8 +1,7 @@
 import {
     UPDATE_PROCESS_ID,
-    UPDATE_PROCESS_DATALINK,
     UPDATE_DECODED_FILE,
-    UPDATE_WORKING_FOLDER,
+    UPDATE_WORKING_PATH,
     UPDATE_PROCESS_DESCRIPTOR,
     UPDATE_MANIFEST,
     UPDATE_DEMOD_FILE,
@@ -21,9 +20,9 @@ export default function reducer(state, action) {
         return Object.assign({}, state, {
             decodedFile: action.path
         })
-        case UPDATE_WORKING_FOLDER:
+        case UPDATE_WORKING_PATH:
         return Object.assign({}, state, {
-            workingFolder: action.path
+            workingPath: action.path
         })
         case UPDATE_PROCESS_DESCRIPTOR:
         return Object.assign({}, state, {

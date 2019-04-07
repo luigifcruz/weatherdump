@@ -224,7 +224,7 @@ class Decoder extends Component {
                         <RingLoader
                             sizeUnit={"px"}
                             size={100}
-                            color={'#A2A0A1'}
+                            color={'#2a2c3a'}
                         />
                     </div>
                 )}

@@ -21,20 +21,20 @@ var Composers = List{
 	},
 }
 
-var Manifest = helpers.Manifest{
+var Manifest = helpers.ManifestList{
 	000: {
 		Name:        "True-Color",
-		Description: "Moderate Resolution Channels True-Color Composite",
+		Description: "Moderate RGB Composite",
 		Activated:   true,
 	},
 	001: {
 		Name:        "Ima. Nat-Color",
-		Description: "Imagery Channels Natural-Color Composite",
+		Description: "Imagery Natural Composite",
 		Activated:   true,
 	},
 	002: {
 		Name:        "Mod. Nat-Color",
-		Description: "Moderate Resolution Natural-Color Composite",
+		Description: "Moderate Natural Composite",
 		Activated:   true,
 	},
 }
