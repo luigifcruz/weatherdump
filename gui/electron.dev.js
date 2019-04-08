@@ -1,5 +1,4 @@
 const { app, BrowserWindow, shell, session } = require('electron');
-const url = require('url')
 
 let win
 
@@ -11,9 +10,9 @@ function createWindow() {
         height,
         autoHideMenuBar: true,
         resizable: false
-    })
+    });
 
-    win.setSize(900, 760)
+    win.setSize(900, 760);
     win.webContents.openDevTools();
 
     win.loadURL("http://localhost:3002/")
@@ -30,7 +29,7 @@ function createWindow() {
     });
 
     win.on('closed', () => {
-        win = null
+        win = null;
     })
 }
 

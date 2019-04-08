@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-import * as rxa from 'redux/actions';
-import inputFormats from 'static/InputFormats';
-import { steps as headerText } from 'static/HeaderText';
-
 import 'styles/steppicker';
 import 'styles/tabview';
 import 'styles/grid';
+
+import * as rxa from 'redux/actions';
+
+import React, { Component } from 'react';
+
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { steps as headerText } from 'static/HeaderText';
+import inputFormats from 'static/InputFormats';
 
 class StepPicker extends Component {
     constructor(props) {

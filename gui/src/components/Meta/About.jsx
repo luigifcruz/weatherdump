@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { version, engineVersion } from '../../../package.json';
-
 import 'styles/meta';
+
+import React, { Component } from 'react';
+import { engineVersion, version } from '../../../package.json';
 
 class About extends Component {
 	render() {

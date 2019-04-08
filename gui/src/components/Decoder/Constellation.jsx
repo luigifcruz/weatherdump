@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
-import { Shaders, Node, GLSL } from "gl-react";
-import { Surface } from "gl-react-dom";
-
 import "styles/progressbar";
+
+import { GLSL, Node, Shaders } from "gl-react";
+import React, { Component } from 'react';
+
+import { Surface } from "gl-react-dom";
 
 const shaders = Shaders.create({
     constellation: {

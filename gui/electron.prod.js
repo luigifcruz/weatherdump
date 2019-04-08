@@ -1,4 +1,4 @@
-const { app, BrowserWindow, protocol, shell, dialog, session } = require('electron');
+const { app, BrowserWindow, shell, dialog, session } = require('electron');
 const { spawn } = require('child_process');
 const getPort = require('get-port');
 const express = require('express');
@@ -29,7 +29,7 @@ function createWindow() {
         win.webContents.openDevTools();
     }
 
-    win.loadURL("http://localhost:"+electronPort)
+    win.loadURL("http://localhost:"+electronPort);
     win.focus();
 
     win.webContents.on('new-window', function(e, payload) {
@@ -43,12 +43,13 @@ function createWindow() {
     });
 
     win.on('closed', () => {
-        win = null
+        win = null;
     });
 }
 
 app.on('will-quit', () => {
-    console.log("Safely quiting...")
+    console.log("Safely quiting...");
+    
     if (cli) {
         cli.stdin.pause();
         cli.kill();
@@ -91,18 +92,18 @@ app.on('activate', () => {
 });
 
 function getBinaryPath() {
-    let binaryName = "weatherdump"
+    let binaryName = "weatherdump";
 
     if (process.platform == "win32") {
-        binaryName.concat(".exe")
+        binaryName.concat(".exe");
     }
 
-    return path.join(__dirname, "..", "app", "engine", binaryName)
+    return path.join(__dirname, "..", "app", "engine", binaryName);
 }
 
 function startServer() {
-    return new Promise((resolve, reject) => {
-        serve.use('/', express.static(path.join(__dirname, "..", "app", "gui")))
+    return new Promise((resolve) => {
+        serve.use('/', express.static(path.join(__dirname, "..", "app", "gui")));
         server = http.createServer(serve).listen({
             host: 'localhost',
             port: electronPort,
@@ -123,7 +124,7 @@ function startEngine() {
         engineLog += data.toString();
     });
 
-    cli.on('exit', (code) => {
+    cli.on('exit', () => {
         if (cli != null) {
             dialog.showErrorBox(
                 "Unexpected Engine Crash",

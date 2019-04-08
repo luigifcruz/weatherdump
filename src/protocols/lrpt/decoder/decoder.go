@@ -107,6 +107,7 @@ func (e *Worker) Work(inputPath string, outputPath string, signal chan bool) {
 	bar.PrependFunc(func(b *uiprogress.Bar) string {
 		return "[DEC] Decoding soft-symbol file	"
 	})
+
 	bar.AppendFunc(func(b *uiprogress.Bar) string {
 		s := e.Statistics
 		return fmt.Sprintf("\n[DEC] Decoder Statistics	 [VCID: %2d] [VIT: %5d] [QUAL: %2d%%] [RS: %2d %2d %2d %2d] [DROPPED: %4.1f%%]",

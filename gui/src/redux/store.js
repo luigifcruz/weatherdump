@@ -1,4 +1,5 @@
-import { createStore, applyMiddleware } from 'redux'
+import { applyMiddleware, createStore } from 'redux'
+
 import Reducer from './reducer'
 import { createLogger } from 'redux-logger'
 
@@ -37,7 +38,7 @@ let defaultState = {
 let middleware = new Array()
 
 if (process.env.NODE_ENV == 'development') {
-    //middleware.push(createLogger())
+    middleware.push(createLogger())
 }
 
 function configureStore(initialState = defaultState) {

@@ -1,7 +1,5 @@
-const webpack = require('webpack');
 const path = require('path');
 const WebpackBar = require('webpackbar');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const prodConfig = {
@@ -26,7 +24,7 @@ const prodConfig = {
         rules: [{
             test: /\.(sa|sc|c)ss$/,
             use: [
-                MiniCssExtractPlugin.loader,
+                'style-loader',
                 'css-loader',
                 'sass-loader',
                 {
@@ -48,15 +46,12 @@ const prodConfig = {
             }
         },{
             test: /\.(woff|woff2|eot|ttf|otf)$/,
+            exclude: /node_modules/,
             use: ['url-loader']
         }]
     },
     plugins: [
-        new WebpackBar(),
-        new MiniCssExtractPlugin({
-            filename: '[name].css',
-            allChunks: false
-        })
+        new WebpackBar()
     ]
 };
 

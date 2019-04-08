@@ -1,9 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WebpackBar = require('webpackbar');
-
-const buildDate = new Date().toISOString()
 
 const devConfig = {
     mode: 'development',
@@ -34,8 +31,8 @@ const devConfig = {
             {
                 test: /\.(sa|sc|c)ss$/,
                 use: [
+                    'style-loader',
                     'css-hot-loader',
-                    MiniCssExtractPlugin.loader,
                     'css-loader',
                     'sass-loader',
                     {
@@ -62,15 +59,9 @@ const devConfig = {
         ]
     },
     plugins: [
-        new MiniCssExtractPlugin({
-            filename: '[name].css',
-            allChunks: false
-        }),
         new WebpackBar(),
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify('development')
-        }),
+        new webpack.DefinePlugin({ "global.GENTLY": false })
     ]
 };
 

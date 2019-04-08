@@ -1,19 +1,20 @@
-import { withRouter } from 'react-router-dom';
-import React, { Component } from 'react';
+import 'styles/fonts';
+import 'styles/app';
+
 import * as rxa from 'redux/actions';
-import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
-import { version } from '../../package.json';
+
+import { Link, Route, Switch } from 'react-router-dom';
+import React, { Component } from 'react';
+
+import Dashboard from 'components/Dashboard';
 import Decoder from 'components/Decoder';
 import Meta from 'components/Meta';
 import Processor from 'components/Processor';
-import StepPicker from 'components/StepPicker';
 import Showroom from 'components/Showroom';
-import Dashboard from 'components/Dashboard';
-import { Route, Switch } from 'react-router-dom';
-
-import 'styles/fonts';
-import 'styles/app';
+import StepPicker from 'components/StepPicker';
+import { connect } from 'react-redux';
+import { version } from '../../package.json';
+import { withRouter } from 'react-router-dom';
 
 class App extends Component {
     render() {

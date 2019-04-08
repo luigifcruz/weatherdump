@@ -14,15 +14,16 @@ type Response struct {
 
 // ResError ends the current request with Code 400 (Bad Request).
 // Will return standard response structure.
-func ResError(w http.ResponseWriter, code, description string) {
+func ResError(w http.ResponseWriter, code, data string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(Response{false, code, description})
+	json.NewEncoder(w).Encode(Response{false, code, data})
 }
 
 // ResSuccess ends the current request with Code 200 (Success).
 // Will return standard response structure.
-func ResSuccess(w http.ResponseWriter, code, description string) {
+func ResSuccess(w http.ResponseWriter, code, data string) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Response{true, code, description})
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(Response{true, code, data})
 }

@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
-import Websocket from 'react-websocket';
+import 'styles/Decoder';
+
 import * as rxa from '../../redux/actions';
-import { connect } from 'react-redux';
-import WeatherRemote from 'weather-remote';
+
+import React, { Component } from 'react';
+
 import Constellation from './Constellation';
 import { RingLoader } from 'react-spinners';
+import WeatherRemote from 'weather-remote';
+import Websocket from 'react-websocket';
+import { connect } from 'react-redux';
 import { decoder as headerText } from 'static/HeaderText';
-
-import 'styles/Decoder';
 
 function _base64ToArrayBuffer(base64) {
     var wordArray = window.atob(base64);

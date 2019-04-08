@@ -1,15 +1,15 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { spring, AnimatedSwitch } from 'react-router-transition';
-import About from './About';
-import Feedback from './Feedback';
-import Updates from './Updates';
-import Licenses from './Licenses';
-import Advanced from './Advanced';
-
 import 'styles/meta';
 import 'styles/tabview';
+
+import { AnimatedSwitch, spring } from 'react-router-transition';
+import { Link, Route } from 'react-router-dom';
+import React, { Component } from 'react';
+
+import About from './About';
+import Advanced from './Advanced';
+import Feedback from './Feedback';
+import Licenses from './Licenses';
+import Updates from './Updates';
 
 function mapStyles(styles) {
     return {

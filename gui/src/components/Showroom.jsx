@@ -1,16 +1,17 @@
-import React, { Component } from 'react';
-import * as rxa from 'redux/actions';
-import { connect } from 'react-redux';
-import WeatherRemote from 'weather-remote';
-import Websocket from 'react-websocket';
-
-import { showroom as headerText } from 'static/HeaderText';
-
 import 'styles/showroom';
 import 'styles/progressbar';
 import 'styles/btn';
 import 'styles/grid';
 import 'styles/scrollbar';
+
+import * as rxa from 'redux/actions';
+
+import React, { Component } from 'react';
+
+import WeatherRemote from 'weather-remote';
+import Websocket from 'react-websocket';
+import { connect } from 'react-redux';
+import { showroom as headerText } from 'static/HeaderText';
 
 class Showroom extends Component {
     constructor(props) {
@@ -46,11 +47,8 @@ class Showroom extends Component {
     }
 
     handleAbort() {
-        const { datalink } = this.props.match.params
-        const { history, processId, processDescriptor } = this.props
-        
         this.handleFinish()
-        history.push("/")
+        this.props.history.push("/")
 
         // To-do: ADD DECODER ABORT WHEN AVAILABLE
     }

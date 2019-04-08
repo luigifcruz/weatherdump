@@ -1,6 +1,6 @@
 FROM node:current-stretch
 
-RUN dpkg --add-architecture i386 && apt-get update && apt-get install wine32 -y --no-install-recommends
+RUN dpkg --add-architecture i386
 RUN apt-get update && apt-get install -y mono-complete wine wine32 build-essential --no-install-recommends
 
 RUN npm install -g electron-builder

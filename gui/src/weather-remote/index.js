@@ -1,5 +1,5 @@
-import request from 'superagent';
 import Cookies from 'js-cookie';
+import request from 'superagent';
 
 class WeatherRemote {
 	constructor() {
@@ -19,7 +19,6 @@ class WeatherRemote {
 	get enginePath() {
 		return this.serverAddress;
 	}
-	
 
 	// Abort Task
 	// Endpoint: /abort/:uuid

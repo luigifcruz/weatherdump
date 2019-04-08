@@ -15,14 +15,17 @@ import (
 
 var decoder = schema.NewDecoder()
 
+// Remote data structure.
 type Remote struct {
 	routines map[uuid.UUID](chan bool)
 }
 
+// New returns a pointer containing an initialized Remote data struct.
 func New() *Remote {
 	return &Remote{make(map[uuid.UUID](chan bool))}
 }
 
+// Listen to client requests for HTTP and WebSockets API.
 func (s *Remote) Listen(serverPort, clientPort string) {
 	fmt.Println("[RMT] Server listening to port " + serverPort)
 	fmt.Println("[RMT] Accepting requests from client port " + clientPort)

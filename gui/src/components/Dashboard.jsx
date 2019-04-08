@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-
-import { index as headerText } from 'static/HeaderText';
-
 import 'styles/dashboard';
 import 'styles/grid';
+
+import React, { Component } from 'react';
+
+import { Link } from 'react-router-dom';
+import { index as headerText } from 'static/HeaderText';
 
 class Dashboard extends Component {
     render() {

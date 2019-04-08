@@ -1,12 +1,14 @@
-import React, { Component } from 'react';
-import * as rxa from 'redux/actions';
-import { connect } from 'react-redux';
-import WeatherRemote from 'weather-remote';
-import { processor as headerText } from 'static/HeaderText';
-
 import 'styles/processor';
 import 'styles/matrix';
 import 'styles/btn';
+
+import * as rxa from 'redux/actions';
+
+import React, { Component } from 'react';
+
+import WeatherRemote from 'weather-remote';
+import { connect } from 'react-redux';
+import { processor as headerText } from 'static/HeaderText';
 
 class Processor extends Component {
     constructor(props) {
