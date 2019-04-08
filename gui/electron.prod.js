@@ -115,7 +115,13 @@ function startServer() {
 }
 
 function startEngine() {
+    let engineLog = "";
+
     cli = spawn(getBinaryPath(), ['remote', enginePort.toString(), electronPort.toString()]);
+
+    cli.stdout.on('data', function(data) {
+        engineLog += data.toString();
+    });
 
     cli.on('exit', (code) => {
         if (cli != null) {
@@ -124,9 +130,15 @@ function startEngine() {
                 "Something has gone terribly wrong with the WeatherDump engine. Please, report this error to @luigifcruz at Twitter."
             );
             cli = null;
+
+            reportCrash(engineLog);
             app.quit();
         }
     });
+}
+
+function reportCrash(crash) {
+    console.error(crash);
 }
 
 function setupCookie(name, value) {
