@@ -2,6 +2,7 @@ package remote
 
 import (
 	"github.com/nfnt/resize"
+	"image"
 	"image/jpeg"
 	"net/http"
 	"os"
@@ -16,12 +17,8 @@ func (s *Remote) thumbnailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file, err := os.Open(filePath)
-	if err != nil {
-		ResError(w, "INPUT_FILE_NOT_FOUND", "")
-		return
-	}
+	img, _, err := image.Decode(file)
 
-	img, err := jpeg.Decode(file)
 	if err != nil {
 		ResError(w, "INVALID_FILE", "")
 		return

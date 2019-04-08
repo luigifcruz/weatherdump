@@ -1,8 +1,18 @@
 package parser
 
-import "weather-dump/src/protocols/helpers"
+import (
+	"encoding/json"
+	"weather-dump/src/protocols/helpers"
+)
 
 type List map[uint16]*Channel
+
+func New() List {
+	var n List
+	buf, _ := json.Marshal(Channels)
+	json.Unmarshal(buf, &n)
+	return n
+}
 
 var Channels = List{
 	800: {

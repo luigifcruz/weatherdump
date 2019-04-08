@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"weather-dump/src/handlers"
 	"weather-dump/src/img"
 	"weather-dump/src/protocols/helpers"
@@ -54,6 +55,9 @@ func (s *Remote) processorHandler(w http.ResponseWriter, r *http.Request) {
 
 		processor.Work(req.InputFile)
 		processor.Export(req.OutputPath, wf)
+
+		processor = nil
+		debug.FreeOSMemory()
 
 		color.Magenta("[RMT] Processor %s exited.\n", id.String())
 	}()

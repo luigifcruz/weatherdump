@@ -12,11 +12,11 @@
         "description": "In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while."
     },
     "processor": {
-        "title": "Customize processor output...",
-        "description": "In the decoding step, the data from the demodulator is synchronized and corrected using Error Correcting algorithms like Viterbi and Reed-Solomon. This step is computationally intensive and might take a while."
+        "title": "Product Customization",
+        "description": "Here, you can tweak almost every part of the processing pipeline. You can change the file format, the multi-spectral composites and the channels you want to export. Overlays are coming soon."
     },
     "showroom": {
-        "title": "Where are you at?",
-        "description": "From the recording thru processing, the WeatherDump supports a myriad of input options. To proceed, select below where are you at in the receiving process and what kind of input file you want to process."
+        "title": "Product Gallery",
+        "description": "Wo-hoo! At this time, we're rendering the decoded data into the final product. We're also applying the custom features you selected in the last step. Watch the products popping in the gallery below as they are saved!"
     }
 }

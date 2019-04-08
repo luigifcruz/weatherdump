@@ -12,6 +12,10 @@ input {
 //
 // Main Header 
 //
+ 
+.switch-wrapper > div {
+  position: absolute;
+}
 
 .main-header {
     height: 5.5em; 

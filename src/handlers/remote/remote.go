@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/fatih/color"
 	"github.com/google/uuid"
@@ -49,6 +50,7 @@ func (s *Remote) terminate(id uuid.UUID) {
 	s.routines[id] <- true
 	delete(s.routines, id)
 	color.Magenta("[RMT] Process terminated: %s\n", id.String())
+	debug.FreeOSMemory()
 }
 
 func (s *Remote) abortHandler(w http.ResponseWriter, r *http.Request) {

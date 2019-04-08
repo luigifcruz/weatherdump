@@ -20,14 +20,11 @@ weatherdump lrpt soft ./file_path.bin
 
 ## Known Bugs
 
-- The LRPT RGB composite is unsynchonized in most occasions.
+- The LRPT RGB composite is unsynchonized in most occasions. Will be corrected in Beta 1.
 
 ## Upcoming Features List
 
-- [ ] Support SatNOGS compatible output.
-- [ ] Add multi-thread support to decoder.
-- [x] Generate LRPT RGB composite.
-- [ ] Add NOAA APT support.
+The WeatherDump project roadmap is available in our [Notion Page](https://www.notion.so/fef088dd80b34bd9a6547e890ed962d3?v=182d497ce07d42bc98fb325ca091e813).
 
 ## Changelog
 
@@ -53,3 +50,6 @@ weatherdump lrpt soft ./file_path.bin
 - New Javascript library for the REST API.
 - Fix WebSockets synchronization.
 - General improvements to the REST API.
+- Unified WebSockets handlers.
+- New thumbnail generator API.
+- Add support for multiple apps opened at the same time.

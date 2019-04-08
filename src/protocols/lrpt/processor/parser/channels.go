@@ -1,6 +1,16 @@
 package parser
 
-import "weather-dump/src/protocols/helpers"
+import (
+	"encoding/json"
+	"weather-dump/src/protocols/helpers"
+)
+
+func New() List {
+	var n List
+	buf, _ := json.Marshal(Channels)
+	json.Unmarshal(buf, &n)
+	return n
+}
 
 // List datatype of the LRPT protocol.
 type List map[uint16]*Channel

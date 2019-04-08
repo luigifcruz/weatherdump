@@ -19,7 +19,6 @@ import (
 )
 
 var upgrader = websocket.Upgrader{}
-var channels = parser.Channels
 
 const frameSize = 892
 
@@ -27,11 +26,13 @@ type Worker struct {
 	ccsds    *ccsds.Worker
 	scid     uint8
 	manifest helpers.ProcessingManifest
+	channels parser.List
 }
 
 func NewProcessor(uuid string, manifest *helpers.ProcessingManifest) interfaces.Processor {
 	e := Worker{
-		ccsds: ccsds.New(),
+		ccsds:    ccsds.New(),
+		channels: parser.New(),
 	}
 
 	if manifest == nil {
@@ -65,7 +66,7 @@ func (e *Worker) Work(inputFile string) {
 
 	for _, packet := range e.ccsds.GetSpacePackets() {
 		if packet.GetAPID() >= 800 && packet.GetAPID() <= 823 {
-			channels[packet.GetAPID()].Parse(packet)
+			e.channels[packet.GetAPID()].Parse(packet)
 		}
 	}
 
@@ -112,10 +113,10 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 
 	for _, apid := range e.manifest.Parser.Parse() {
 		currentParser = apid
-		ch := channels[apid]
+		ch := e.channels[apid]
 
 		var buf []byte
-		if ch.Export(&buf, channels, hrd.Spacecrafts[e.scid]) {
+		if ch.Export(&buf, e.channels, hrd.Spacecrafts[e.scid]) {
 			w, h := ch.GetDimensions()
 			outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
 
@@ -136,7 +137,7 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	for _, code := range e.manifest.Composer.Parse() {
 		currentComposer = code
 		c := composer.Composers[uint16(code)]
-		outputName := c.Register(wf, hrd.Spacecrafts[e.scid]).Render(channels, outputPath)
+		outputName := c.Register(wf, hrd.Spacecrafts[e.scid]).Render(e.channels, outputPath)
 		e.manifest.Composer[code].FileName(outputName)
 		e.manifest.Composer[code].Completed()
 		e.manifest.Update()
@@ -149,6 +150,8 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 		progress.Stop()
 	}
 
+	e.channels = make(parser.List)
+	e.ccsds = nil
 	color.Green("[PRC] Done! All products and components were saved.")
 }
 

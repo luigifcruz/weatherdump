@@ -90,10 +90,10 @@ class Meta extends Component {
                         </Link>
                     </div>
                     <AnimatedSwitch
-                            atEnter={bounceTransition.atEnter}
-                            atLeave={bounceTransition.atLeave}
-                            atActive={bounceTransition.atActive}
-                            mapStyles={mapStyles}
+                        atEnter={bounceTransition.atEnter}
+                        atLeave={bounceTransition.atLeave}
+                        atActive={bounceTransition.atActive}
+                        mapStyles={mapStyles}
                         className="tab-view-body"
                     >
                         <Route exact path="/meta/about" component={About}/>

@@ -50,7 +50,7 @@ class Showroom extends Component {
         const { history, processId, processDescriptor } = this.props
         
         this.handleFinish()
-        history.push(`/steps/${datalink}/processor`)
+        history.push("/")
 
         // To-do: ADD DECODER ABORT WHEN AVAILABLE
     }
@@ -110,7 +110,7 @@ class Showroom extends Component {
                         </div>
                         {headerText.title}
                     </h1>
-                    <h2 className="main-description">{this.props.workingFolder}</h2>
+                    <h2 className="main-description">{headerText.description}</h2>
                </div> 
                 <div className="main-body showroom">
                     <div className="products grid-container scroll-bar">
