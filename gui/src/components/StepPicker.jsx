@@ -53,7 +53,7 @@ class StepPicker extends Component {
     }
 
     goBack() {
-        this.props.history.push("/")
+        this.props.history.push("/index.html")
     }
 
     render() {

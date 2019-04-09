@@ -1,8 +1,10 @@
 import { spawn } from 'child_process';
+import { remote } from 'electron';
 import path from 'path';
 
 class WeatherServer {
-    constructor(port) {;
+    constructor(port) {
+        this.dirname = remote.app.getAppPath();
         this.port = port
         this.cli = null;
     }
@@ -17,28 +19,32 @@ class WeatherServer {
 		if (process.platform == "win32") {
 			binaryName.concat(".exe");
         }
-        
-		return path.join(__dirname, "..", "app", "engine", binaryName);
+
+        return path.join(this.dirname, "..", "app", "engine", binaryName);
 	}
 	
 	startEngine() {
         this.cli = spawn(this.getBinaryPath(), ['remote', this.port]);
         
         this.cli.stdout.on('data', (data) => {
-            process.stdout.write(data.toString());
+            console.log(data.toString());
         });
 
-        this.cli.on('exit', () => {
+        this.cli.stderr.on('data', (data) => {
+            console.error(data.toString());
+        });
+
+        this.cli.on('exit', (code) => {
             if (this.cli != null) {
                 this.cli = null;
-                this.reportCrash("Engine has crashed.");
+                this.reportCrash("Engine has exited with code " + code);
             }
         });
     }
     
     stopEngine() {
         if (!this.isRunning) {
-            console.error("Engine isn't running.");
+            console.warn("Engine isn't running.");
             return;
         }
 

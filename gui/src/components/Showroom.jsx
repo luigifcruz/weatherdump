@@ -51,7 +51,7 @@ class Showroom extends Component {
 
     handleAbort() {
         this.handleFinish()
-        this.props.history.push("/")
+        this.props.history.push("/index.html")
 
         // To-do: ADD DECODER ABORT WHEN AVAILABLE
     }
