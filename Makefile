@@ -41,8 +41,7 @@ build-gui:
 	rm -fr ./gui/dist
 
 build-gui-linux:
-	electron-builder --project ./gui -l --x64
-	electron-builder --project ./gui -l --armv7l
+	electron-builder --project ./gui -l --x64 --armv7l
 	mv ./gui/dist/*.AppImage ./release-builds
 
 build-gui-windows:

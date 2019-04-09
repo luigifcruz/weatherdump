@@ -11,7 +11,7 @@
   },
   "build": {
     "productName": "WeatherDump",
-    "artifactName": "weatherdump-gui-${version}-${os}.${ext}",
+    "artifactName": "weatherdump-gui-${version}-${os}-${arch}.${ext}",
     "icon": "./resources/icon_by_eucalyp.png",
     "files": [
       "electron.prod.js"
