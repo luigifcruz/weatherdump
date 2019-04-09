@@ -8,7 +8,7 @@ import * as rxa from 'redux/actions';
 
 import React, { Component } from 'react';
 
-import WeatherRemote from 'weather-remote';
+import open from 'open';
 import Websocket from 'react-websocket';
 import { connect } from 'react-redux';
 import { showroom as headerText } from 'static/HeaderText';
@@ -21,7 +21,6 @@ class Showroom extends Component {
             socketOpen: false
         }
 
-        this.remote = new WeatherRemote();
         this.openDecodedFolder = this.openDecodedFolder.bind(this);
         this.openDecodedFile = this.openDecodedFile.bind(this);
         this.decodedFilePath = this.decodedFilePath.bind(this);
@@ -39,11 +38,15 @@ class Showroom extends Component {
     }
 
     openDecodedFile(path) {
-        window.open(this.decodedFilePath(path), '_blank');
+        (async () => {
+            await open(this.decodedFilePath(path), {wait: true});
+        })();
     }
 
     openDecodedFolder() {
-        window.open(this.props.demodulatedFile, '_blank');
+        (async () => {
+            await open(this.props.demodulatedFile, {wait: true});
+        })();
     }
 
     handleAbort() {
@@ -94,7 +97,7 @@ class Showroom extends Component {
                         <Websocket
                             reconnect={true}
                             debug={true}
-                            url={`ws://${this.remote.enginePath}/socket/${datalink}/${this.props.processId}`}
+                            url={`ws://${global.client.enginePath}/socket/${datalink}/${this.props.processId}`}
                             onMessage={this.handleSocketMessage}
                             onOpen={this.handleSocketEvent}
                             onClose={this.handleSocketEvent}
@@ -124,7 +127,7 @@ class Showroom extends Component {
                                         className="product product-dark"
                                     >
                                         <div className="img">
-                                            <img src={`http://${this.remote.enginePath}/get/thumbnail?filepath=/${filePath}`}/>
+                                            <img src={`http://${global.client.enginePath}/get/thumbnail?filepath=/${filePath}`}/>
                                         </div>
                                         <div className="title">{Name}</div>
                                         <div className="description">{Description}</div>
@@ -139,7 +142,7 @@ class Showroom extends Component {
                                 <div style={{ background: "#059C75", width: ratio + "%" }} className="filler"></div>
                             </div>
                             <div className="text">
-                                <div className="description">Processing CCSDS packets</div>
+                                <div className="description">Processing packets</div>
                                 <div className="percentage">{finished}/{count} {ratio.toFixed(0)}%</div>
                             </div>
                         </div>

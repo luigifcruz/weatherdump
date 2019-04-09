@@ -39,7 +39,7 @@ class App extends Component {
                             }
                         }}>About</Link>
                     </div>
-                    <div className="main-footer-center">
+                    <div className={(global.server !== "undefined") ? "main-footer-center main-footer-center-active" : "main-footer-center"}>
                         WeatherDump
                     </div>
                     <div className="main-footer-right">

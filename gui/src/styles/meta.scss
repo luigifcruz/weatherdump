@@ -47,9 +47,9 @@
 }
 
 .about-right-body {
-    font-size: .95em;
+    font-size: .85em;
     margin-bottom: 2em;
-    font-style: italic;
+    font-family: 'Roboto Mono', monospace;
 }
 
 @mixin about-right-theme($text-color) {

@@ -6,7 +6,6 @@ import * as rxa from 'redux/actions';
 
 import React, { Component } from 'react';
 
-import WeatherRemote from 'weather-remote';
 import { connect } from 'react-redux';
 import { processor as headerText } from 'static/HeaderText';
 
@@ -16,18 +15,17 @@ class Processor extends Component {
 
         this.goBack = this.goBack.bind(this);
         this.startProcessor = this.startProcessor.bind(this);
-        this.remote = new WeatherRemote();
         this.datalink = this.props.match.params.datalink;
     }
 
     componentDidMount() {
-        this.remote.getManifest(this.datalink).then((manifest) => {
+        global.client.getManifest(this.datalink).then((manifest) => {
             this.props.dispatch(rxa.updateManifest(manifest.Parser, manifest.Composer))
         });
     }
 
     startProcessor() {
-        this.remote.startProcessor({
+        global.client.startProcessor({
             datalink: this.datalink,
             inputPath: this.props.decodedFile,
             pipeline: JSON.stringify(this.props.processorEnhancements),

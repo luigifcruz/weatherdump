@@ -1,6 +1,6 @@
-const { app, BrowserWindow, shell, session } = require('electron');
+const { app, BrowserWindow, shell } = require('electron');
 
-let win
+let win;
 
 function createWindow() {
     let height = 500;
@@ -34,9 +34,6 @@ function createWindow() {
 }
 
 app.on('ready', () => {
-    setupCookie("enginePort", "3000");
-    setupCookie("engineAddr", "localhost");
-    setupCookie("systemLocale", app.getLocale());
     createWindow();
 });
 
@@ -51,11 +48,3 @@ app.on('activate', () => {
         createWindow();
     }
 });
-
-function setupCookie(name, value) {
-    console.log("Registering Cookie: ", name, value);
-    const cookie = { url: 'http://localhost:3002', name, value };
-    session.defaultSession.cookies.set(cookie, (error) => {
-        if (error) console.error(error);
-    });
-}

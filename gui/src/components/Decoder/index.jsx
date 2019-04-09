@@ -6,7 +6,6 @@ import React, { Component } from 'react';
 
 import Constellation from './Constellation';
 import { RingLoader } from 'react-spinners';
-import WeatherRemote from 'weather-remote';
 import Websocket from 'react-websocket';
 import { connect } from 'react-redux';
 import { decoder as headerText } from 'static/HeaderText';
@@ -47,8 +46,6 @@ class Decoder extends Component {
         this.openProcessor = this.openProcessor.bind(this);
         this.handleSocketEvent = this.handleSocketEvent.bind(this);
         this.handleSocketMessage = this.handleSocketMessage.bind(this);
-
-        this.remote = new WeatherRemote();
         this.datalink = this.props.match.params.datalink;
     }
 
@@ -69,7 +66,7 @@ class Decoder extends Component {
 
     componentDidMount() {
         if (this.props.processId == null) {
-            this.remote.startDecoder({
+            global.client.startDecoder({
                 datalink: this.datalink,
                 inputFile: this.props.demodulatedFile,
                 decoder: this.props.processDescriptor
@@ -94,7 +91,7 @@ class Decoder extends Component {
         history.push(`/steps/${this.datalink}/decoder`)
 
         if (processId != null) {
-            this.remote.abortTask(processId).then(() => {
+            global.client.abortTask(processId).then(() => {
                 this.handleFinish()
             });
         }
@@ -135,7 +132,7 @@ class Decoder extends Component {
                         <Websocket 
                             reconnect={true}
                             debug={process.env.NODE_ENV == 'development'}
-                            url={`ws://${this.remote.enginePath}/socket/${this.datalink}/${this.props.processId}`}
+                            url={`ws://${global.client.enginePath}/socket/${this.datalink}/${this.props.processId}`}
                             onMessage={this.handleSocketMessage}
                             onOpen={this.handleSocketEvent}
                             onClose={this.handleSocketEvent}

@@ -4,7 +4,7 @@ const WebpackBar = require('webpackbar');
 
 const devConfig = {
     mode: 'development',
-    target: 'web',
+    target: 'electron-renderer',
     devtool: 'inline-source-map',
     performance: {
         hints: false
@@ -31,8 +31,8 @@ const devConfig = {
             {
                 test: /\.(sa|sc|c)ss$/,
                 use: [
-                    'style-loader',
                     'css-hot-loader',
+                    'style-loader',
                     'css-loader',
                     'sass-loader',
                     {
@@ -50,7 +50,10 @@ const devConfig = {
                 loader: 'babel-loader',
                 exclude: /node_modules/,
                 options: {
-                    presets: ['@babel/react', '@babel/env']
+                    presets: ['@babel/preset-react', '@babel/preset-env'],
+                    plugins: [
+                        ["@babel/transform-runtime"]
+                    ]
                 }
             },{
                 test: /\.(woff|woff2|eot|ttf|otf)$/,
@@ -60,8 +63,7 @@ const devConfig = {
     },
     plugins: [
         new WebpackBar(),
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.DefinePlugin({ "global.GENTLY": false })
+        new webpack.HotModuleReplacementPlugin()
     ]
 };
 

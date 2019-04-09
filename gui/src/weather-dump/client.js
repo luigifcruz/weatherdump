@@ -1,10 +1,7 @@
-import Cookies from 'js-cookie';
 import request from 'superagent';
 
-class WeatherRemote {
-	constructor() {
-		const engineAddr = Cookies.get('engineAddr');
-		const enginePort = Cookies.get('enginePort');
+class WeatherClient {
+	constructor(engineAddr, enginePort) {
 		this.serverAddress = `${engineAddr}:${enginePort}`;
 	}
 
@@ -104,6 +101,6 @@ class WeatherRemote {
 			reject(err);
 		});
 	}
-}
+};
 
-export default WeatherRemote
+export default WeatherClient;

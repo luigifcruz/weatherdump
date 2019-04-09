@@ -1,9 +1,31 @@
 import 'styles/meta';
 
+import * as os from 'os';
+import osLocale from 'os-locale';
 import React, { Component } from 'react';
 import { engineVersion, version } from '../../../package.json';
 
 class About extends Component {
+	constructor(props) {
+		super(props);
+
+		this.state = {
+			locale: null,
+			platform: null,
+			arch: null
+		}
+	}
+
+	componentDidMount() {
+		(async () => {
+			this.setState({
+				locale: await osLocale(),
+				platform: await os.type(),
+				arch: await os.arch()
+			});
+		})();
+	}
+
 	render() {
 		return (
 			<div className="about">
@@ -19,6 +41,8 @@ class About extends Component {
 					<div className="about-right-body">
 						<div>Interface Version: {version}</div>
 						<div>Engine Version: {engineVersion}</div>
+						<div>Platform: {this.state.platform} ({this.state.arch})</div>
+						<div>Locale: {this.state.locale}</div>
 					</div>
 					<div className="about-right-body">
 						<div>This program comes with absolutely no warranty.</div>
