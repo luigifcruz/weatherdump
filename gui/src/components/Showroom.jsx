@@ -8,10 +8,10 @@ import * as rxa from 'redux/actions';
 
 import React, { Component } from 'react';
 
-import open from 'open';
 import Websocket from 'react-websocket';
 import { connect } from 'react-redux';
 import { showroom as headerText } from 'static/HeaderText';
+import open from 'open';
 
 class Showroom extends Component {
     constructor(props) {
@@ -127,7 +127,7 @@ class Showroom extends Component {
                                         className="product product-dark"
                                     >
                                         <div className="img">
-                                            <img src={`http://${global.client.enginePath}/get/thumbnail?filepath=/${filePath}`}/>
+                                            <img src={`http://${global.client.enginePath}/get/thumbnail?filepath=${filePath}`}/>
                                         </div>
                                         <div className="title">{Name}</div>
                                         <div className="description">{Description}</div>

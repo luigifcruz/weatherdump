@@ -21,6 +21,7 @@ weatherdump lrpt soft ./file_path.bin
 ## Known Bugs
 
 - The LRPT RGB composite is unsynchonized in most occasions. Will be corrected in Beta 1.
+- Garbage collection bug causes the app to use a huge amout of memory. Will be corrected in Beta 1.
 
 ## Upcoming Features List
 
@@ -53,3 +54,4 @@ The WeatherDump project roadmap is available in our [Notion Page](https://www.no
 - Unified WebSockets handlers.
 - New thumbnail generator API.
 - Add support for multiple apps opened at the same time.
+- New engine handler is now running on client-side.
