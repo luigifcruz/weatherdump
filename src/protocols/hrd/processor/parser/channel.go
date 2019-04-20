@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 	"sync"
-	"weather-dump/src/ccsds/frames"
-	"weather-dump/src/protocols/hrd"
-	"weather-dump/src/protocols/hrd/processor/parser/segment"
+	"weatherdump/src/ccsds/frames"
+	"weatherdump/src/protocols/hrd"
+	"weatherdump/src/protocols/hrd/processor/parser/segment"
 )
 
 const maxFrameCount = 8192

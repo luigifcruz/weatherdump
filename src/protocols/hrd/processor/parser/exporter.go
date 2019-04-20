@@ -3,7 +3,7 @@ package parser
 import (
 	"runtime"
 	"sync"
-	"weather-dump/src/protocols/hrd"
+	"weatherdump/src/protocols/hrd"
 )
 
 func (e *Channel) Export(buf *[]byte, ch List, scft hrd.SpacecraftParameters) bool {

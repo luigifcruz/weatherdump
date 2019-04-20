@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"weather-dump/src/handlers"
+	"weatherdump/src/handlers"
 )
 
 type decoderRequest struct {

@@ -1,8 +1,8 @@
 package ccsds
 
 import (
-	"weather-dump/src/ccsds/frames"
-	"weather-dump/src/ccsds/parameters"
+	"weatherdump/src/ccsds/frames"
+	"weatherdump/src/ccsds/parameters"
 )
 
 // Version list of all supported CCSDS variants.

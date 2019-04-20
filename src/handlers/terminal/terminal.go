@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"weather-dump/src/handlers"
-	"weather-dump/src/img"
+	"weatherdump/src/handlers"
+	"weatherdump/src/img"
 
 	"github.com/fatih/color"
 )

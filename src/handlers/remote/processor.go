@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
-	"weather-dump/src/handlers"
-	"weather-dump/src/img"
-	"weather-dump/src/protocols/helpers"
+	"weatherdump/src/handlers"
+	"weatherdump/src/img"
+	"weatherdump/src/protocols/helpers"
 )
 
 type processorRequest struct {

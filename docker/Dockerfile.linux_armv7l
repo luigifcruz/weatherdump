@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y build-essential cmake g++-arm-linux-gnu
 
 ENV CC="arm-linux-gnueabihf-gcc"
 ENV CXX="arm-linux-gnueabihf-g++"
-ENV PACKAGE_NAME="weatherdump-cli-linux-armv7"
+ENV PACKAGE_NAME="weatherdump-cli-linux-armv7l"
 ENV CGO_ENABLED="1"
 ENV CGO_CFLAGS="-I/go/libaec/src"
 ENV CGO_CXXFLAGS="-I/go/libsathelper/includes -I/go/libcorrect/build/include"

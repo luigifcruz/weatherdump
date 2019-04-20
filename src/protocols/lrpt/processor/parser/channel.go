@@ -2,9 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"weather-dump/src/ccsds/frames"
-	"weather-dump/src/protocols/lrpt"
-	"weather-dump/src/protocols/lrpt/processor/parser/segment"
+	"weatherdump/src/ccsds/frames"
+	"weatherdump/src/protocols/lrpt"
+	"weatherdump/src/protocols/lrpt/processor/parser/segment"
 )
 
 const maxFrameCount = 8192 * 3

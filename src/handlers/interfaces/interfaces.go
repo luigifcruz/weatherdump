@@ -1,8 +1,8 @@
 package interfaces
 
 import (
-	"weather-dump/src/img"
-	"weather-dump/src/protocols/helpers"
+	"weatherdump/src/img"
+	"weatherdump/src/protocols/helpers"
 )
 
 type ProcessorMakers map[string]func(string, *helpers.ProcessingManifest) Processor

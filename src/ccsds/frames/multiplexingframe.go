@@ -3,7 +3,7 @@ package frames
 import (
 	"encoding/binary"
 	"fmt"
-	"weather-dump/src/ccsds/parameters"
+	"weatherdump/src/ccsds/parameters"
 )
 
 const multiplexingFrameMinimum = 2

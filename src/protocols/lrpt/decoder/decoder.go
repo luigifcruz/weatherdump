@@ -5,8 +5,8 @@ import (
 	"io"
 	"log"
 	"os"
-	"weather-dump/src/handlers/interfaces"
-	"weather-dump/src/protocols/helpers"
+	"weatherdump/src/handlers/interfaces"
+	"weatherdump/src/protocols/helpers"
 
 	"encoding/binary"
 

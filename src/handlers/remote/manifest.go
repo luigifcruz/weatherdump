@@ -3,8 +3,8 @@ package remote
 import (
 	"encoding/json"
 	"net/http"
-	"weather-dump/src/handlers"
-	"weather-dump/src/protocols/helpers"
+	"weatherdump/src/handlers"
+	"weatherdump/src/protocols/helpers"
 )
 
 type manifestRequest struct {

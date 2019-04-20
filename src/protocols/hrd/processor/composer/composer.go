@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
-	"weather-dump/src/img"
-	"weather-dump/src/protocols/hrd"
-	"weather-dump/src/protocols/hrd/processor/parser"
+	"weatherdump/src/img"
+	"weatherdump/src/protocols/hrd"
+	"weatherdump/src/protocols/hrd/processor/parser"
 )
 
 type Composer struct {

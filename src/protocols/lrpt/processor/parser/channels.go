@@ -2,7 +2,7 @@ package parser
 
 import (
 	"encoding/json"
-	"weather-dump/src/protocols/helpers"
+	"weatherdump/src/protocols/helpers"
 )
 
 func New() List {

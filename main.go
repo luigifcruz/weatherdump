@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 	"time"
-	remoteHandler "weather-dump/src/handlers/remote"
-	terminalHandler "weather-dump/src/handlers/terminal"
-	"weather-dump/src/img"
+	remoteHandler "weatherdump/src/handlers/remote"
+	terminalHandler "weatherdump/src/handlers/terminal"
+	"weatherdump/src/img"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-const VER_NAME = "Alpha 2 - Nightly (Pre-Release)"
 const startMessage = `__          __        _   _               _____                        
 \ \        / /       | | | |             |  __ \                       
  \ \  /\  / /__  __ _| |_| |__   ___ _ __| |  | |_   _ _ __ ___  _ __  
@@ -19,6 +18,8 @@ const startMessage = `__          __        _   _               _____
     \/  \/ \___|\__,_|\__|_| |_|\___|_|  |_____/ \__,_|_| |_| |_| .__/ 
                                                                 | |    
 								|_|`
+
+var version string
 
 var (
 	output = kingpin.Flag("output", "Custom output folder. Default is the current input file folder.").Default("").String()
@@ -43,17 +44,21 @@ var (
 )
 
 func main() {
-	fmt.Println(startMessage)
-	fmt.Println()
+	if version == "" {
+		version = "Dev-Mode"
+	}
 
 	kingpin.CommandLine.HelpFlag.Short('h')
-	kingpin.Version(VER_NAME)
+	kingpin.Version(version)
 
 	datalink := kingpin.Parse()
 
 	if datalink == "remote" {
 		remoteHandler.New().Listen(*remotePort, *clientPort)
 	}
+
+	fmt.Println(startMessage)
+	fmt.Println()
 
 	wf := img.NewPipeline()
 
@@ -64,7 +69,7 @@ func main() {
 	wf.AddPipe("ExportJPEG", *exportJPEG)
 
 	start := time.Now()
-	fmt.Printf("[CLI] Version %s\n", VER_NAME)
+	fmt.Printf("[CLI] Version %s\n", version)
 	terminalHandler.HandleInput(datalink, *lrptInputFile+*hrdInputFile, *output, *hrdDecoderType+*lrptDecoderType, wf)
 	fmt.Printf("[CLI] Tasks finished in %s\n", time.Since(start))
 }

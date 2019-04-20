@@ -1,0 +1,1 @@
+Plugin 'scrooloose/nerdtree'

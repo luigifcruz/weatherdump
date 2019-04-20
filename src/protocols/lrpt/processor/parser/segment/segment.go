@@ -3,8 +3,8 @@ package segment
 import (
 	"encoding/binary"
 	"fmt"
-	"weather-dump/src/protocols/lrpt"
-	"weather-dump/src/protocols/lrpt/processor/parser/segment/jpeg"
+	"weatherdump/src/protocols/lrpt"
+	"weatherdump/src/protocols/lrpt/processor/parser/segment/jpeg"
 )
 
 const segmentDataMinimum = 13

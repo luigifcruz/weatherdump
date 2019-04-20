@@ -5,11 +5,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"weather-dump/src/handlers/interfaces"
-	npoessDecoder "weather-dump/src/protocols/hrd/decoder"
-	npoessProcessor "weather-dump/src/protocols/hrd/processor"
-	meteorDecoder "weather-dump/src/protocols/lrpt/decoder"
-	meteorProcessor "weather-dump/src/protocols/lrpt/processor"
+	"weatherdump/src/handlers/interfaces"
+	npoessDecoder "weatherdump/src/protocols/hrd/decoder"
+	npoessProcessor "weatherdump/src/protocols/hrd/processor"
+	meteorDecoder "weatherdump/src/protocols/lrpt/decoder"
+	meteorProcessor "weatherdump/src/protocols/lrpt/processor"
 )
 
 // AvailableDecoders shows the currently available decoders for this build.

@@ -3,7 +3,7 @@ package segment
 import (
 	"encoding/binary"
 	"fmt"
-	"weather-dump/src/protocols/hrd"
+	"weatherdump/src/protocols/hrd"
 )
 
 const headerMinimum = 52

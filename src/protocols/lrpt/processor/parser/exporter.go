@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"weather-dump/src/protocols/lrpt"
+	"weatherdump/src/protocols/lrpt"
 )
 
 // Export the assets data inside the current LRPT channel.
