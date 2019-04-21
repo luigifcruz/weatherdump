@@ -43,15 +43,15 @@ func (e *Channel) init() {
 
 // GetBounds returns the number of the first and last segment
 // of the current channel. This should be called after Process().
-func (e Channel) GetBounds() (int, int) {
-	return int(e.FirstSegment / 14), int(e.LastSegment / 14)
+func (e Channel) GetBounds() (int, int, int) {
+	return int(e.FirstSegment / 14), int(e.LastSegment / 14), int(e.offset)
 }
 
 // SetBounds for the passed values.
 // After calling this function the Process() also should be called.
-func (e *Channel) SetBounds(first, last int) {
-	e.FirstSegment = uint32(first * 14)
-	e.LastSegment = uint32(last * 14)
+func (e *Channel) SetBounds(first, last, offset int) {
+	e.FirstSegment = uint32((first + (offset - int(e.offset))) * 14)
+	e.LastSegment = uint32((last + (offset - int(e.offset))) * 14)
 }
 
 // GetDimensions returns the width and height of the current channel.
@@ -111,8 +111,11 @@ func (e *Channel) Parse(packet frames.SpacePacketFrame) {
 			e.rollover += 16384
 		}
 
-		if mcuNumber == 0 {
-			e.offset = (sequence + e.rollover) % 43
+		if mcuNumber == 0 && e.offset == 0 {
+			e.offset = (sequence + e.rollover) % 43 % 14
+			if e.offset > 10 {
+				e.offset = 13 - e.offset
+			}
 		}
 
 		id := ((sequence + e.rollover - e.offset) / 43 * 14) + mcuNumber

@@ -41,33 +41,15 @@ func (e Composer) Render(ch parser.List, outputFolder string) string {
 	// Synchronize all channels scans.
 	firstScan := make([]int, 3)
 	lastScan := make([]int, 3)
+	offset := make([]int, 3)
 
-	firstScan[0], lastScan[0] = ch01.GetBounds()
-	firstScan[1], lastScan[1] = ch02.GetBounds()
-	firstScan[2], lastScan[2] = ch03.GetBounds()
+	firstScan[0], lastScan[0], offset[0] = ch01.GetBounds()
+	firstScan[1], lastScan[1], offset[1] = ch02.GetBounds()
+	firstScan[2], lastScan[2], offset[2] = ch03.GetBounds()
 
-	ch01.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
-	ch02.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
-	ch03.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan))
-
-	ch01.Process(e.scft)
-	ch02.Process(e.scft)
-	ch03.Process(e.scft)
-
-	a := make([]int, 3)
-	b := make([]int, 3)
-
-	a[0], b[0] = ch01.GetTime()
-	a[1], b[1] = ch02.GetTime()
-	a[2], b[2] = ch03.GetTime()
-
-	//fmt.Println(((a[0] - MinIntSlice(a)) / 1232))
-	//fmt.Println(((a[1] - MinIntSlice(a)) / 1232))
-	//fmt.Println(((a[2] - MinIntSlice(a)) / 1232))
-
-	ch01.SetBounds(MaxIntSlice(firstScan)-((a[0]-MinIntSlice(a))/1232), MinIntSlice(lastScan))
-	ch02.SetBounds(MaxIntSlice(firstScan)-((a[1]-MinIntSlice(a))/1232), MinIntSlice(lastScan))
-	ch03.SetBounds(MaxIntSlice(firstScan)-((a[2]-MinIntSlice(a))/1232), MinIntSlice(lastScan))
+	ch01.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan), MaxIntSlice(offset))
+	ch02.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan), MaxIntSlice(offset))
+	ch03.SetBounds(MaxIntSlice(firstScan), MinIntSlice(lastScan), MaxIntSlice(offset))
 
 	ch01.Process(e.scft)
 	ch02.Process(e.scft)
