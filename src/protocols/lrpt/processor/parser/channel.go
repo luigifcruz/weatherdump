@@ -95,6 +95,10 @@ func (e *Channel) Process(scft lrpt.SpacecraftParameters) {
 	e.FileName = fmt.Sprintf("%s_%s_BISMW_%s_%d", scft.Filename, scft.SignalName, e.ChannelName, e.StartTime.GetMilliseconds())
 	e.Height = ((e.LastSegment - e.FirstSegment) / 14) * 8
 	e.Width = e.FinalWidth
+
+	if e.Height*e.Width < 100 {
+		e.HasData = false
+	}
 }
 
 // Parse the current Space Packet Frame into each LRPT protocol channel structure.
@@ -113,9 +117,6 @@ func (e *Channel) Parse(packet frames.SpacePacketFrame) {
 
 		if mcuNumber == 0 && e.offset == 0 {
 			e.offset = (sequence + e.rollover) % 43 % 14
-			if e.offset > 10 {
-				e.offset = 13 - e.offset
-			}
 		}
 
 		id := ((sequence + e.rollover - e.offset) / 43 * 14) + mcuNumber

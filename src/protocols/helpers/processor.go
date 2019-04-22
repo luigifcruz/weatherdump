@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"sort"
+
+	"github.com/fatih/color"
 )
 
 type Manifest struct {
@@ -36,8 +38,9 @@ func (e *ProcessingManifest) Start() {
 	e.WaitForClient(nil)
 }
 
-func (e *ProcessingManifest) Stop() {
+func (e *ProcessingManifest) Stop(re string) {
 	e.Progress.Stop()
+	color.Magenta(re)
 }
 
 func (e *ProcessingManifest) Update() {

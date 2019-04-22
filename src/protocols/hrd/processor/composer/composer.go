@@ -30,7 +30,7 @@ func (e Composer) Render(ch parser.List, outputFolder string) string {
 
 	// Check if required channels exist.
 	if !ch01.HasData || !ch02.HasData || !ch03.HasData {
-		//fmt.Println("[COM] Can't export component channel. Not all required channels are available.")
+		fmt.Println("[COM] Can't export component channel. Not all required channels are available.")
 		return ""
 	}
 

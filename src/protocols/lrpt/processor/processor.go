@@ -77,35 +77,41 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	fmt.Printf("[PRC] Exporting BISMW science products.\n")
 	e.manifest.Start()
 
-	for _, apid := range e.manifest.Parser.Parse() {
-		ch := e.channels[apid]
+	re := helpers.CaptureOutput(func() {
+		for _, apid := range e.manifest.Parser.Parse() {
+			ch := e.channels[apid]
 
-		var buf []byte
-		if ch.Export(&buf, lrpt.Spacecrafts[e.scid]) {
-			w, h := ch.GetDimensions()
-			outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
+			if !ch.HasData {
+				continue
+			}
 
-			wf.AddException("Invert", ch.Invert)
-			wf.Target(img.NewGray(&buf, w, h)).Process().Export(outputName, 100)
-			wf.ResetExceptions()
+			var buf []byte
+			if ch.Export(&buf, lrpt.Spacecrafts[e.scid]) {
+				w, h := ch.GetDimensions()
+				outputName, _ := filepath.Abs(fmt.Sprintf("%s/%s", outputPath, ch.FileName))
 
-			e.manifest.Parser[apid].FileName(outputName)
+				wf.AddException("Invert", ch.Invert)
+				wf.Target(img.NewGray(&buf, w, h)).Process().Export(outputName, 100)
+				wf.ResetExceptions()
+
+				e.manifest.Parser[apid].FileName(outputName)
+			}
+
+			e.manifest.ParserCompleted(apid)
 		}
 
-		e.manifest.ParserCompleted(apid)
-	}
-
-	for _, code := range e.manifest.Composer.Parse() {
-		c := composer.Composers[code]
-		outputName := c.Register(wf, lrpt.Spacecrafts[e.scid]).Render(e.channels, outputPath)
-		e.manifest.Composer[code].FileName(outputName)
-		e.manifest.ComposerCompleted(code)
-	}
+		for _, code := range e.manifest.Composer.Parse() {
+			c := composer.Composers[code]
+			outputName := c.Register(wf, lrpt.Spacecrafts[e.scid]).Render(e.channels, outputPath)
+			e.manifest.Composer[code].FileName(outputName)
+			e.manifest.ComposerCompleted(code)
+		}
+	})
 
 	e.channels = make(parser.List)
 	e.ccsds = nil
 
-	e.manifest.Stop()
+	e.manifest.Stop(re)
 	color.Green("[PRC] Done! All products and components were saved.")
 }
 

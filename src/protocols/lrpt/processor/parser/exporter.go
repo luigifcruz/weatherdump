@@ -7,11 +7,12 @@ import (
 // Export the assets data inside the current LRPT channel.
 // Data allocation with the current bounds occurs inside this function.
 func (e *Channel) Export(buf *[]byte, scft lrpt.SpacecraftParameters) bool {
+	e.Process(scft)
+
 	if !e.HasData {
 		return false
 	}
 
-	e.Process(scft)
 	*buf = make([]byte, e.Height*e.Width)
 
 	index := 0
