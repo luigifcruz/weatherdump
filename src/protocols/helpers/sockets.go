@@ -3,8 +3,9 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{}

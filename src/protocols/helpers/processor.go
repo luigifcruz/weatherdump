@@ -20,25 +20,41 @@ func (e *Manifest) Completed() {
 	e.Finished = true
 }
 
+type ManifestList map[uint16]*Manifest
+
 type ProcessingManifest struct {
 	Parser   ManifestList
 	Composer ManifestList
 	SocketConnection
+	Progress
 }
 
-func (e ProcessingManifest) ParserCount() int {
-	return len(e.Parser)
+func (e *ProcessingManifest) Start() {
+	if !e.IsRegistred() {
+		e.Progress.Start(len(e.Parser), len(e.Composer))
+	}
+	e.WaitForClient(nil)
 }
 
-func (e ProcessingManifest) ComposerCount() int {
-	return len(e.Composer)
+func (e *ProcessingManifest) Stop() {
+	e.Progress.Stop()
 }
 
 func (e *ProcessingManifest) Update() {
 	e.SocketConnection.SendJSON(e)
 }
 
-type ManifestList map[uint16]*Manifest
+func (e *ProcessingManifest) ParserCompleted(key uint16) {
+	e.Update()
+	e.Parser[key].Completed()
+	e.Progress.IncrementParser()
+}
+
+func (e *ProcessingManifest) ComposerCompleted(key uint16) {
+	e.Update()
+	e.Composer[key].Completed()
+	e.Progress.IncrementComposer()
+}
 
 func (e ManifestList) Parse() []uint16 {
 	keys := make([]int, 0, len(e))

@@ -15,7 +15,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gorilla/websocket"
-	"github.com/gosuri/uiprogress"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -76,43 +75,9 @@ func (e *Worker) Work(inputFile string) {
 
 func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 	fmt.Printf("[PRC] Exporting VIIRS science products.\n")
-	var currentComposer, currentParser uint16
-
-	progress := uiprogress.New()
-
-	if !e.manifest.IsRegistred() {
-		progress.Start()
-	}
-
-	bar1 := progress.AddBar(e.manifest.ParserCount()).AppendCompleted()
-	bar2 := progress.AddBar(e.manifest.ComposerCount()).AppendCompleted()
-
-	bar1.PrependFunc(func(b *uiprogress.Bar) string {
-		switch currentParser {
-		case 0:
-			return fmt.Sprintf("[DEC] Starting render		")
-		case 9999:
-			return fmt.Sprintf("[DEC] Processing completed 	")
-		default:
-			return fmt.Sprintf("[DEC] Rendering channel %s	", e.manifest.Parser[currentParser].Name)
-		}
-	})
-
-	bar2.PrependFunc(func(b *uiprogress.Bar) string {
-		switch currentComposer {
-		case 0:
-			return fmt.Sprintf("[DEC] Waiting for render	")
-		case 9999:
-			return fmt.Sprintf("[DEC] Components completed	")
-		default:
-			return fmt.Sprintf("[DEC] Rendering %s	", e.manifest.Composer[currentComposer].Name)
-		}
-	})
-
-	e.manifest.WaitForClient(nil)
+	e.manifest.Start()
 
 	for _, apid := range e.manifest.Parser.Parse() {
-		currentParser = apid
 		ch := e.channels[apid]
 
 		var buf []byte
@@ -127,31 +92,20 @@ func (e *Worker) Export(outputPath string, wf img.Pipeline) {
 			e.manifest.Parser[apid].FileName(outputName)
 		}
 
-		e.manifest.Parser[apid].Completed()
-		e.manifest.Update()
-		bar1.Incr()
+		e.manifest.ParserCompleted(apid)
 	}
 
-	currentParser = 9999
-
 	for _, code := range e.manifest.Composer.Parse() {
-		currentComposer = code
 		c := composer.Composers[uint16(code)]
 		outputName := c.Register(wf, hrd.Spacecrafts[e.scid]).Render(e.channels, outputPath)
 		e.manifest.Composer[code].FileName(outputName)
-		e.manifest.Composer[code].Completed()
-		e.manifest.Update()
-		bar2.Incr()
-	}
-
-	currentComposer = 9999
-
-	if !e.manifest.IsRegistred() {
-		progress.Stop()
+		e.manifest.ComposerCompleted(code)
 	}
 
 	e.channels = make(parser.List)
 	e.ccsds = nil
+
+	e.manifest.Stop()
 	color.Green("[PRC] Done! All products and components were saved.")
 }
 
