@@ -28,13 +28,19 @@ func (e *Progress) Start(parserCount, composerCount int) {
 }
 
 func (e *Progress) Stop() {
-	e.progress.Stop()
+	if e.activated {
+		e.progress.Stop()
+	}
 }
 
 func (e *Progress) IncrementParser() {
-	e.parserBar.Incr()
+	if e.activated {
+		e.parserBar.Incr()
+	}
 }
 
 func (e *Progress) IncrementComposer() {
-	e.composerBar.Incr()
+	if e.activated {
+		e.composerBar.Incr()
+	}
 }

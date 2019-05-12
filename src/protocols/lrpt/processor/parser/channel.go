@@ -117,6 +117,7 @@ func (e *Channel) Parse(packet frames.SpacePacketFrame) {
 
 		if mcuNumber == 0 && e.offset == 0 {
 			e.offset = (sequence + e.rollover) % 43 % 14
+			fmt.Println(e.offset)
 		}
 
 		id := ((sequence + e.rollover - e.offset) / 43 * 14) + mcuNumber
