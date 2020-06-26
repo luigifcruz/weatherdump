@@ -21,7 +21,7 @@ weatherdump lrpt soft ./file_path.bin
 ## Known Bugs
 
 - The LRPT RGB composite is unsynchonized in most occasions. Will be corrected in Beta 1.
-- Garbage collection bug causes the app to use a huge amout of memory. Will be corrected in Beta 1.
+- Garbage collection bug causes the app to use a huge amount of memory. Will be corrected in Beta 1.
 
 ## Upcoming Features List
 
